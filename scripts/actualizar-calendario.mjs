@@ -51,7 +51,7 @@ const SPACE_ES = ['espacio', 'espacial', 'astronom', 'astrofís', 'planeta', 'ex
   'supernova', 'nebulosa', 'cosmo', 'universo', 'sonda', 'astronauta', 'satélite', 'cohete', 'órbita', 'webb', 'hubble', 'artemis', 'vía láctea', 'sistema solar', 'sol '];
 const MAJOR = ['artemis', 'crew', 'astronaut', 'spacewalk', 'mars', 'moon', 'lunar', 'webb', 'jwst', 'hubble', 'exoplanet', 'black hole', 'galaxy', 'supernova',
   'discover', 'first', 'record', 'eclipse', 'comet', 'asteroid', 'meteor', 'sample return', 'starship flight', 'new glenn', 'europa clipper', 'juice', 'bepicolombo',
-  'iss ', 'space station', 'tiangong', 'shenzhou', "chang'e", 'tianwen', 'gaganyaan', 'chandrayaan', 'voyager', 'jupiter', 'saturn', 'pluto', 'sun ', 'solar storm', 'aurora',
+  'iss ', 'space station', 'neptune', 'uranus', 'venus', 'mercury ', 'light-day', 'light-year', 'spacecraft', 'probe', 'rover', 'lander', 'telescope', 'nebula', 'star ', 'planet', 'neptuno', 'urano', 'júpiter', 'saturno', 'sonda', 'tiangong', 'shenzhou', "chang'e", 'tianwen', 'gaganyaan', 'chandrayaan', 'voyager', 'jupiter', 'saturn', 'pluto', 'sun ', 'solar storm', 'aurora',
   'marte', 'luna', 'astronauta', 'telescopio', 'agujero negro', 'descubr', 'primer', 'récord', 'cometa', 'asteroide', 'eclipse', 'exoplaneta', 'galaxia'];
 const NOISE = ['starlink group', 'contract', 'funding', 'raises', 'acquire', 'acquisition', 'earnings', 'revenue', 'stock', 'ipo', 'series a', 'series b', 'investor',
   'partnership', 'podcast', 'roundup', 'this week in', 'weekly', 'job', 'hiring', 'webinar', 'conference', 'award', 'sponsor', 'deal', 'merger', 'layoff', 'quarter'];
@@ -67,21 +67,32 @@ export function newsScore(n) {
   const t = `${n.titulo} ${n.resumen || ''}`.toLowerCase(), title = n.titulo.toLowerCase();
   if (NOISE.some(w => wholeWord(title, w))) return 0;
   if (n.idioma === 'es' && !SPACE_ES.some(w => hit(t, w))) return 0; // SINC publica de toda la ciencia: solo espacio
-  let s = 0;
-  for (const w of MAJOR) if (hit(title, w)) s += 2; else if (hit(t, w)) s += 1;
+  let s = 0, inTitle = 0;
+  for (const w of MAJOR) if (hit(title, w)) { s += 2; inTitle++; } else if (hit(t, w)) s += 1;
+  if (!inTitle && !n.destacado && n.idioma !== 'es') return 0; // el titular debe hablar de espacio (fuera fotos de la Tierra, selfis…)
   if (n.destacado) s += 3;
   if (OFFICIAL.some(o => (n.fuente || '').includes(o))) s += 1;
   if (n.idioma === 'es') s += 3; // SINC: agencia científica pública; sus noticias de espacio (ya filtradas arriba) entran todas
   return s;
 }
+// Palabras significativas de un titular (para detectar la misma noticia contada por dos webs)
+const STOP = new Set('the a an of to in on for and is are its it from by with at as after near nasa nasas new el la los las de del en un una y que se por con su sus al'.split(' '));
+const words = t => new Set(t.toLowerCase().replace(/[’']s\b/g, '').split(/[^a-z0-9áéíóúüñ]+/).filter(w => w && !STOP.has(w)));
+const sameStory = (a, b) => { const A = words(a), B = words(b); let k = 0; for (const w of A) if (B.has(w)) k++; return k / Math.min(A.size, B.size) >= 0.6; };
 export function pickNews(items, now = Date.now()) {
-  const seen = new Set();
-  return items
+  const kept = [];
+  let apod = 0;
+  items
     .filter(n => n.titulo && n.url && now - Date.parse(n.fecha) < NEWS_DAYS * 864e5)
     .map(n => ({ ...n, puntos: newsScore(n) }))
     .filter(n => n.puntos >= 3)
-    .filter(n => { const k = n.titulo.toLowerCase().replace(/[^a-z0-9áéíóúñ]/g, '').slice(0, 40); if (seen.has(k)) return false; seen.add(k); return true; })
     .sort((a, b) => b.puntos - a.puntos || Date.parse(b.fecha) - Date.parse(a.fecha))
+    .forEach(n => {
+      if (/^apod\b/i.test(n.titulo) && apod++ >= 1) return;        // la foto del día de la NASA: como mucho una
+      if (kept.some(k => sameStory(k.titulo, n.titulo))) return;   // misma noticia en otra web
+      kept.push(n);
+    });
+  return kept
     .slice(0, NEWS_MAX)
     .sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha));
 }
