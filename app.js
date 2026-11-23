@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -49,7 +49,8 @@ const I18N = {
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
     manualMode: 'Modo manual · toca 🧭 Seguir el móvil para volver', camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
-    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', calTitle: '📅 Calendario', tabTonight: '🌙 Esta noche', tabEvents: '📅 Eventos', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
+    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', shotTitle: '📸 Compartir el cielo', shotShare: '📤 Compartir', shotSave: '💾 Guardar',
+    shotFormats: { square: '◻️ Cuadrado', story: '▯ Vertical', wide: '▭ Horizontal' }, shotDefault: 'El cielo de esta noche', shotText: 'Míralo en el Planetario DarwinCaos:', shotSaved: 'Imagen guardada ✔', calTitle: '📅 Calendario', tabTonight: '🌙 Esta noche', tabEvents: '📅 Eventos', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
@@ -85,7 +86,8 @@ const I18N = {
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
     manualMode: 'Manual mode · tap 🧭 Follow phone to go back', camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
-    hintPlace: 'Tap 📍 to see the sky from your location', calTitle: '📅 Calendar', tabTonight: '🌙 Tonight', tabEvents: '📅 Events', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
+    hintPlace: 'Tap 📍 to see the sky from your location', shotTitle: '📸 Share the sky', shotShare: '📤 Share', shotSave: '💾 Save',
+    shotFormats: { square: '◻️ Square', story: '▯ Vertical', wide: '▭ Landscape' }, shotDefault: 'Tonight’s sky', shotText: 'See it in the DarwinCaos Planetarium:', shotSaved: 'Image saved ✔', calTitle: '📅 Calendar', tabTonight: '🌙 Tonight', tabEvents: '📅 Events', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
@@ -1443,7 +1445,7 @@ $('btnCamera').onclick = () => setCamera(!S.camera);
 // ───────────── Interfaz ─────────────
 let toastTimer;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 2600); }
-const MODALS = { modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: 'dockSky', modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
+const MODALS = { modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: 'dockSky', modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
 function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); $(b).classList.remove('active'); }); }
 function toggleModal(id) {
   const open = $(id).classList.contains('open');
@@ -1714,7 +1716,7 @@ const CAL_TXT = {
     venusDay: 'Venus es tan brillante que, con el cielo muy limpio, puede verse de día. Usa «Apuntar» para localizarlo.',
     issNight: 'Pasos visibles de la ISS', noIss: 'Sin pasos visibles esta noche.', meteorsNight: 'Estrellas fugaces',
     constNight: 'Constelaciones altas a las', tapToSee: 'Toca para verlo en el cielo',
-    newVideos: '▶ Nuevo en DarwinCaos', thisWeek: 'esta semana', filters: { all: 'Todo', sky: '🔭 Cielo', launch: '🚀 Lanzamientos', video: '▶ Vídeos', news: '📰 Noticias' },
+    latestNews: '📰 Últimas noticias', newVideos: '▶ Nuevo en DarwinCaos', thisWeek: 'esta semana', filters: { all: 'Todo', sky: '🔭 Cielo', launch: '🚀 Lanzamientos', video: '▶ Vídeos', news: '📰 Noticias' },
     supermoon: 'Superluna', eclipseL: 'Eclipse lunar', eclipseS: 'Eclipse solar', kinds: { penumbral: 'penumbral', partial: 'parcial', total: 'total', annular: 'anular' },
     visibleHere: 'visible desde tu ubicación', notVisibleHere: 'no visible desde tu ubicación', covered: 'del Sol tapado',
     opposition: 'Oposición de', oppMore: 'el mejor momento del año para verlo: más cerca, más brillante y visible toda la noche',
@@ -1733,7 +1735,7 @@ const CAL_TXT = {
     venusDay: 'Venus is so bright that, with a very clear sky, it can be seen in daylight. Use “Point” to find it.',
     issNight: 'Visible ISS passes', noIss: 'No visible passes tonight.', meteorsNight: 'Shooting stars',
     constNight: 'Constellations high at', tapToSee: 'Tap to see it in the sky',
-    newVideos: '▶ New on DarwinCaos', thisWeek: 'this week', filters: { all: 'All', sky: '🔭 Sky', launch: '🚀 Launches', video: '▶ Videos', news: '📰 News' },
+    latestNews: '📰 Latest news', newVideos: '▶ New on DarwinCaos', thisWeek: 'this week', filters: { all: 'All', sky: '🔭 Sky', launch: '🚀 Launches', video: '▶ Videos', news: '📰 News' },
     supermoon: 'Supermoon', eclipseL: 'Lunar eclipse', eclipseS: 'Solar eclipse', kinds: { penumbral: 'penumbral', partial: 'partial', total: 'total', annular: 'annular' },
     visibleHere: 'visible from your location', notVisibleHere: 'not visible from your location', covered: 'of the Sun covered',
     opposition: 'Opposition of', oppMore: 'the best time of the year to see it: closest, brightest and up all night',
@@ -1969,7 +1971,6 @@ function feedEvents() {
   if (!FEED) return [];
   const now = simDate(), items = [];
   for (const l of FEED.lanzamientos || []) { const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
-  for (const m of FEED.manuales || []) { const d = new Date(m.fecha); if (!isNaN(d) && d > new Date(+now - 2 * 864e5)) items.push({ date: d, cat: 'news', ico: '📰', what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true }); }
   return items;
 }
 function renderEvents(box) {
@@ -1982,11 +1983,22 @@ function renderEvents(box) {
       week.forEach(v => box.append(evRow({ img: v.miniatura, when: fmtDay(new Date(v.fecha)), what: v.titulo, href: v.url })));
     } else if (S.calFilter === 'video') { const p = document.createElement('p'); p.className = 'note'; p.textContent = FEED ? c.empty : c.noFeed; box.append(p); }
   }
+  // Últimas noticias: primero las tuyas (manuales), luego las automáticas relevantes
+  if (S.calFilter === 'all' || S.calFilter === 'news') {
+    const now = simDate();
+    const mine = (FEED?.manuales || []).filter(m => { const d = new Date(m.fecha); return !isNaN(d) && d > new Date(+now - 7 * 864e5); }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    const auto = FEED?.noticias || [];
+    if (mine.length || auto.length) {
+      box.append(section(c.latestNews));
+      mine.forEach(m => box.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
+      auto.forEach(n => box.append(evRow({ img: n.imagen || null, ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
+    } else if (S.calFilter === 'news') { const p = document.createElement('p'); p.className = 'note'; p.textContent = FEED ? c.empty : c.noFeed; box.append(p); }
+  }
   // Filtros
   const chips = document.createElement('div'); chips.className = 'chips';
   Object.entries(c.filters).forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.calFilter === k ? ' on' : ''); b.textContent = label; b.onclick = () => { S.calFilter = k; renderCal(); }; chips.append(b); });
   box.prepend(chips);
-  if (S.calFilter === 'video') return;
+  if (S.calFilter === 'video' || S.calFilter === 'news') return;
   const all = [...computeSkyEvents(), ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
   let month = '';
   all.forEach(e => {
@@ -2184,6 +2196,109 @@ function updateGuide() {
   guideEl.firstElementChild.style.transform = `rotate(${-a}rad)`;
   guideEl.lastElementChild.textContent = S.selected.name();
 }
+
+// ───────────── Compartir el cielo: imagen con la marca del canal ─────────────
+const SHOT_FORMATS = { square: [1080, 1080], story: [1080, 1920], wide: [1920, 1080] };
+S.shotFormat = 'square';
+let shotBlob = null, shotUrl = null;
+const logoImg = new Image();
+logoImg.src = `img/logo.png?v=${APP_VERSION}`;
+
+// Qué se ve: el objeto seleccionado o los astros dentro del encuadre + la constelación enfocada
+function shotCaption() {
+  if (S.selected) return S.selected.name();
+  const v = new THREE.Vector3(), names = [];
+  for (const b of BODIES) {
+    v.copy(b.holder.getWorldPosition(new THREE.Vector3())).project(camera);
+    if (v.z < 1 && Math.abs(v.x) < 0.9 && Math.abs(v.y) < 0.9 && vecToAltAz(b.holder.getWorldPosition(new THREE.Vector3())).alt > -2) names.push(bodyName(b));
+  }
+  if (focused) names.push(S.lang === 'en' ? focused.en : focused.es);
+  return names.slice(0, 4).join(' · ');
+}
+// Renderiza el cielo al tamaño pedido (sin menús) y le añade el pie con logo, qué se ve, lugar y fecha
+function renderShot(w, h) {
+  const out = document.createElement('canvas'); out.width = w; out.height = h;
+  const ctx = out.getContext('2d');
+  // Render 3D al tamaño de la imagen, sin tocar lo que ve el usuario
+  const prev = { pr: renderer.getPixelRatio(), aspect: camera.aspect, px: starUniforms.uPx.value, size: renderer.getSize(new THREE.Vector2()) };
+  const view = camera.view ? { ...camera.view } : null;
+  camera.clearViewOffset();
+  renderer.setPixelRatio(1); renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+  starUniforms.uPx.value = h / innerHeight; // estrellas con el mismo tamaño relativo que en pantalla
+  if (S.camera && $('cameraFeed').videoWidth) { // en modo cámara, la foto real de fondo
+    const vid = $('cameraFeed'), k = Math.max(w / vid.videoWidth, h / vid.videoHeight);
+    ctx.drawImage(vid, (w - vid.videoWidth * k) / 2, (h - vid.videoHeight * k) / 2, vid.videoWidth * k, vid.videoHeight * k);
+  }
+  renderer.render(scene, camera);
+  ctx.drawImage(renderer.domElement, 0, 0, w, h);
+  // Restaurar la vista de la pantalla
+  renderer.setPixelRatio(prev.pr); renderer.setSize(prev.size.x, prev.size.y, false);
+  camera.aspect = prev.aspect; starUniforms.uPx.value = prev.px;
+  if (view?.enabled) camera.setViewOffset(view.fullWidth, view.fullHeight, view.offsetX, view.offsetY, view.width, view.height); else camera.updateProjectionMatrix();
+
+  // Pie de foto
+  const u = Math.min(w, h) / 1080, band = 190 * u, y0 = h - band;
+  const g = ctx.createLinearGradient(0, y0 - 80 * u, 0, h);
+  g.addColorStop(0, 'rgba(2,6,18,0)'); g.addColorStop(0.45, 'rgba(2,6,18,0.82)'); g.addColorStop(1, 'rgba(2,6,18,0.95)');
+  ctx.fillStyle = g; ctx.fillRect(0, y0 - 80 * u, w, band + 80 * u);
+  const R = 62 * u, cx = 44 * u + R, cy = h - band / 2;
+  if (logoImg.complete && logoImg.naturalWidth) { // logo recortado por su círculo azul
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.clip();
+    const k = (2 * R) / (LOGO_CIRCLE * Math.min(logoImg.naturalWidth, logoImg.naturalHeight));
+    ctx.drawImage(logoImg, cx - logoImg.naturalWidth * k / 2, cy - logoImg.naturalHeight * k / 2, logoImg.naturalWidth * k, logoImg.naturalHeight * k);
+    ctx.restore();
+  }
+  ctx.strokeStyle = 'rgba(56,189,248,0.9)'; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+  const tx = cx + R + 28 * u, maxW = w - tx - 40 * u;
+  const fit = (txt, size, weight) => { let s = size; do { ctx.font = `${weight} ${s * u}px system-ui, -apple-system, "Segoe UI", sans-serif`; s -= 2; } while (ctx.measureText(txt).width > maxW && s > 16); };
+  ctx.textBaseline = 'alphabetic'; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 8 * u;
+  const caption = S.shotCap || T().shotDefault, date = simDate();
+  const when = date.toLocaleString(S.lang, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', ...tzOpt() });
+  fit(caption, 44, 800); ctx.fillStyle = '#f8fafc'; ctx.fillText(caption, tx, cy - 22 * u);
+  fit(`📍 ${S.place.name} · ${when}`, 28, 600); ctx.fillStyle = '#bae6fd'; ctx.fillText(`📍 ${S.place.name} · ${when}`, tx, cy + 18 * u);
+  fit('DarwinCaos · youtube.com/@darwincaos', 26, 700); ctx.fillStyle = '#38bdf8'; ctx.fillText('DarwinCaos · youtube.com/@darwincaos', tx, cy + 54 * u);
+  ctx.shadowBlur = 0;
+  return out;
+}
+function makeShot() {
+  const [w, h] = SHOT_FORMATS[S.shotFormat];
+  const c = renderShot(w, h);
+  return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.92));
+}
+async function openShot() {
+  S.shotCap = shotCaption(); S.shotEntry = S.selected; // antes de que la ventana cierre la ficha
+  toggleModal('modalShot');
+  const box = $('shotFormats'); box.replaceChildren();
+  Object.entries(T().shotFormats).forEach(([k, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.shotFormat === k ? ' on' : ''); b.textContent = label;
+    b.onclick = () => { S.shotFormat = k; openShot.refresh(); box.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); };
+    box.append(b);
+  });
+  await openShot.refresh();
+}
+openShot.refresh = async () => {
+  shotBlob = await makeShot();
+  if (shotUrl) URL.revokeObjectURL(shotUrl);
+  shotUrl = URL.createObjectURL(shotBlob);
+  $('shotImg').src = shotUrl;
+};
+const shotName = () => `darwincaos-cielo-${simDate().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.jpg`;
+function saveShot() {
+  const a = document.createElement('a'); a.href = shotUrl; a.download = shotName(); document.body.append(a); a.click(); a.remove();
+}
+$('infoShot').onclick = () => openShot();
+$('dockShot').onclick = () => ($('modalShot').classList.contains('open') ? closeModals() : openShot());
+$('shotSave').onclick = saveShot;
+$('shotShare').onclick = async () => {
+  if (!shotBlob) return;
+  const file = new File([shotBlob], shotName(), { type: 'image/jpeg' });
+  const text = `${S.shotCap || T().shotDefault} · ${T().shotText} ${shareUrl(S.shotEntry)}`;
+  try {
+    if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: 'Planetario DarwinCaos', text });
+    else { saveShot(); toast(T().shotSaved); }
+  } catch { /* el usuario canceló */ }
+};
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;

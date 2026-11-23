@@ -70,6 +70,13 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.2 — 23 de noviembre de 2026
+- **📸 Compartir el cielo:** botón en la barra lateral y en la ficha de cada astro. Genera una imagen de la vista actual con el logo del canal, qué se ve, lugar, fecha y enlace al canal, en formato cuadrado (1080×1080), vertical (1080×1920) u horizontal (1920×1080). Se comparte directamente a WhatsApp, Instagram, X… o se guarda.
+- **📰 Últimas noticias** en Calendario → Eventos: tus noticias manuales primero (📌) y después noticias automáticas **solo de espacio y astronomía** y **solo relevantes**, de Spaceflight News API (inglés) y Agencia SINC (español). Máximo 8, de los últimos 7 días.
+  - El filtro descarta contratos, financiación, resultados empresariales, resúmenes semanales, pódcasts y lanzamientos rutinarios de Starlink, y puntúa misiones tripuladas, Artemis, Marte, Luna, telescopios, exoplanetas, descubrimientos, récords, eclipses…
+  - Las listas de palabras están en `scripts/actualizar-calendario.mjs` (`MAJOR`, `NOISE`, `SPACE_ES`) por si quieres ajustarlas.
+- Créditos: The Space Devs (lanzamientos y noticias), Agencia SINC, modelo magnético WMM 2025 y BigDataCloud.
+
 ### Versión 1.1 — 23 de noviembre de 2026
 - **📅 Calendario** (nuevo botón en la barra lateral) con dos pestañas:
   - **🌙 Esta noche:** atardecer, noche cerrada y amanecer; fase y horario de la Luna; planetas visibles con la mejor hora y dirección; pasos visibles de la ISS; estrellas fugaces; constelaciones altas; qué se puede ver de día. Todo se puede tocar para verlo en el cielo.

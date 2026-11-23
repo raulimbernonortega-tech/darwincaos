@@ -78,6 +78,9 @@
     .ev.hl { border-color: rgba(251,191,36,.55); background: rgba(120,80,10,.25); }
     .sunbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .sunbar .stat b { font-size: 14px; }
+    /* Compartir el cielo */
+    .shot-wrap { background: #000; border-radius: 12px; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 160px; }
+    #shotImg { display: block; max-width: 100%; max-height: 52vh; object-fit: contain; }
     #reticle { position: fixed; top: var(--cy, 50%); left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 1.5px solid rgba(186,230,253,.5); border-radius: 50%; z-index: 9; pointer-events: none; }
 
     #showerBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 84px); left: 12px; z-index: 11; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; display: none; color: #fde68a; border-color: rgba(251,191,36,.4); }
@@ -192,6 +195,9 @@
     <button id="dockCal" class="dock-btn" type="button" data-i18n-title="calTitle" title="Calendario">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.6"/></svg>
     </button>
+    <button id="dockShot" class="dock-btn" type="button" data-i18n-title="shotTitle" title="Compartir el cielo">
+      <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.6"/></svg>
+    </button>
     <button id="dockLayers" class="dock-btn" type="button" data-i18n-title="layers" title="Capas">
       <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>
     </button>
@@ -248,6 +254,17 @@
     <div id="calBody" class="scroll"></div>
   </section>
 
+  <!-- Compartir el cielo -->
+  <section id="modalShot" class="modal pill">
+    <div class="modal-head"><div class="modal-title" data-i18n="shotTitle">📸 Compartir el cielo</div><button class="close" type="button">✕</button></div>
+    <div id="shotFormats" class="seg"></div>
+    <div class="shot-wrap"><img id="shotImg" alt="" /></div>
+    <div class="btn-row">
+      <button id="shotShare" class="btn" type="button" style="flex:1" data-i18n="shotShare">📤 Compartir</button>
+      <button id="shotSave" class="btn ghost" type="button" style="flex:1" data-i18n="shotSave">💾 Guardar</button>
+    </div>
+  </section>
+
   <!-- Capas -->
   <section id="modalLayers" class="modal pill">
     <div class="modal-head"><div class="modal-title" data-i18n="layers">🗂️ Capas</div><button class="close" type="button">✕</button></div>
@@ -259,7 +276,7 @@
     <div class="modal-head"><div class="modal-title">🪐 Planetario DarwinCaos</div><button class="close" type="button">✕</button></div>
     <div class="scroll">
       <p class="note" data-i18n="aboutText">Posiciones calculadas en tiempo real para tu ubicación. La ISS usa sus elementos orbitales actuales.</p>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.1</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 1.2</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -268,7 +285,10 @@
         Estrellas y nombres: <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a> (BSD) / Hipparcos ·
         Líneas e ilustraciones de constelaciones: Stellarium, ilustraciones de Johan Meuris (<a href="https://artlibre.org/licence/lal/es/" target="_blank" rel="noopener">Licencia Arte Libre</a>) ·
         Texturas planetarias: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0), Plutón: NASA/JPL ·
-        Geocodificación: Open-Meteo · 3D: three.js (MIT)
+        Lanzamientos: <a href="https://thespacedevs.com" target="_blank" rel="noopener">The Space Devs</a> / Launch Library 2 ·
+        Noticias: Spaceflight News API (The Space Devs) y <a href="https://www.agenciasinc.es" target="_blank" rel="noopener">Agencia SINC</a> ·
+        Declinación magnética: modelo WMM 2025 (NOAA/BGS) ·
+        Geocodificación: Open-Meteo y BigDataCloud · 3D: three.js (MIT)
       </p>
     </div>
   </section>
@@ -286,6 +306,7 @@
     <div class="btn-row">
       <button id="infoPoint" class="btn ghost" type="button" data-i18n="pointTo">Apuntar</button>
       <button id="infoShare" class="btn ghost" type="button" data-i18n="share">Compartir</button>
+      <button id="infoShot" class="btn ghost" type="button" title="Imagen para redes" aria-label="Imagen para redes">📸</button>
       <a id="infoVideo" class="btn yt" target="_blank" rel="noopener" style="text-decoration:none" data-i18n="watchVideo">▶ Ver en el canal</a>
     </div>
   </section>
@@ -307,9 +328,9 @@
 
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.1"></script>
-  <script src="vendor/satellite.min.js?v=1.1"></script>
-  <script src="vendor/geomag.min.js?v=1.1"></script>
-  <script type="module" src="app.js?v=1.1"></script>
+  <script src="vendor/astronomy.browser.min.js?v=1.2"></script>
+  <script src="vendor/satellite.min.js?v=1.2"></script>
+  <script src="vendor/geomag.min.js?v=1.2"></script>
+  <script type="module" src="app.js?v=1.2"></script>
 </body>
 </html>
