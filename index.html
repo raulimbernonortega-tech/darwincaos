@@ -49,6 +49,9 @@
     #guide span { font-size: 30px; line-height: 1; display: block; }
     #guide small { font-size: 11px; font-weight: 700; color: #e0f2fe; white-space: nowrap; }
     #zoomIn, #zoomOut { min-width: 30px; font-size: 15px; padding: 2px 8px; }
+    #compass { position: fixed; top: max(10px, env(safe-area-inset-top)); right: 12px; z-index: 13; width: 48px; height: 48px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; }
+    #compass svg { width: 40px; height: 40px; transition: transform .15s linear; }
+    #compass span { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #fecaca; background: #b91c1c; border-radius: 6px; padding: 0 4px; line-height: 14px; }
     #reticle { position: fixed; top: var(--cy, 50%); left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 1.5px solid rgba(186,230,253,.5); border-radius: 50%; z-index: 9; pointer-events: none; }
 
     #showerBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 84px); left: 12px; z-index: 11; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; display: none; color: #fde68a; border-color: rgba(251,191,36,.4); }
@@ -141,6 +144,10 @@
     </div>
   </header>
   <div id="showerBanner" class="pill"></div>
+  <button id="compass" class="pill" type="button" title="Brújula · toca para mirar al Norte" aria-label="Brújula">
+    <svg id="compassNeedle" viewBox="0 0 48 48"><polygon points="24,5 29,24 19,24" fill="#ef4444"/><polygon points="24,43 29,24 19,24" fill="#cbd5e1"/><circle cx="24" cy="24" r="2.5" fill="#0f172a"/><text x="24" y="15" text-anchor="middle" font-size="0" fill="#fff">N</text></svg>
+    <span>N</span>
+  </button>
 
   <aside class="dock pill" aria-label="Herramientas">
     <button id="dockSky" class="dock-btn" type="button" data-i18n-title="skyNow" title="Qué hay en el cielo">

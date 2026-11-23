@@ -13,6 +13,10 @@ const VIDEOS = {
   // jupiter: 'https://youtu.be/XXXXXXXXXXX',
 };
 
+// Logo del canal en el centro de la rosa de los vientos: img/logo.png (cuadrado).
+// LOGO_CIRCLE = diámetro del círculo azul del logo / ancho de la imagen. Se recorta justo por ese círculo.
+const LOGO_CIRCLE = 0.84;
+
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const R = { dome: 950, ground: 930, stars: 900, lines: 895, art: 890, dso: 870, meteor: 860, body: 500, iss: 450 };
 const SKY_LIMIT = [3.5, 5.0, 6.5]; // magnitud límite: ciudad, pueblo, campo
@@ -49,7 +53,8 @@ const I18N = {
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
-      ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo' },
+      ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo',
+      skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)' },
     skyQ: 'Calidad del cielo', skyQOpts: ['🏙️ Ciudad', '🏘️ Pueblo', '🌲 Campo'],
     min: 'min', today: 'hoy', tomorrow: 'mañana',
   },
@@ -83,7 +88,8 @@ const I18N = {
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
-      ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight' },
+      ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight',
+      skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)' },
     skyQ: 'Sky quality', skyQOpts: ['🏙️ City', '🏘️ Town', '🌲 Countryside'],
     min: 'min', today: 'today', tomorrow: 'tomorrow',
   },
@@ -173,7 +179,7 @@ const urlPlace = params.has('lat') && params.has('lon')
 const S = {
   lang: params.get('lang') || saved.lang || ((navigator.language || 'es').startsWith('es') ? 'es' : 'en'),
   place: urlPlace || saved.place || PRESET_CITIES[0],
-  layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true }, saved.layers),
+  layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true }, saved.layers),
   skyQ: saved.skyQ ?? 1,
   red: !!saved.red,
   tleCache: saved.tle || null,
@@ -248,7 +254,8 @@ const domeMat = new THREE.ShaderMaterial({
   vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
   fragmentShader: `uniform vec3 uZenith, uHorizon, uSunDir; uniform float uSunGlow; varying vec3 vDir;
     void main(){ vec3 d = normalize(vDir); float h = clamp(d.y, 0.0, 1.0);
-      vec3 c = mix(uHorizon, uZenith, pow(h, 0.45));
+      vec3 c = mix(uHorizon, uZenith, pow(h, 0.5)); // resplandor urbano junto al horizonte
+      if (d.y < 0.0) c = mix(uHorizon, uZenith * 0.8, pow(clamp(-d.y, 0.0, 1.0), 0.4));
       float s = max(dot(d, uSunDir), 0.0);
       c += uSunGlow * (pow(s, 8.0) * vec3(0.55, 0.35, 0.18) + pow(s, 64.0) * vec3(0.6, 0.5, 0.35));
       gl_FragColor = vec4(c, 1.0); }`,
@@ -258,7 +265,7 @@ dome.renderOrder = -10;
 scene.add(dome);
 
 const SKY_KEYS = [ // [altura Sol, cenit, horizonte]
-  [-18, '#01030a', '#03070f'], [-12, '#020611', '#0b1630'], [-6, '#0a1838', '#36406a'],
+  [-18, '#01030a', '#22365f'], [-12, '#020611', '#2a3f6c'], [-6, '#0a1838', '#36406a'],
   [-2, '#16305f', '#a3627a'], [2, '#2a5ba0', '#e3a06c'], [10, '#2f6fc8', '#a9cdf0'], [90, '#2a66c4', '#9cc6ee'],
 ];
 function skyColorsFor(sunAlt) {
@@ -275,17 +282,158 @@ function skyColorsFor(sunAlt) {
 // ── Suelo translúcido + horizonte ──
 const ground = new THREE.Mesh(
   new THREE.SphereGeometry(R.ground, 48, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
-  new THREE.MeshBasicMaterial({ color: 0x080705, transparent: true, opacity: 0.8, side: THREE.BackSide, depthWrite: false, depthTest: false }),
+  new THREE.MeshBasicMaterial({ color: 0x0a1428, transparent: true, opacity: 0.3, side: THREE.BackSide, depthWrite: false, depthTest: false }),
 );
 ground.renderOrder = 50;
 horizonGroup.add(ground);
 {
   const pts = [];
   for (let a = 0; a <= 360; a += 2) pts.push(altAzVec(a, 0, R.ground - 5));
-  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.55, depthTest: false }));
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.3, depthTest: false }));
   line.renderOrder = 61;
   horizonGroup.add(line);
 }
+// ── Silueta de ciudad en el horizonte (opaca: tapa lo que hay detrás, como en la realidad) ──
+const SKY_TOP_DEG = 12, SKY_BOTTOM_DEG = -1.5, SKY_HS = 1.5; // SKY_HS: escala de altura de los edificios
+function makeSkylineTexture() {
+  const W = 4096, H = 512, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const top = Math.tan(SKY_TOP_DEG * D2R), bot = Math.tan(SKY_BOTTOM_DEG * D2R);
+  const yOf = deg => H * (top - Math.tan(deg * SKY_HS * D2R)) / (top - bot); // grados de altura → píxel
+  const base = yOf(0);
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const sil = '#03050a', lights = [];
+  ctx.fillStyle = sil;
+  ctx.fillRect(0, base - 2, W, H - base + 2);
+  const block = (x, w, hDeg) => { const y = yOf(hDeg); ctx.fillRect(x, y, w, base - y + 2); return y; };
+  let x = 0;
+  while (x < W) {
+    const r = rnd();
+    if (r < 0.16) { // arboleda
+      const w = 60 + rnd() * 140;
+      for (let i = 0; i < w; i += 14) { const rr = 10 + rnd() * 16; ctx.beginPath(); ctx.arc(x + i, yOf(0.5 + rnd() * 0.7), rr, 0, Math.PI * 2); ctx.fill(); }
+      block(x, w, 0.45); x += w;
+    } else if (r < 0.5) { // casas y bloques bajos con tejados
+      const w = 30 + rnd() * 60, h = 0.6 + rnd() * 1.1, y = block(x, w, h);
+      if (rnd() < 0.5) { ctx.beginPath(); ctx.moveTo(x - 2, y + 1); ctx.lineTo(x + w / 2, y - 14 - rnd() * 10); ctx.lineTo(x + w + 2, y + 1); ctx.fill(); }
+      if (rnd() < 0.3) ctx.fillRect(x + w * 0.7, y - 12, 5, 12); // chimenea
+      lights.push([x, w, y]); x += w + (rnd() < 0.3 ? 4 + rnd() * 10 : 0);
+    } else if (r < 0.8) { // edificios medios escalonados
+      const w = 50 + rnd() * 80, h = 1.6 + rnd() * 2.2;
+      const y = block(x, w, h);
+      if (rnd() < 0.5) block(x + w * 0.2, w * 0.6, h + 0.25 + rnd() * 0.4);
+      if (rnd() < 0.35) { ctx.fillRect(x + w * 0.5, yOf(h + 0.9), 3, y - yOf(h + 0.9)); lights.push(['red', x + w * 0.5 + 1.5, yOf(h + 0.9)]); }
+      lights.push([x, w, y]); x += w + rnd() * 6;
+    } else if (r < 0.93) { // rascacielos con retranqueos
+      const w = 40 + rnd() * 50, h = 3.8 + rnd() * 2.8;
+      const y = block(x, w, h);
+      block(x + w * 0.15, w * 0.7, h + 0.35);
+      block(x + w * 0.32, w * 0.36, h + 0.7);
+      if (rnd() < 0.6) { ctx.fillRect(x + w / 2 - 1.5, yOf(h + 1.6), 3, y); lights.push(['red', x + w / 2, yOf(h + 1.6)]); }
+      lights.push([x, w, y]); x += w + rnd() * 8;
+    } else { // cúpula o campanario
+      const w = 70 + rnd() * 50, h = 1.4 + rnd() * 0.8, y = block(x, w, h);
+      if (rnd() < 0.5) { ctx.beginPath(); ctx.ellipse(x + w / 2, y, w * 0.3, w * 0.28, 0, Math.PI, 0); ctx.fill(); ctx.fillRect(x + w / 2 - 2, y - w * 0.28 - 22, 4, 22); }
+      else { ctx.fillRect(x + w * 0.4, yOf(h + 2), w * 0.2, y); ctx.beginPath(); ctx.moveTo(x + w * 0.38, yOf(h + 2)); ctx.lineTo(x + w / 2, yOf(h + 3.1)); ctx.lineTo(x + w * 0.62, yOf(h + 2)); ctx.fill(); }
+      x += w;
+    }
+  }
+  // Ventanas encendidas (pocas y tenues) y balizas rojas
+  for (const L of lights) {
+    if (L[0] === 'red') { ctx.fillStyle = '#ff3b30'; ctx.fillRect(L[1] - 2, L[2] - 2, 4, 4); continue; }
+    const [bx, bw, by] = L;
+    for (let wy = by + 8; wy < base - 6; wy += 9) for (let wx = bx + 5; wx < bx + bw - 6; wx += 8)
+      if (rnd() < 0.09) { ctx.fillStyle = rnd() < 0.7 ? 'rgba(255,196,120,0.55)' : 'rgba(180,215,255,0.45)'; ctx.fillRect(wx, wy, 3, 4); }
+  }
+  ctx.fillStyle = sil;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.repeat.set(3, 1);
+  tex.anisotropy = 4;
+  return tex;
+}
+const skylineGroup = new THREE.Group();
+horizonGroup.add(skylineGroup);
+{
+  const r = R.ground - 15, yTop = r * Math.tan(SKY_TOP_DEG * D2R), yBot = r * Math.tan(SKY_BOTTOM_DEG * D2R);
+  const city = new THREE.Mesh(new THREE.CylinderGeometry(r, r, yTop - yBot, 180, 1, true),
+    new THREE.MeshBasicMaterial({ map: makeSkylineTexture(), transparent: true, side: THREE.BackSide, depthWrite: false, depthTest: false }));
+  city.position.y = (yTop + yBot) / 2;
+  city.renderOrder = 52;
+  skylineGroup.add(city);
+}
+
+// ── Rosa de los vientos en el cenit con el logo de DarwinCaos ──
+const roseGroup = new THREE.Group();
+horizonGroup.add(roseGroup);
+const roseCanvas = document.createElement('canvas');
+roseCanvas.width = roseCanvas.height = 1024;
+const roseTex = new THREE.CanvasTexture(roseCanvas);
+roseTex.colorSpace = THREE.SRGBColorSpace;
+let roseLogo = null;
+function drawRose() {
+  const ctx = roseCanvas.getContext('2d'), C = 512, t = T();
+  ctx.clearRect(0, 0, 1024, 1024);
+  ctx.save(); ctx.translate(C, C);
+  ctx.strokeStyle = 'rgba(125,211,252,0.55)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, 470, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 440, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 72; i++) { // marcas cada 5°
+    const a = i * 5 * D2R, l = i % 18 === 0 ? 40 : i % 9 === 0 ? 26 : 12;
+    ctx.beginPath(); ctx.moveTo(Math.sin(a) * 470, -Math.cos(a) * 470); ctx.lineTo(Math.sin(a) * (470 - l), -Math.cos(a) * (470 - l)); ctx.stroke();
+  }
+  // Puntas de la rosa. En el lienzo: arriba = Sur, derecha = Este (así se lee bien mirando hacia arriba)
+  const point = (ang, len, wid, colA, colB) => {
+    ctx.save(); ctx.rotate(ang);
+    ctx.fillStyle = colA; ctx.beginPath(); ctx.moveTo(0, -len); ctx.lineTo(wid, 0); ctx.lineTo(0, 0); ctx.fill();
+    ctx.fillStyle = colB; ctx.beginPath(); ctx.moveTo(0, -len); ctx.lineTo(-wid, 0); ctx.lineTo(0, 0); ctx.fill();
+    ctx.restore();
+  };
+  for (let k = 0; k < 4; k++) point(Math.PI / 4 + k * Math.PI / 2, 270, 34, 'rgba(56,189,248,0.35)', 'rgba(14,116,144,0.35)');
+  for (let k = 0; k < 4; k++) {
+    const north = k === 2; // abajo del lienzo = Norte
+    point(k * Math.PI / 2, 400, 52, north ? 'rgba(239,68,68,0.9)' : 'rgba(186,230,253,0.75)', north ? 'rgba(153,27,27,0.9)' : 'rgba(56,189,248,0.55)');
+  }
+  // Letras
+  ctx.font = '800 76px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  // Cada letra se lee derecha cuando miras hacia ese punto cardinal (su parte de arriba apunta al centro)
+  [[t.S, 0, -385, Math.PI], [t.E, 385, 0, -Math.PI / 2], [t.N, 0, 385, 0], [t.W, -385, 0, Math.PI / 2]].forEach(([s, x, y, rot]) => {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.fillStyle = s === t.N ? '#fecaca' : '#e0f2fe'; ctx.shadowColor = '#000'; ctx.shadowBlur = 12; ctx.fillText(s, 0, 0);
+    ctx.restore();
+  });
+  ctx.shadowBlur = 0;
+  // Logo en el centro
+  ctx.fillStyle = 'rgba(3,7,18,0.85)'; ctx.strokeStyle = 'rgba(125,211,252,0.8)'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  if (roseLogo) { // recorte redondo hasta el círculo azul del logo
+    ctx.save(); ctx.beginPath(); ctx.arc(0, 0, 150, 0, Math.PI * 2); ctx.clip();
+    const k = 300 / (LOGO_CIRCLE * Math.min(roseLogo.width, roseLogo.height));
+    ctx.drawImage(roseLogo, -roseLogo.width * k / 2, -roseLogo.height * k / 2, roseLogo.width * k, roseLogo.height * k);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#e0f2fe'; ctx.font = '800 46px system-ui, sans-serif'; ctx.fillText('DARWIN', 0, -24);
+    ctx.fillStyle = '#38bdf8'; ctx.fillText('CAOS', 0, 30);
+  }
+  ctx.restore();
+  roseTex.needsUpdate = true;
+}
+{
+  const img = new Image();
+  img.onload = () => { roseLogo = img; drawRose(); };
+  img.src = 'img/logo.png'; // pon aquí el logo del canal (PNG, idealmente cuadrado y con fondo transparente)
+  const h = R.ground - 40, size = 2 * h * Math.tan(13 * D2R); // ~13° de radio alrededor del cenit
+  const rose = new THREE.Mesh(new THREE.PlaneGeometry(size, size),
+    new THREE.MeshBasicMaterial({ map: roseTex, transparent: true, opacity: 0.85, depthWrite: false, depthTest: false, side: THREE.DoubleSide }));
+  rose.position.y = h;
+  rose.rotation.x = Math.PI / 2; // mira hacia abajo; el borde superior del lienzo queda al Sur
+  rose.renderOrder = 10; // por encima de las líneas de constelaciones, para que el logo quede limpio
+  roseGroup.add(rose);
+}
+
 const gridGroup = new THREE.Group();
 horizonGroup.add(gridGroup);
 {
@@ -331,6 +479,21 @@ function makeLabel(text, { color = '#e0f2fe', px = 17, weight = 600, spacing = 0
   const sp = screenSprite(mat, px, w / h);
   if (below) sp.center.set(0.5, 1.25);
   sp.renderOrder = order;
+  textLabels.push(sp);
+  return sp;
+}
+// Insignia redonda para N/E/S/O (la N en rojo, como una brújula)
+function cardinalBadge(letter, north) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = north ? 'rgba(185,28,28,0.92)' : 'rgba(8,15,30,0.88)';
+  ctx.strokeStyle = north ? '#fecaca' : 'rgba(56,189,248,0.9)'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(64, 64, 56, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '800 64px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(letter, 64, 68);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = screenSprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: false }), north ? 38 : 32);
+  sp.renderOrder = 63;
   textLabels.push(sp);
   return sp;
 }
@@ -394,8 +557,8 @@ function buildStars() {
     uniforms: starUniforms, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
     vertexShader: `attribute float mag; attribute vec3 color; uniform float uScale, uLimit, uFade, uPx; varying vec3 vColor; varying float vAlpha;
       void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        float s = (2.6 + 9.0 * pow(0.66, mag + 1.5)) * uScale;
-        vAlpha = clamp((uLimit - mag) / 1.2, 0.0, 1.0) * clamp(1.25 - (mag - 1.0) * 0.1, 0.45, 1.0) * uFade;
+        float s = (3.4 + 11.0 * pow(0.66, mag + 1.5)) * uScale;
+        vAlpha = clamp((uLimit - mag) / 1.2, 0.0, 1.0) * clamp(1.4 - (mag - 1.0) * 0.1, 0.65, 1.0) * uFade;
         gl_PointSize = s * uPx; vColor = color; }`,
     fragmentShader: `varying vec3 vColor; varying float vAlpha;
       void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = (exp(-d * d * 7.0) + 0.35 * smoothstep(1.0, 0.0, d) * exp(-d * 3.0)) * vAlpha;
@@ -769,10 +932,11 @@ function buildLabels() {
   const t = T();
   [['N', 0], ['NE', 45], ['E', 90], ['SE', 135], ['S', 180], ['SW', 225], ['W', 270], ['NW', 315]].forEach(([k, az]) => {
     const major = k.length === 1;
-    const lbl = makeLabel(t[k], { color: major ? '#38bdf8' : '#7dd3fc', px: major ? 22 : 15, weight: 800, below: false, order: 62 });
-    lbl.position.copy(altAzVec(az, 2.2, R.ground - 10));
-    horizonGroup.add(lbl);
+    const sp = major ? cardinalBadge(t[k], k === 'N') : makeLabel(t[k], { color: '#7dd3fc', px: 15, weight: 800, below: false, order: 62 });
+    sp.position.copy(altAzVec(az, major ? 10.5 : 9.5, R.ground - 20));
+    horizonGroup.add(sp);
   });
+  drawRose();
   updateScreenSprites();
 }
 
@@ -1068,6 +1232,7 @@ async function setCamera(on) {
   S.camera = on;
   document.body.classList.toggle('camera', on);
   dome.visible = !on; ground.visible = !on;
+  applyLayers();
   $('btnCamera').classList.toggle('active', on);
 }
 $('btnSensor').onclick = () => setSensor(!S.sensor);
@@ -1117,6 +1282,7 @@ function applyLayers() {
   bodiesGroup.visible = L.planets; linesGroup.visible = L.lines; artGroup.visible = L.art; conNameGroup.visible = L.conNames;
   starNameGroup.visible = L.starNames; dsoGroup.visible = L.deep; eclipticGroup.visible = L.ecliptic; gridGroup.visible = L.grid;
   meteorGroup.visible = L.meteors;
+  skylineGroup.visible = L.skyline && !S.camera; roseGroup.visible = L.rose;
   starUniforms.uLimit.value = SKY_LIMIT[S.skyQ];
 }
 function renderLayers() {
@@ -1291,6 +1457,11 @@ $('dateInput').addEventListener('change', e => { const t = Date.parse(e.target.v
 // ───────────── Bucle principal ─────────────
 const azEl = $('azText'), altEl = $('altText'), horEl = $('horizonTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
 const camDir = new THREE.Vector3();
+const compassNeedle = $('compassNeedle');
+$('compass').onclick = () => { // tocar la brújula: mirar al Norte
+  if (S.sensor) { toast(`${T().turnTo} ${T().N}`); return; }
+  S.tracking = null; S.targetAz = 0; S.targetAlt = 12;
+};
 let last = performance.now(), slowTick = 0, focused = null;
 function frame(now) {
   requestAnimationFrame(frame);
@@ -1360,7 +1531,7 @@ function frame(now) {
     hiLines.geometry = new THREE.BufferGeometry().setFromPoints(best ? conSegments(best, R.lines - 1) : []);
   }
   if (DATA) for (const con of DATA.cons) {
-    if (con.artMat) con.artMat.opacity += (((con === focused ? 0.7 : 0.15) * artFade) - con.artMat.opacity) * 0.08;
+    if (con.artMat) con.artMat.opacity += (((con === focused ? 0.5 : 0.14) * artFade) - con.artMat.opacity) * 0.08;
     if (con.label) con.label.material.opacity = (con === focused ? 0.95 : 0.55) * lineFade;
   }
   lineMat.opacity = 0.3 * lineFade; hiLineMat.opacity = 0.85 * lineFade;
@@ -1378,6 +1549,7 @@ function frame(now) {
   updateMeteors(dt, starFade, date);
 
   // HUD (4 veces por segundo)
+  compassNeedle.style.transform = `rotate(${-view.az}deg)`;
   if (now - slowTick > 250) {
     slowTick = now;
     const az = Math.round(view.az) % 360, alt = Math.round(view.alt);
