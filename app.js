@@ -45,6 +45,8 @@ const I18N = {
     camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
     hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación',
+    locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
+    searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
       ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo' },
@@ -77,6 +79,8 @@ const I18N = {
     camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
     hintPlace: 'Tap 📍 to see the sky from your location',
+    locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
+    searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
       ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight' },
@@ -88,25 +92,25 @@ const I18N = {
 // ───────────── Catálogos propios ─────────────
 // Polos de rotación (RA°, Dec° J2000, IAU) para orientar discos y anillos correctamente.
 const BODIES = [
-  { id: 'sun', body: 'Sun', es: 'Sol', en: 'Sun', tex: 'sol', deg: 0.267, ref: 40, pole: [286.13, 63.87], glow: '#fde68a',
+  { id: 'sun', body: 'Sun', es: 'Sol', en: 'Sun', tex: 'sol', deg: 0.267, ref: 7, pole: [286.13, 63.87], glow: '#fde68a',
     fact: ['Contiene el 99,86 % de la masa del sistema solar. Su luz tarda unos 8 minutos y 20 segundos en llegar hasta nosotros.', 'Holds 99.86% of the Solar System\'s mass. Its light takes about 8 minutes 20 seconds to reach us.'] },
-  { id: 'moon', body: 'Moon', es: 'Luna', en: 'Moon', tex: 'luna', deg: 0.259, ref: 26, pole: [270, 66.5], glow: '#e2e8f0',
+  { id: 'moon', body: 'Moon', es: 'Luna', en: 'Moon', tex: 'luna', deg: 0.259, ref: 7, pole: [270, 66.5], glow: '#e2e8f0',
     fact: ['Siempre nos muestra la misma cara porque tarda lo mismo en girar sobre sí misma que en orbitarnos (27,3 días). Se aleja unos 3,8 cm cada año.', 'It always shows us the same face because it spins once per orbit (27.3 days). It drifts away about 3.8 cm per year.'] },
-  { id: 'mercury', body: 'Mercury', es: 'Mercurio', en: 'Mercury', tex: 'mercurio', deg: 0.025, ref: 7, pole: [281.01, 61.42], glow: '#d6d3d1',
+  { id: 'mercury', body: 'Mercury', es: 'Mercurio', en: 'Mercury', tex: 'mercurio', deg: 0.025, ref: 1, pole: [281.01, 61.42], glow: '#d6d3d1',
     fact: ['El planeta más cercano al Sol. Su año dura 88 días, pero un día solar completo dura 176 días terrestres.', 'Closest planet to the Sun. Its year lasts 88 days, but one full solar day lasts 176 Earth days.'] },
-  { id: 'venus', body: 'Venus', es: 'Venus', en: 'Venus', tex: 'venus', deg: 0.04, ref: 7, pole: [272.76, 67.16], glow: '#fef3c7',
+  { id: 'venus', body: 'Venus', es: 'Venus', en: 'Venus', tex: 'venus', deg: 0.04, ref: 1, pole: [272.76, 67.16], glow: '#fef3c7',
     fact: ['El planeta más caliente (~465 °C) por su enorme efecto invernadero, y gira al revés que casi todos los demás.', 'The hottest planet (~465 °C) due to its runaway greenhouse effect, and it spins backwards.'] },
-  { id: 'mars', body: 'Mars', es: 'Marte', en: 'Mars', tex: 'marte', deg: 0.03, ref: 7, pole: [317.68, 52.89], glow: '#fdba74',
+  { id: 'mars', body: 'Mars', es: 'Marte', en: 'Mars', tex: 'marte', deg: 0.03, ref: 1, pole: [317.68, 52.89], glow: '#fdba74',
     fact: ['Alberga el Olympus Mons, el mayor volcán conocido del sistema solar: unas 2,5 veces la altura del Everest.', 'Home to Olympus Mons, the largest known volcano in the Solar System: about 2.5× the height of Everest.'] },
-  { id: 'jupiter', body: 'Jupiter', es: 'Júpiter', en: 'Jupiter', tex: 'jupiter', deg: 0.06, ref: 7, pole: [268.06, 64.5], glow: '#fde7c2',
+  { id: 'jupiter', body: 'Jupiter', es: 'Júpiter', en: 'Jupiter', tex: 'jupiter', deg: 0.06, ref: 1, pole: [268.06, 64.5], glow: '#fde7c2',
     fact: ['Más del doble de masivo que todos los demás planetas juntos. Con unos prismáticos ya se ven sus cuatro lunas galileanas.', 'More than twice as massive as all other planets combined. Binoculars reveal its four Galilean moons.'] },
-  { id: 'saturn', body: 'Saturn', es: 'Saturno', en: 'Saturn', tex: 'saturno', deg: 0.05, ref: 7, pole: [40.59, 83.54], glow: '#fde68a', ring: true,
+  { id: 'saturn', body: 'Saturn', es: 'Saturno', en: 'Saturn', tex: 'saturno', deg: 0.05, ref: 1, pole: [40.59, 83.54], glow: '#fde68a', ring: true,
     fact: ['Sus anillos miden unos 280.000 km de diámetro, pero su grosor típico es de apenas decenas de metros. Un telescopio pequeño basta para verlos.', 'Its rings span ~280,000 km yet are typically only tens of metres thick. A small telescope shows them.'] },
-  { id: 'uranus', body: 'Uranus', es: 'Urano', en: 'Uranus', tex: 'urano', deg: 0.025, ref: 7, pole: [257.31, -15.18], glow: '#a5f3fc',
+  { id: 'uranus', body: 'Uranus', es: 'Urano', en: 'Uranus', tex: 'urano', deg: 0.025, ref: 1, pole: [257.31, -15.18], glow: '#a5f3fc',
     fact: ['Gira “tumbado”: su eje está inclinado unos 98°. Bajo cielos muy oscuros es apenas visible a simple vista.', 'It spins on its side, tilted about 98°. Under very dark skies it is barely visible to the naked eye.'] },
-  { id: 'neptune', body: 'Neptune', es: 'Neptuno', en: 'Neptune', tex: 'neptuno', deg: 0.025, ref: 7, pole: [299.36, 43.46], glow: '#93c5fd',
+  { id: 'neptune', body: 'Neptune', es: 'Neptuno', en: 'Neptune', tex: 'neptuno', deg: 0.025, ref: 1, pole: [299.36, 43.46], glow: '#93c5fd',
     fact: ['Tiene los vientos más rápidos del sistema solar, de más de 2.000 km/h. Hace falta un telescopio para verlo.', 'It has the fastest winds in the Solar System, over 2,000 km/h. You need a telescope to see it.'] },
-  { id: 'pluto', body: 'Pluto', es: 'Plutón', en: 'Pluto', tex: 'pluton', deg: 0.018, ref: 7, pole: [132.99, -6.16], glow: '#e7d3bf', dwarf: true,
+  { id: 'pluto', body: 'Pluto', es: 'Plutón', en: 'Pluto', tex: 'pluton', deg: 0.018, ref: 1, pole: [132.99, -6.16], glow: '#e7d3bf', dwarf: true,
     fact: ['Planeta enano del cinturón de Kuiper. La sonda New Horizons lo visitó en 2015 y descubrió una llanura helada en forma de corazón.', 'Dwarf planet in the Kuiper Belt. New Horizons flew by in 2015 and found a heart-shaped icy plain.'] },
 ];
 
@@ -911,7 +915,8 @@ function updateViewOffset() {
 function pointTo(entry) {
   const aa = entryAltAz(entry);
   if (!aa) return;
-  if (S.sensor) { toast(`${azName(aa.az)} · Az ${fmtNum(aa.az)}° · Alt ${fmtNum(aa.alt)}°`); return; }
+  if (aa.alt < 0) toast(`${entry.name()}: ${T().belowNow}`);
+  if (S.sensor && sensorReady) { toast(`${T().turnTo} ${azName(aa.az)} · Alt ${fmtNum(aa.alt)}°`); return; } // la flecha guía en pantalla
   S.targetAz = aa.az; S.targetAlt = THREE.MathUtils.clamp(aa.alt, -85, 85);
   S.tracking = entry.kind === 'iss' ? entry : null; // la ISS se mueve ~1°/s: la seguimos
 }
@@ -1005,6 +1010,8 @@ function setFov(f) {
   updateScreenSprites();
 }
 $('zoomBtn').onclick = () => setFov(62);
+$('zoomIn').onclick = () => setFov(S.fov / 1.8);
+$('zoomOut').onclick = () => setFov(S.fov * 1.8);
 
 // Orientación del dispositivo → cuaternión (brújula absoluta en Android, webkitCompassHeading en iOS)
 const sensorQ = new THREE.Quaternion();
@@ -1028,12 +1035,15 @@ let sensorBound = false;
 async function enableSensor() {
   if (typeof DeviceOrientationEvent === 'undefined') return false;
   if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try { if ((await DeviceOrientationEvent.requestPermission()) !== 'granted') return false; } catch { return false; }
+    // iOS (y Chrome reciente) piden permiso. Solo abandonamos si el usuario lo deniega; si no llegan datos, setSensor lo detecta.
+    try { if ((await DeviceOrientationEvent.requestPermission()) === 'denied') return false; } catch { /* seguimos intentándolo */ }
   }
   if (!sensorBound) {
     sensorBound = true;
-    if ('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute', onOrientation);
-    else addEventListener('deviceorientation', onOrientation);
+    // Android da el norte real en «deviceorientationabsolute»; iOS en «deviceorientation» + webkitCompassHeading.
+    let gotAbsolute = false;
+    addEventListener('deviceorientationabsolute', e => { if (e.alpha != null) { gotAbsolute = true; onOrientation(e); } });
+    addEventListener('deviceorientation', e => { if (!gotAbsolute) onOrientation(e); });
   }
   return true;
 }
@@ -1044,7 +1054,7 @@ async function setSensor(on) {
   S.sensor = on;
   if (!on) { const d = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), aa = vecToAltAz(d); S.viewAz = aa.az; S.viewAlt = aa.alt; }
   $('btnSensor').classList.toggle('active', on);
-  setTimeout(() => { if (S.sensor && !sensorReady) toast(T().sensorFail); }, 2500);
+  setTimeout(() => { if (S.sensor && !sensorReady) { toast(T().sensorFail); setSensor(false); } }, 2500);
 }
 async function setCamera(on) {
   if (on) {
@@ -1072,7 +1082,7 @@ function toggleModal(id) {
   const open = $(id).classList.contains('open');
   closeModals();
   if (open) return;
-  if (id !== 'modalSky') closeInfo();
+  closeInfo();
   $(id).classList.add('open'); $(MODALS[id]).classList.add('active');
   if (id === 'modalSky') renderSkyList($('search').value);
   if (id === 'modalLayers') renderLayers();
@@ -1192,8 +1202,9 @@ function renderSkyList(filter = '') {
     .forEach(([e, aa]) => list.append(rowFor(e, posText(aa))));
 }
 $('search').addEventListener('input', e => {
-  if (!$('modalSky').classList.contains('open')) toggleModal('modalSky');
-  else renderSkyList(e.target.value);
+  const open = $('modalSky').classList.contains('open');
+  if (!open && e.target.value.trim()) toggleModal('modalSky'); // borrar el texto no abre la lista
+  else if (open) renderSkyList(e.target.value);
 });
 $('search').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
@@ -1237,11 +1248,31 @@ async function searchCity(q) {
 }
 $('cityBtn').onclick = () => searchCity($('cityInput').value.trim());
 $('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity(e.target.value.trim()); });
+// Nombre de la ciudad (y, sin coordenadas, ubicación aproximada por IP) con BigDataCloud, gratis y sin clave.
+async function locate(lat, lon) {
+  const q = lat != null ? `latitude=${lat}&longitude=${lon}&` : '';
+  const j = JSON.parse(await fetchText(`https://api.bigdatacloud.net/data/reverse-geocode-client?${q}localityLanguage=${S.lang}`));
+  const name = [j.city || j.locality, j.countryName].filter(Boolean).join(', ');
+  return { lat: lat ?? j.latitude, lon: lon ?? j.longitude, name };
+}
+async function useApproxLocation(reason) {
+  try {
+    const r = await locate();
+    if (r.lat == null) throw new Error('sin datos');
+    setPlace({ name: `${r.name || T().myLocation} (${T().approx})`, lat: r.lat, lon: r.lon, tz: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    closeModals(); toast(`${reason} ${T().usedApprox}`);
+  } catch { toast(`${reason} ${T().searchCityHint}`); }
+}
 $('geoBtn').onclick = () => {
-  if (!navigator.geolocation) return toast(T().gpsFail);
-  navigator.geolocation.getCurrentPosition(
-    pos => { setPlace({ name: T().myLocation, lat: pos.coords.latitude, lon: pos.coords.longitude, tz: Intl.DateTimeFormat().resolvedOptions().timeZone }); closeModals(); },
-    () => toast(T().gpsFail), { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600e3 });
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if (!navigator.geolocation || !isSecureContext) return useApproxLocation(T().gpsFail + '.');
+  toast(T().locating);
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude: lat, longitude: lon } = pos.coords;
+    setPlace({ name: T().myLocation, lat, lon, tz }); closeModals();
+    try { const r = await locate(lat, lon); if (r.name) setPlace({ name: r.name, lat, lon, tz }); } catch { /* nos quedamos con «Mi ubicación» */ }
+    toast(`📍 ${S.place.name}`);
+  }, err => useApproxLocation(err.code === 1 ? T().gpsDenied : T().gpsFail + '.'), { enableHighAccuracy: false, timeout: 12000, maximumAge: 600e3 });
 };
 
 // Tiempo
@@ -1271,15 +1302,16 @@ function frame(now) {
   if (S.layers.iss) updateISS(date); else ISS.group.visible = false;
 
   // Cámara
-  if (S.sensor && sensorReady) camera.quaternion.slerp(sensorQ, 0.25);
+  if (S.sensor && sensorReady) camera.quaternion.slerp(sensorQ, 1 - Math.exp(-dt * 15)); // suavizado independiente de los fps
   else {
     const tr = S.tracking && S.targetAz == null && entryAltAz(S.tracking);
     if (tr) { S.viewAz = tr.az; S.viewAlt = THREE.MathUtils.clamp(tr.alt, -89, 89); }
     if (S.targetAz != null) {
       if (S.tracking) { const t = entryAltAz(S.tracking); if (t) { S.targetAz = t.az; S.targetAlt = t.alt; } }
       const dAz = ((S.targetAz - S.viewAz + 540) % 360) - 180;
-      S.viewAz = (S.viewAz + dAz * 0.12 + 360) % 360;
-      S.viewAlt += (S.targetAlt - S.viewAlt) * 0.12;
+      const f = 1 - Math.exp(-dt * 7); // ~0,5 s hasta el objetivo, independiente de los fps
+      S.viewAz = (S.viewAz + dAz * f + 360) % 360;
+      S.viewAlt += (S.targetAlt - S.viewAlt) * f;
       const tol = S.tracking ? 1.5 : 0.05; // al seguir la ISS nos "enganchamos" en cuanto estamos cerca
       if (Math.abs(dAz) < tol && Math.abs(S.targetAlt - S.viewAlt) < tol) S.targetAz = S.targetAlt = null;
     }
@@ -1304,13 +1336,13 @@ function frame(now) {
   // Tamaño aparente de los astros: exagerado con poco zoom, real con mucho zoom
   for (const b of BODIES) {
     if (b.id !== 'sun') b.sphere.material.uniforms.uLight.value.copy(b.lightEq).transformDirection(skyGroup.matrix);
-    const k = Math.max(1, S.fov / b.ref);
+    const k = Math.max(1, Math.pow(S.fov / b.ref, 0.55)); // al ampliar, el disco crece en pantalla hasta su tamaño real
     b.scaled.scale.setScalar(k);
     const discPx = (b.radius * k / R.body) / Math.tan(S.fov * D2R / 2) * innerHeight / 2;
     b.glow.material.opacity = THREE.MathUtils.clamp(1.2 - discPx / 14, 0, b.id === 'sun' ? 0.9 : 0.7);
     if (b.label) b.label.center.y = 1.15 + discPx * (b.ring ? 2.3 : 1) / 18; // la etiqueta queda bajo el disco
   }
-  ISS.scaled.scale.setScalar(R.iss * Math.tan(0.03 * D2R) * Math.max(1, S.fov / 4));
+  ISS.scaled.scale.setScalar(R.iss * Math.tan(0.03 * D2R) * Math.max(1, Math.pow(S.fov / 0.5, 0.55)));
   if (ISS.label) ISS.label.center.y = 1.15 + (ISS.scaled.scale.x * 0.5 / R.iss) / Math.tan(S.fov * D2R / 2) * innerHeight / 2 / 17;
 
   // Constelación enfocada
@@ -1336,6 +1368,8 @@ function frame(now) {
   banner.textContent = focused ? (S.lang === 'en' ? focused.en : focused.es) : '';
   banner.style.opacity = focused && bestAng < 15 && S.layers.lines ? 1 : 0;
 
+  // Flecha guía hacia el objeto seleccionado si está fuera de la pantalla
+  updateGuide();
   // Marcador del objeto seleccionado
   const selW = S.selected?.world();
   selMarker.visible = !!selW && S.fov > 3;
@@ -1362,6 +1396,22 @@ function frame(now) {
     } else sb.style.display = 'none';
   }
   renderer.render(scene, camera);
+}
+
+const guideEl = $('guide'), guideTmp = new THREE.Vector3();
+function updateGuide() {
+  const w = S.selected?.world();
+  if (!w) { guideEl.style.display = 'none'; return; }
+  const c = guideTmp.copy(w).applyMatrix4(camera.matrixWorldInverse);
+  const ndc = w.clone().project(camera);
+  if (c.z < 0 && Math.abs(ndc.x) < 0.92 && Math.abs(ndc.y) < 0.92) { guideEl.style.display = 'none'; return; }
+  const a = Math.atan2(c.y, c.x), rx = innerWidth / 2 - 60, ry = innerHeight / 2 - 130;
+  const k = Math.min(rx / Math.abs(Math.cos(a) || 1e-6), ry / Math.abs(Math.sin(a) || 1e-6));
+  guideEl.style.display = 'flex';
+  guideEl.style.left = `${innerWidth / 2 + Math.cos(a) * k}px`;
+  guideEl.style.top = `${innerHeight / 2 - Math.sin(a) * k}px`;
+  guideEl.firstElementChild.style.transform = `rotate(${-a}rad)`;
+  guideEl.lastElementChild.textContent = S.selected.name();
 }
 
 addEventListener('resize', () => {

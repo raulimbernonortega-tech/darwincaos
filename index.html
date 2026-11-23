@@ -45,6 +45,10 @@
     .tag.below { background: rgba(245,158,11,0.18); color: var(--warn); }
 
     #focusBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 52px); left: 50%; transform: translateX(-50%); z-index: 9; color: #e0f2fe; font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; text-shadow: 0 1px 6px #000; pointer-events: none; opacity: 0; transition: opacity .3s; white-space: nowrap; }
+    #guide { position: fixed; z-index: 14; display: none; flex-direction: column; align-items: center; gap: 2px; transform: translate(-50%, -50%); pointer-events: none; color: #38bdf8; text-shadow: 0 0 8px rgba(56,189,248,.8), 0 1px 4px #000; }
+    #guide span { font-size: 30px; line-height: 1; display: block; }
+    #guide small { font-size: 11px; font-weight: 700; color: #e0f2fe; white-space: nowrap; }
+    #zoomIn, #zoomOut { min-width: 30px; font-size: 15px; padding: 2px 8px; }
     #reticle { position: fixed; top: var(--cy, 50%); left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 1.5px solid rgba(186,230,253,.5); border-radius: 50%; z-index: 9; pointer-events: none; }
 
     #showerBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 84px); left: 12px; z-index: 11; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; display: none; color: #fde68a; border-color: rgba(251,191,36,.4); }
@@ -123,6 +127,7 @@
   <canvas id="sky"></canvas>
   <div id="reticle"></div>
   <div id="focusBanner"></div>
+  <div id="guide"><span>➤</span><small></small></div>
   <div id="redFilter"></div>
   <div id="loading" data-i18n="loading">Cargando el cielo…</div>
 
@@ -227,7 +232,9 @@
     <div class="search pill">
       <span>🔎</span>
       <input id="search" type="text" autocomplete="off" data-i18n-ph="searchPh" placeholder="Busca Saturno, Orión, Sirio, ISS…" />
-      <button id="zoomBtn" class="zoom" type="button" title="Zoom">1.0x</button>
+      <button id="zoomOut" class="zoom" type="button" title="Alejar" aria-label="Alejar">−</button>
+      <button id="zoomBtn" class="zoom" type="button" title="Restablecer zoom">1.0x</button>
+      <button id="zoomIn" class="zoom" type="button" title="Ampliar" aria-label="Ampliar">+</button>
     </div>
     <nav class="modes pill">
       <button id="btnSensor" class="mode" type="button" data-i18n="sensor">🧭 Seguir el móvil</button>
