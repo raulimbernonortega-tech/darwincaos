@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-23T15:56:04.620Z",
+ "actualizado": "2026-11-23T16:47:55.331Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -497,6 +497,17 @@
    "enlace": null
   },
   {
+   "nombre": "Falcon 9 Block 5 | NROL-132",
+   "fecha": "2026-12-02T20:30:00Z",
+   "estado": "TBC",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Vandenberg SFB, CA, USA",
+   "mision": "Sixteenth batch of satellites for a reconnaissance satellite constellation built by SpaceX and Northrop Grumman for the National Reconnaissance Office to provide imaging and other reconnaissance capabilities.",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_9_on_slc_image_thumbnail_20241024165957.jpeg",
+   "enlace": null
+  },
+  {
    "nombre": "Long March 12 | SatNet LEO Group TBD?",
    "fecha": "2026-12-10T07:00:00Z",
    "estado": "TBC",
@@ -505,17 +516,6 @@
    "lugar": "Wenchang Space Launch Site, People's Republic of China",
    "mision": "A batch of 9 Low Earth Orbit communication satellites for the Chinese state owned SatNet constellation operated by the China Satellite Network Group.\r\n\r\nThe constellation will eventually consists of 13000 satellites.",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/cz-12_on_its_la_image_thumbnail_20241128132937.jpeg",
-   "enlace": null
-  },
-  {
-   "nombre": "Ariane 62 | Metop-SG B1",
-   "fecha": "2026-12-17T00:00:00Z",
-   "estado": "TBD",
-   "proveedor": "Arianespace",
-   "cohete": "Ariane 62",
-   "lugar": "Guiana Space Centre, French Guiana",
-   "mision": "Second of EUMETSAT's second generation of Metop weather satellites.",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_thumbnail_20240711132056.jpeg",
    "enlace": null
   }
  ],
@@ -529,7 +529,7 @@
    "fecha": "2026-11-23T15:00:00Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 8
+   "puntos": 10
   },
   {
    "titulo": "China details its path to a crewed Moon landing before 2030",
@@ -554,17 +554,6 @@
    "puntos": 6
   },
   {
-   "titulo": "NASA’s Curiosity Mars Rover Collects Samples",
-   "resumen": "This Nov. 16 collage shows 49 drill holes captured by NASA’s Curiosity Mars rover as of November 2026. Each hole represents a sample collected from rocks on the Martian surface; Curiosity’s drill, located on the end of its robotic arm, drops pulverized rock samples into instrumen",
-   "url": "https://www.nasa.gov/image-article/nasas-curiosity-mars-rover-collects-samples/",
-   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/pia26804.jpg",
-   "fuente": "NASA",
-   "fecha": "2026-11-20T15:53:24Z",
-   "destacado": false,
-   "idioma": "en",
-   "puntos": 5
-  },
-  {
    "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
    "resumen": "NASA’s Voyager 1 probe, humanity’s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1 billion miles (25.9 billion kilometers). The spacecraft ach",
    "url": "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/",
@@ -576,26 +565,28 @@
    "puntos": 7
   },
   {
-   "titulo": "Voyager 1 reaches one light-day nearly 50 years after launch",
-   "resumen": "At 5:16:07 AM EST (10:16 UTC) on Nov. 18, and at a distance of 26…\r\nThe post Voyager 1 reaches one light-day nearly 50 years after launch appeared first on NASASpaceFlight.com.",
-   "url": "https://www.nasaspaceflight.com/2026/11/voyager-1-light-day/",
-   "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2024/12/voyager-scaled.jpg",
-   "fuente": "NASASpaceflight",
-   "fecha": "2026-11-18T21:48:55Z",
+   "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
+   "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
+   "url": "http://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
+   "imagen": null,
+   "fuente": "Agencia SINC",
+   "fecha": "2026-11-19T10:00:04.000Z",
    "destacado": false,
-   "idioma": "en",
-   "puntos": 6
+   "idioma": "es",
+   "espacio": false,
+   "puntos": 8
   },
   {
-   "titulo": "Empire State Building Goes Gold for Voyager",
-   "resumen": "The Empire State Building is seen illuminated in gold to celebrate NASA’s Voyager 1 spacecraft as it was about to pass one light-day away from Earth, a distance reached by no other human-made object, Nov. 17, 2026. The color gold represents the gold-plated copper phonograph recor",
-   "url": "https://www.nasa.gov/image-article/empire-state-building-goes-gold-for-voyager/",
-   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/55658604092-c6f0765cc5-o.jpg",
-   "fuente": "NASA",
-   "fecha": "2026-11-18T17:50:26Z",
+   "titulo": "Voyager 1: Un día luz",
+   "resumen": "Descarga, imprime y comparte el póster conmemorativo del récord de distancia de Voyager 1. La NASA espera una señal de confirmación de Voyager 1 después de que la sonda alcanzara una distancia de un día luz de la Tierra el 18 de noviembre. The post Voyager 1: Un día luz appeared ",
+   "url": "https://ciencia.nasa.gov/multimedia/voyager-1-un-dia-luz/",
+   "imagen": null,
+   "fuente": "NASA Ciencia",
+   "fecha": "2026-11-18T20:42:39.000Z",
    "destacado": false,
-   "idioma": "en",
-   "puntos": 5
+   "idioma": "es",
+   "espacio": true,
+   "puntos": 7
   },
   {
    "titulo": "What Is the Moon Base?",
@@ -606,6 +597,18 @@
    "fecha": "2026-11-18T17:36:03Z",
    "destacado": false,
    "idioma": "en",
+   "puntos": 7
+  },
+  {
+   "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
+   "resumen": "El seguimiento durante años del evento AT 2025abao revela la física oculta de la evolución de envoltura común, una fase crítica para explicar la formación de sistemas binarios compactos y futuras fuentes de ondas gravitacionales. Tierra",
+   "url": "http://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
+   "imagen": null,
+   "fuente": "Agencia SINC",
+   "fecha": "2026-11-18T16:00:04.000Z",
+   "destacado": false,
+   "idioma": "es",
+   "espacio": false,
    "puntos": 7
   }
  ],
