@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-23T16:47:55.331Z",
+ "actualizado": "2026-11-23T19:12:31.808Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -521,6 +521,17 @@
  ],
  "noticias": [
   {
+   "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
+   "resumen": "NASA is seeking industry partners to develop and test the first nuclear reactor designed to provide electricity on the Moon, a major step toward establishing a sustained human presence on the lunar surface.  Lunar Reactor-1 (LR-1) will be a small fission power system that will ge",
+   "url": "https://www.nasa.gov/directorates/rtmd/nasa-seeks-partners-to-design-first-nuclear-reactor-for-the-moon/",
+   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/srd-fsp-isru02b.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-23T17:23:50Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 7
+  },
+  {
    "titulo": "NASA’s Webb Shows How Supernova Dust Chronicles Star Evolution",
    "resumen": "NASA’s James Webb Space Telescope has painted a vibrant tapestry of the legendary supernova remnant Cassiopeia A (Cas A). Remnants like these are the clouds of gas and dust that remain following the explosion of a massive star and will eventually seed a new generation of stars an",
    "url": "https://science.nasa.gov/missions/webb/nasas-webb-shows-how-supernova-dust-chronicles-star-evolution/",
@@ -541,17 +552,6 @@
    "destacado": false,
    "idioma": "en",
    "puntos": 7
-  },
-  {
-   "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
-   "resumen": "APOD Science APOD APOD: 2026 November 21 –… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a b",
-   "url": "https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/",
-   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Neptune-South-Pole-Voyager-2_2327x1670.jpg",
-   "fuente": "NASA",
-   "fecha": "2026-11-21T05:05:00Z",
-   "destacado": false,
-   "idioma": "en",
-   "puntos": 6
   },
   {
    "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
