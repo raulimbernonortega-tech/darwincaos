@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.4';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -173,7 +173,7 @@ const STORE_KEY = 'dc_planetario_v2';
 const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; } })();
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ lang: S.lang, place: S.place, layers: S.layers, envMode: S.envMode, red: S.red, tle: S.tleCache, hinted: true }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ welcomed: true, lang: S.lang, place: S.place, layers: S.layers, envMode: S.envMode, red: S.red, tle: S.tleCache, hinted: true }));
   } catch { /* almacenamiento no disponible */ }
 }
 const params = new URLSearchParams(location.search);
@@ -1159,6 +1159,29 @@ function refreshInfo() {
   S.selected.shortFact = fact;
 }
 // Texto descriptivo: primer párrafo visible y el resto tras «Leer más»
+// Mitología de las 88 constelaciones → fichas con «Leer más», como las de los planetas.
+// Datos clave calculados: origen, estrella más brillante y mejor época para verla (cuando culmina hacia las 22 h).
+function addMythology(MYTH) {
+  if (!MYTH) return;
+  const L = { es: ['Origen', 'Estrella más brillante', 'Mejor época para verla', 'hacia las 22 h'], en: ['Origin', 'Brightest star', 'Best time to see it', 'around 10 pm'] };
+  for (const con of DATA.cons) {
+    const my = MYTH[con.id];
+    if (!my) continue;
+    const ids = [...new Set(con.l.flat())];
+    const bright = ids.reduce((a, b) => (DATA.stars[b][2] < DATA.stars[a][2] ? b : a), ids[0]);
+    const nm = DATA.names.find(x => x[0] === bright);
+    const c = con.center, ra = ((Math.atan2(c.x, c.z) * R2D + 360) % 360) / 15;
+    const month = (8 + Math.round((ra + 2) / 2)) % 12; // culmina hacia las 22 h unos 2 meses por cada 4 h de ascensión recta
+    const entry = {};
+    for (const lg of ['es', 'en']) {
+      const t = my[lg], mg = DATA.stars[bright][2].toLocaleString(lg, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      const star = nm ? `${lg === 'en' ? nm[2] : nm[1]} (mag ${mg})` : `mag ${mg}`;
+      const mon = new Date(2026, month, 15).toLocaleDateString(lg, { month: 'long' });
+      entry[lg] = { datos: [[L[lg][0], t.origen], [L[lg][1], star], [L[lg][2], `${mon} · ${L[lg][3]}`]], texto: [t.mito, '✨ ' + t.curiosidad] };
+    }
+    DESC['c:' + con.id] = entry;
+  }
+}
 function renderInfoText(entry) {
   const d = DESC[entry.id]?.[S.lang];
   const paras = d?.texto?.length ? d.texto : (entry.shortFact ? [entry.shortFact] : []);
@@ -1970,7 +1993,7 @@ function computeSkyEvents() {
 function feedEvents() {
   if (!FEED) return [];
   const now = simDate(), items = [];
-  for (const l of FEED.lanzamientos || []) { const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
+  for (const l of FEED.lanzamientos || []) { if (l.relevante === false) continue; /* solo los relevantes */ const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
   return items;
 }
 function renderEvents(box) {
@@ -2314,9 +2337,12 @@ async function init() {
   applyRed();
   $('placeLabel').textContent = S.place.name;
   setOffset(S.offset);
-  [DATA, DESC] = await Promise.all([fetch(`data/cielo.json?v=${APP_VERSION}`).then(r => r.json()), fetch(`data/descripciones.json?v=${APP_VERSION}`).then(r => r.json()).catch(() => ({}))]);
+  let MYTH;
+  [DATA, DESC, MYTH] = await Promise.all([fetch(`data/cielo.json?v=${APP_VERSION}`).then(r => r.json()), fetch(`data/descripciones.json?v=${APP_VERSION}`).then(r => r.json()).catch(() => ({})),
+    fetch(`data/mitologia.json?v=${APP_VERSION}`).then(r => r.json()).catch(() => ({}))]);
   buildStars();
   buildConstellations();
+  addMythology(MYTH);
   buildBodies();
   buildDSO();
   buildLabels();
@@ -2335,12 +2361,22 @@ async function init() {
   S.home = { az: S.viewAz, alt: S.viewAlt };
   if (fromUrl) openInfo(fromUrl);
   requestAnimationFrame(frame);
-  $('loading').style.opacity = 0;
-  setTimeout(() => $('loading').remove(), 600);
-  if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1200);
+  // Bienvenida: la primera vez espera al botón «Empezar» (en iPhone ese toque concede los sensores); después se desvanece sola
+  const firstVisit = !saved.welcomed;
+  // Los sensores se activan al cerrar la bienvenida (no mientras está en pantalla)
+  const startSensors = byUser => {
+    const iosPermission = typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
+    if (byUser && iosPermission && matchMedia('(pointer: coarse)').matches) setSensor(true, true); // iPhone: el toque concede el permiso
+    else autoStartSensor();
+  };
+  if (!window.__splash) startSensors(false);
+  window.__splash?.ready(firstVisit, byUser => {
+    startSensors(byUser);
+    if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1400);
+    try { const st = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); st.welcomed = true; localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch { }
+  });
   persist();
   updateDeclination();
-  autoStartSensor();
   loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); });
   loadISS().then(() => {
     updateISS(simDate());

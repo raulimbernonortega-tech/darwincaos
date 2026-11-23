@@ -70,6 +70,19 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.4 — 23 de noviembre de 2026
+- **Mitología de las 88 constelaciones** (`data/mitologia.json`, en español e inglés). Al tocar una constelación, su ficha muestra:
+  - las 52 clásicas: su **mito griego** (Orión y el escorpión, Perseo y Medusa, Calisto y las osas…);
+  - las 36 modernas: su **origen real** (navegantes holandeses del siglo XVI, Hevelius en 1687, Lacaille y sus instrumentos científicos en 1756);
+  - una **curiosidad astronómica** ✨ y **datos clave calculados**: origen, estrella más brillante y mejor época del año para verla.
+- La frase de bienvenida queda sin coma: «Cada estrella que ves es luz que viajó años solo para encontrarte.»
+
+### Versión 1.3 — 23 de noviembre de 2026
+- **Bienvenida «Planetarium by DarwinCaos»:** espacio profundo animado (estrellas que titilan y giran, Vía Láctea, nebulosas) con un **amanecer orbital**: el Sol asomando tras el borde de un planeta. Encima, el logo, el título y la frase «Cada estrella que ves es luz que viajó años solo para encontrarte.» (en inglés: «Every star you see is light that traveled for years just to find you.»).
+  - Sustituye a la pantalla de carga. La primera vez muestra el botón **«Empezar»** (en iPhone, ese toque concede además los sensores); en visitas siguientes se desvanece sola tras unos 2,5 s. Tocar la pantalla la cierra antes.
+- **Lanzamientos relevantes:** el calendario solo muestra tripulados, suministro a estaciones, Starship/New Glenn/Artemis, ciencia y exploración, primeros vuelos, China destacada (Shenzhou, Mengzhou, Tianzhou, Chang'e, Tianwen…) y todo lo europeo (Ariane, Vega, Miura de PLD Space). Fuera: Starlink, OneWeb, Kuiper/Amazon Leo, Guowang, Qianfan, satélites secretos y cargas desconocidas. Listas `LAUNCH_YES` / `LAUNCH_NO` en `scripts/actualizar-calendario.mjs`.
+- **Noticias:** fuentes en español NASA Ciencia + Agencia SINC (+ ESA si publica RSS), sin duplicados entre idiomas (se prefiere la versión en español), una sola «foto del día» de la NASA.
+
 ### Versión 1.2 — 23 de noviembre de 2026
 - **📸 Compartir el cielo:** botón en la barra lateral y en la ficha de cada astro. Genera una imagen de la vista actual con el logo del canal, qué se ve, lugar, fecha y enlace al canal, en formato cuadrado (1080×1080), vertical (1080×1920) u horizontal (1920×1080). Se comparte directamente a WhatsApp, Instagram, X… o se guarda.
 - **📰 Últimas noticias** en Calendario → Eventos: tus noticias manuales primero (📌) y después noticias automáticas **solo de espacio y astronomía** y **solo relevantes**, de Spaceflight News API (inglés) y Agencia SINC (español). Máximo 8, de los últimos 7 días.
