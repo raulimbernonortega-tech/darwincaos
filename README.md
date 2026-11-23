@@ -67,3 +67,39 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 - Catálogo de estrellas y nombres: d3-celestial (BSD-3), basado en Hipparcos.
 - Texturas planetarias: Solar System Scope (CC BY 4.0). Plutón: NASA/JPL.
 - Efemérides: Astronomy Engine (MIT). Órbitas: satellite.js (MIT). 3D: three.js (MIT).
+
+## Historial de versiones
+
+### Versión 1.1 — 23 de noviembre de 2026
+- **📅 Calendario** (nuevo botón en la barra lateral) con dos pestañas:
+  - **🌙 Esta noche:** atardecer, noche cerrada y amanecer; fase y horario de la Luna; planetas visibles con la mejor hora y dirección; pasos visibles de la ISS; estrellas fugaces; constelaciones altas; qué se puede ver de día. Todo se puede tocar para verlo en el cielo.
+  - **📅 Eventos:** fases lunares y superlunas, eclipses (indicando si se ven desde tu ciudad), oposiciones, máximas elongaciones, conjunciones de la Luna con planetas y estrellas, conjunciones entre planetas, lluvias de meteoros, equinoccios y solsticios (según tu hemisferio), vídeos nuevos de DarwinCaos de la última semana, próximos lanzamientos y noticias propias. Filtros por tipo.
+- **«Ver en el canal»** abre automáticamente el último vídeo de DarwinCaos sobre ese astro.
+- **Pantalla limpia:** se mantiene el nombre de la constelación a la que miras.
+
+### Cómo se rellena el calendario
+- **Lo astronómico** se calcula en la propia app: no hay que hacer nada.
+- **Vídeos y lanzamientos:** el robot `.github/workflows/actualizar-calendario.yml` ejecuta `scripts/actualizar-calendario.mjs` cada 6 horas y actualiza `data/eventos.json` (RSS del canal + Launch Library 2). Se puede lanzar a mano en la pestaña **Actions → Actualizar calendario → Run workflow**.
+- **Noticias propias:** edita `data/eventos-manuales.json` en GitHub (icono del lápiz) y añade eventos con este formato:
+  ```json
+  { "fecha": "2026-12-13T21:00:00+01:00", "titulo": "Directo: lluvia de Gemínidas", "descripcion": "Opcional", "enlace": "https://… (opcional)" }
+  ```
+  Al guardar, el robot se ejecuta solo y el evento aparece en unos minutos.
+- **Enlace de astros con vídeos:** las palabras clave están en `KEYWORDS` dentro del script (por ejemplo, un título con «Saturno» enlaza el botón de Saturno).
+
+### Versión 1.0 — 23 de noviembre de 2026
+Primera versión estable.
+
+- **Cielo real** para cualquier ubicación y fecha: Sol, Luna (con su fase), planetas y Plutón con efemérides de precisión; 8.878 estrellas del catálogo Hipparcos (215 con nombre); las 88 constelaciones con las ilustraciones de Stellarium.
+- **ISS** con su órbita real (CelesTrak), seguimiento automático y próximos pasos visibles.
+- **Estrellas fugaces** de las lluvias de meteoros reales activas.
+- **Fichas ampliadas** de 35 objetos (planetas, Luna, Sol, ISS, cielo profundo y estrellas famosas) con datos clave y «Leer más».
+- **Horizonte según el entorno** (ciudad, pueblo o campo/bosque), detectado automáticamente, con su contaminación lumínica.
+- **Orientación:** brújula en pantalla, insignias N/E/S/O, rosa de los vientos en el cenit con el logo del canal.
+- **«Seguir el móvil»** activado al entrar (Android: sensor de cuaterniones; iPhone: brújula filtrada), norte geográfico corregido con el modelo magnético WMM 2025; se desactiva al arrastrar el cielo.
+- **Cámara AR**, viaje en el tiempo, buscador de astros y ciudades, «Usar mi ubicación», enlaces para compartir, modo nocturno rojo, pantalla limpia, botón «Vista inicial», español e inglés.
+
+### Cómo publicar una versión nueva
+1. Cambia `APP_VERSION` al principio de `app.js` (por ejemplo, `'1.1'`).
+2. Cambia los `?v=1.0` de las etiquetas `<script>` de `index.html` por el mismo número.
+3. Sube los archivos modificados. Los móviles descargarán automáticamente la versión nueva.

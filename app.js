@@ -7,6 +7,8 @@ const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
+// Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
+const APP_VERSION = '1.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -47,7 +49,7 @@ const I18N = {
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
     manualMode: 'Modo manual · toca 🧭 Seguir el móvil para volver', camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
-    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
+    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', calTitle: '📅 Calendario', tabTonight: '🌙 Esta noche', tabEvents: '📅 Eventos', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
@@ -83,7 +85,7 @@ const I18N = {
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
     manualMode: 'Manual mode · tap 🧭 Follow phone to go back', camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
-    hintPlace: 'Tap 📍 to see the sky from your location', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
+    hintPlace: 'Tap 📍 to see the sky from your location', calTitle: '📅 Calendar', tabTonight: '🌙 Tonight', tabEvents: '📅 Events', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
@@ -1089,7 +1091,7 @@ function defineStar(raH, dec, ly = 1000) { A.DefineStar(A.Body.Star1, raH, dec, 
 const $ = id => document.getElementById(id);
 function videoUrl(entry) {
   const q = entry.names[0].replace(/\s*\(.*\)/, '');
-  return VIDEOS[entry.id] || `${CHANNEL_URL}/search?query=${encodeURIComponent(q)}`;
+  return VIDEOS[entry.id] || FEED?.videosPorObjeto?.[entry.id]?.url || `${CHANNEL_URL}/search?query=${encodeURIComponent(q)}`;
 }
 function infoStats(entry) {
   const t = T(), date = simDate(), aa = entryAltAz(entry);
@@ -1441,7 +1443,7 @@ $('btnCamera').onclick = () => setCamera(!S.camera);
 // ───────────── Interfaz ─────────────
 let toastTimer;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 2600); }
-const MODALS = { modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: 'dockSky', modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
+const MODALS = { modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: 'dockSky', modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
 function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); $(b).classList.remove('active'); }); }
 function toggleModal(id) {
   const open = $(id).classList.contains('open');
@@ -1452,6 +1454,7 @@ function toggleModal(id) {
   if (id === 'modalSky') renderSkyList($('search').value);
   if (id === 'modalLayers') renderLayers();
   if (id === 'modalPlace') renderCities();
+  if (id === 'modalCal') renderCal();
 }
 Object.entries(MODALS).forEach(([m, b]) => ($(b).onclick = () => toggleModal(m)));
 document.querySelectorAll('.modal .close').forEach(b => (b.onclick = closeModals));
@@ -1470,6 +1473,7 @@ function applyLanguage() {
   const t = T();
   document.documentElement.lang = S.lang;
   $('dockLang').textContent = S.lang.toUpperCase();
+  $('appVersion').textContent = `${S.lang === 'en' ? 'Version' : 'Versión'} ${APP_VERSION}`;
   document.querySelectorAll('[data-i18n]').forEach(el => { const v = t[el.dataset.i18n]; if (v) el.textContent = v; });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t[el.dataset.i18nPh]; });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t[el.dataset.i18nTitle].replace(/^\S+\s/, ''); });
@@ -1477,6 +1481,7 @@ function applyLanguage() {
   if (S.selected) openInfo(S.selected);
   if ($('modalLayers').classList.contains('open')) renderLayers();
   if ($('modalSky').classList.contains('open')) renderSkyList($('search').value);
+  if ($('modalCal')?.classList.contains('open')) renderCal();
 }
 
 // Capas
@@ -1692,6 +1697,325 @@ document.querySelectorAll('[data-shift]').forEach(b => (b.onclick = () => setOff
 $('nowBtn').onclick = () => setOffset(0);
 $('dateInput').addEventListener('change', e => { const t = Date.parse(e.target.value); if (!isNaN(t)) setOffset(t - Date.now()); });
 
+// ───────────── Calendario: «Esta noche» y «Eventos» ─────────────
+// Lo astronómico se calcula aquí mismo (siempre exacto para tu ubicación); vídeos, lanzamientos y noticias
+// llegan en data/eventos.json, que un robot de GitHub Actions actualiza cada 6 horas.
+let FEED = null;
+async function loadFeed() {
+  try { FEED = await (await fetch(`data/eventos.json?t=${Math.floor(Date.now() / 600e3)}`)).json(); } catch { FEED = null; }
+}
+const CAL_TXT = {
+  es: {
+    day: 'De día', night: 'Esta noche', sunrise: 'Amanecer', sunset: 'Atardecer', dark: 'Noche cerrada', dawn: 'Fin de la noche',
+    phases: ['Luna nueva', 'Cuarto creciente', 'Luna llena', 'Cuarto menguante'], lit: 'iluminada', moonRise: 'sale', moonSet: 'se pone',
+    moonDay: 'La Luna se ve de día', from: 'de', to: 'a', best: 'mejor a las', towards: 'hacia el', high: 'altura',
+    planetsNight: 'Planetas visibles', noPlanets: 'Esta noche no hay planetas bien situados.', telescope: 'con telescopio', binoculars: 'con prismáticos',
+    sunSpots: 'El Sol: con un filtro solar homologado se pueden ver sus manchas. Nunca lo mires sin protección.',
+    venusDay: 'Venus es tan brillante que, con el cielo muy limpio, puede verse de día. Usa «Apuntar» para localizarlo.',
+    issNight: 'Pasos visibles de la ISS', noIss: 'Sin pasos visibles esta noche.', meteorsNight: 'Estrellas fugaces',
+    constNight: 'Constelaciones altas a las', tapToSee: 'Toca para verlo en el cielo',
+    newVideos: '▶ Nuevo en DarwinCaos', thisWeek: 'esta semana', filters: { all: 'Todo', sky: '🔭 Cielo', launch: '🚀 Lanzamientos', video: '▶ Vídeos', news: '📰 Noticias' },
+    supermoon: 'Superluna', eclipseL: 'Eclipse lunar', eclipseS: 'Eclipse solar', kinds: { penumbral: 'penumbral', partial: 'parcial', total: 'total', annular: 'anular' },
+    visibleHere: 'visible desde tu ubicación', notVisibleHere: 'no visible desde tu ubicación', covered: 'del Sol tapado',
+    opposition: 'Oposición de', oppMore: 'el mejor momento del año para verlo: más cerca, más brillante y visible toda la noche',
+    elong: 'Máxima elongación de', morning: 'al amanecer', evening: 'al anochecer', elongMore: 'el mejor momento para verlo, alejado del resplandor del Sol',
+    moonNear: 'La Luna pasa junto a', conj: 'Conjunción de', and: 'y', sep: 'separación', peakOf: 'Pico de las', perHour: 'meteoros/h en cielo oscuro',
+    seasons: { mar: 'Equinoccio', jun: 'Solsticio', sep: 'Equinoccio', dec: 'Solsticio' }, seasonNames: { spring: 'de primavera', summer: 'de verano', autumn: 'de otoño', winter: 'de invierno' },
+    launch: 'Lanzamiento', noFeed: 'Vídeos y lanzamientos no disponibles ahora mismo.', updated: 'Actualizado',
+    empty: 'No hay eventos en este filtro.', goTo: 'Ver en el cielo', liveAt: 'Mostrando el cielo del',
+  },
+  en: {
+    day: 'Daytime', night: 'Tonight', sunrise: 'Sunrise', sunset: 'Sunset', dark: 'Full darkness', dawn: 'Night ends',
+    phases: ['New Moon', 'First quarter', 'Full Moon', 'Last quarter'], lit: 'illuminated', moonRise: 'rises', moonSet: 'sets',
+    moonDay: 'The Moon is visible in daylight', from: 'from', to: 'to', best: 'best at', towards: 'towards', high: 'altitude',
+    planetsNight: 'Visible planets', noPlanets: 'No well-placed planets tonight.', telescope: 'telescope', binoculars: 'binoculars',
+    sunSpots: 'The Sun: with a certified solar filter you can see sunspots. Never look without protection.',
+    venusDay: 'Venus is so bright that, with a very clear sky, it can be seen in daylight. Use “Point” to find it.',
+    issNight: 'Visible ISS passes', noIss: 'No visible passes tonight.', meteorsNight: 'Shooting stars',
+    constNight: 'Constellations high at', tapToSee: 'Tap to see it in the sky',
+    newVideos: '▶ New on DarwinCaos', thisWeek: 'this week', filters: { all: 'All', sky: '🔭 Sky', launch: '🚀 Launches', video: '▶ Videos', news: '📰 News' },
+    supermoon: 'Supermoon', eclipseL: 'Lunar eclipse', eclipseS: 'Solar eclipse', kinds: { penumbral: 'penumbral', partial: 'partial', total: 'total', annular: 'annular' },
+    visibleHere: 'visible from your location', notVisibleHere: 'not visible from your location', covered: 'of the Sun covered',
+    opposition: 'Opposition of', oppMore: 'the best time of the year to see it: closest, brightest and up all night',
+    elong: 'Greatest elongation of', morning: 'at dawn', evening: 'at dusk', elongMore: 'the best time to see it, away from the Sun’s glare',
+    moonNear: 'The Moon passes near', conj: 'Conjunction of', and: 'and', sep: 'separation', peakOf: 'Peak of the', perHour: 'meteors/h under dark skies',
+    seasons: { mar: 'Equinox', jun: 'Solstice', sep: 'Equinox', dec: 'Solstice' }, seasonNames: { spring: '(spring)', summer: '(summer)', autumn: '(autumn)', winter: '(winter)' },
+    launch: 'Launch', noFeed: 'Videos and launches unavailable right now.', updated: 'Updated',
+    empty: 'No events for this filter.', goTo: 'See in the sky', liveAt: 'Showing the sky on',
+  },
+};
+const CT = () => CAL_TXT[S.lang];
+S.calTab = 'tonight'; S.calFilter = 'all';
+const bodyEntry = id => CATALOG.find(e => e.id === id);
+const fmtDay = d => d.toLocaleDateString(S.lang, { weekday: 'short', day: 'numeric', month: 'short', ...tzOpt() });
+const fmtHM = d => (d ? d.toLocaleTimeString(S.lang, { hour: '2-digit', minute: '2-digit', ...tzOpt() }) : '—');
+const altAzAt = (body, date) => { const eq = A.Equator(body, date, observer, true, true); return A.Horizon(date, observer, eq.ra, eq.dec, 'normal'); };
+const tryTime = f => { try { return f()?.date || null; } catch { return null; } };
+
+// Viajar a un momento y apuntar a un objeto (desde el calendario)
+function goToEvent(id, time) {
+  closeModals();
+  if (time) { setOffset(+time - Date.now()); updateSkyMatrix(simDate(), true); updateBodies(simDate(), true); toast(`${CT().liveAt} ${fmtDay(time)} ${fmtHM(time)} · 🕒 ${T().now}`); }
+  if (S.sensor) setSensor(false);
+  const e = id && bodyEntry(id);
+  if (e) { openInfo(e); pointTo(e); }
+}
+
+function evRow({ ico, when, what, more, onClick, href, img, hl }) {
+  const el = document.createElement(href ? 'a' : onClick ? 'button' : 'div');
+  el.className = 'ev' + (hl ? ' hl' : '');
+  if (href) { el.href = href; el.target = '_blank'; el.rel = 'noopener'; }
+  if (onClick) { el.type = 'button'; el.onclick = onClick; }
+  if (img) { const i = document.createElement('img'); i.src = img; i.alt = ''; i.loading = 'lazy'; el.append(i); }
+  else { const i = document.createElement('span'); i.className = 'ico'; i.textContent = ico; el.append(i); }
+  const box = document.createElement('div');
+  for (const [cls, txt] of [['when', when], ['what', what], ['more', more]]) if (txt) { const d = document.createElement('div'); d.className = cls; d.textContent = txt; box.append(d); }
+  el.append(box);
+  return el;
+}
+
+// ── Esta noche ──
+function computeTonight() {
+  const now = simDate(), out = { day: [], night: [] };
+  const sunNow = altAzAt('Sun', now).altitude;
+  // Ventana de noche: la próxima (si es de día) o la actual (si ya es de noche)
+  const nightStart = sunNow > -1 ? tryTime(() => A.SearchRiseSet('Sun', observer, -1, now, 1)) : tryTime(() => A.SearchRiseSet('Sun', observer, -1, new Date(+now - 864e5), 1));
+  const nightEnd = nightStart && tryTime(() => A.SearchRiseSet('Sun', observer, +1, nightStart, 1));
+  const dark = nightStart && tryTime(() => A.SearchAltitude('Sun', observer, -1, nightStart, 1, -18));
+  const dawn = dark && tryTime(() => A.SearchAltitude('Sun', observer, +1, dark, 1, -18));
+  const dayStart = tryTime(() => A.SearchRiseSet('Sun', observer, +1, new Date(+(nightStart || now) - 864e5), 1));
+  out.sun = { rise: dayStart, set: nightStart, dark, dawn, end: nightEnd };
+
+  // Luna
+  const ph = A.MoonPhase(now), illum = A.Illumination('Moon', now).phase_fraction;
+  const phaseIdx = Math.round(ph / 90) % 4;
+  const exact = Math.min(Math.abs(ph - phaseIdx * 90), 360 - Math.abs(ph - phaseIdx * 90)) < 12;
+  const phaseName = exact ? CT().phases[phaseIdx] : (ph < 180 ? (S.lang === 'en' ? 'Waxing' : 'Creciente') : (S.lang === 'en' ? 'Waning' : 'Menguante'));
+  const mRise = tryTime(() => A.SearchRiseSet('Moon', observer, +1, new Date(+(nightStart || now) - 6 * 3600e3), 1.2));
+  const mSet = tryTime(() => A.SearchRiseSet('Moon', observer, -1, new Date(+(nightStart || now) - 6 * 3600e3), 1.2));
+  out.moon = { name: phaseName, illum, rise: mRise, set: mSet, ph };
+
+  // Planetas: muestreo cada 10 min durante la noche
+  if (nightStart && nightEnd) {
+    for (const b of BODIES.filter(b => !['sun', 'moon', 'pluto'].includes(b.id))) {
+      let best = null, first = null, last = null;
+      for (let t = +nightStart; t <= +nightEnd; t += 600e3) {
+        const d = new Date(t), sunAlt = altAzAt('Sun', d).altitude;
+        if (sunAlt > -8) continue;
+        const h = altAzAt(b.body, d);
+        if (h.altitude > 8) { first ??= d; last = d; if (!best || h.altitude > best.alt) best = { t: d, alt: h.altitude, az: h.azimuth }; }
+      }
+      if (best) {
+        const mag = A.Illumination(b.body, best.t).mag;
+        out.night.push({ kind: 'planet', b, best, first, last, mag });
+      }
+    }
+  }
+  // De día: Luna diurna y Venus
+  if (dayStart && nightStart && dayStart < nightStart) {
+    let mFirst = null, mLast = null;
+    for (let t = +dayStart + 1800e3; t < +nightStart - 1800e3; t += 900e3) { const d = new Date(t); if (altAzAt('Moon', d).altitude > 10) { mFirst ??= d; mLast = d; } }
+    if (mFirst && illum > 0.15) out.day.push({ kind: 'moonDay', from: mFirst, to: mLast });
+    const venusMag = A.Illumination('Venus', now).mag, venusEl = A.Elongation('Venus', now).elongation;
+    if (venusMag < -4.2 && venusEl > 25) out.day.push({ kind: 'venusDay' });
+  }
+  out.day.push({ kind: 'sunSpots' });
+  // ISS, lluvias y constelaciones
+  out.iss = ISS.status === 'ok' && nightStart ? issPasses().filter(p => p.visible && p.start < new Date(+nightEnd + 3600e3) && p.end > new Date(+nightStart - 3600e3)).slice(0, 4) : null;
+  out.shower = showerStatus(now);
+  const tC = new Date(+(dark || nightStart || now) + 2 * 3600e3);
+  out.constTime = tC;
+  out.consts = DATA.cons.map(con => {
+    const c = con.center, ra = ((Math.atan2(c.x, c.z) * R2D + 360) % 360) / 15, dec = Math.asin(c.y) * R2D;
+    return { con, alt: A.Horizon(tC, observer, ra, dec).altitude };
+  }).filter(x => x.alt > 40 && x.con.art).sort((a, b) => b.alt - a.alt).slice(0, 6);
+  return out;
+}
+function renderTonight(box) {
+  const t = T(), c = CT(), n = computeTonight();
+  const head = document.createElement('div'); head.className = 'sunbar';
+  for (const [k, v] of [[c.sunset, fmtHM(n.sun.set)], [c.dark, fmtHM(n.sun.dark)], [c.sunrise, fmtHM(n.sun.end)]]) {
+    const d = document.createElement('div'); d.className = 'stat';
+    const sm = document.createElement('small'); sm.textContent = k; const b = document.createElement('b'); b.textContent = v; d.append(sm, b); head.append(d);
+  }
+  box.append(section('🌙 ' + c.night + ' · ' + S.place.name), head);
+  // Luna
+  const moonE = bodyEntry('moon');
+  box.append(evRow({ ico: n.moon.ph < 180 ? '🌒' : '🌘', what: `${n.moon.name} · ${fmtNum(n.moon.illum * 100)} % ${c.lit}`,
+    more: `${c.moonRise} ${fmtHM(n.moon.rise)} · ${c.moonSet} ${fmtHM(n.moon.set)}`, onClick: () => goToEvent('moon', n.moon.rise && n.moon.rise > simDate() ? new Date(+n.moon.rise + 3600e3) : null) }));
+  // Planetas
+  box.append(section('🪐 ' + c.planetsNight));
+  if (!n.night.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noPlanets; box.append(p); }
+  n.night.sort((a, b) => a.mag - b.mag).forEach(({ b, best, first, last, mag }) => {
+    const aid = mag > 6 ? ` · ${c.telescope}` : mag > 5 ? ` · ${c.binoculars}` : '';
+    box.append(evRow({ ico: '🪐', what: bodyName(b), when: +last - +first < 1800e3 ? `${S.lang === 'en' ? 'around' : 'hacia las'} ${fmtHM(best.t)}` : `${c.from} ${fmtHM(first)} ${c.to} ${fmtHM(last)}`,
+      more: `${c.best} ${fmtHM(best.t)} · ${c.towards} ${azName(best.az)} · ${c.high} ${fmtNum(best.alt)}° · mag ${fmtNum(mag, 1)}${aid}`, onClick: () => goToEvent(b.id, best.t) }));
+  });
+  // ISS
+  box.append(section('🛰️ ' + c.issNight));
+  if (n.iss === null) { const p = document.createElement('p'); p.className = 'note'; p.textContent = ISS.status === 'loading' ? t.issLoading : t.issOffline; box.append(p); }
+  else if (!n.iss.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noIss; box.append(p); }
+  else n.iss.forEach(p => box.append(evRow({ ico: '🛰️', what: `${fmtHM(p.start)} → ${fmtHM(p.end)}`, more: `${c.high} ${fmtNum(p.maxAlt)}° ${c.towards} ${azName(p.maxAz)}`, onClick: () => goToEvent('iss', p.maxTime) })));
+  // Lluvias
+  const sh = n.shower, shName = s => (S.lang === 'en' ? s.en : s.es);
+  box.append(section('☄️ ' + c.meteorsNight));
+  box.append(evRow({ ico: '☄️', what: sh.active && sh.active.zhrNow > 2 ? `${shName(sh.active.sh)} · ~${fmtNum(sh.active.zhrNow)}/h` : t.sporadic,
+    more: sh.next ? `${t.nextShower}: ${shName(sh.next.sh)} · ${fmtDay(sh.next.peak)}` : '' }));
+  // Constelaciones
+  if (n.consts.length) {
+    box.append(section(`⭐ ${c.constNight} ${fmtHM(n.constTime)}`));
+    const chips = document.createElement('div'); chips.className = 'chips';
+    n.consts.forEach(({ con }) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = S.lang === 'en' ? con.en : con.es; b.onclick = () => goToEvent('c:' + con.id, n.constTime); chips.append(b); });
+    box.append(chips);
+  }
+  // De día
+  box.append(section('☀️ ' + c.day + ` · ${c.sunrise} ${fmtHM(n.sun.rise)} · ${c.sunset} ${fmtHM(n.sun.set)}`));
+  n.day.forEach(d => {
+    if (d.kind === 'moonDay') box.append(evRow({ ico: '🌗', what: c.moonDay, more: `${c.from} ${fmtHM(d.from)} ${c.to} ${fmtHM(d.to)}`, onClick: () => goToEvent('moon', d.from) }));
+    if (d.kind === 'venusDay') box.append(evRow({ ico: '✨', what: 'Venus', more: c.venusDay, onClick: () => goToEvent('venus', null) }));
+    if (d.kind === 'sunSpots') box.append(evRow({ ico: '☀️', what: bodyName(BODIES[0]), more: c.sunSpots }));
+  });
+}
+
+// ── Eventos ──
+let eventsCache = { key: '', items: [] };
+function computeSkyEvents() {
+  const start = new Date(simDate()); start.setHours(0, 0, 0, 0);
+  const key = `${S.place.lat.toFixed(2)},${S.place.lon.toFixed(2)},${start.toDateString()},${S.lang}`;
+  if (eventsCache.key === key) return eventsCache.items;
+  const c = CT(), end = new Date(+start + 120 * 864e5), far = new Date(+start + 400 * 864e5), items = [];
+  const push = (date, ico, what, more, action, hl) => { if (date >= start && date <= far) items.push({ date, cat: 'sky', ico, what, more, action, hl }); };
+  const pname = id => bodyName(BODIES.find(b => b.id === id));
+  try { // Fases de la Luna y superlunas
+    let q = A.SearchMoonQuarter(start);
+    while (q.time.date < end) {
+      let what = c.phases[q.quarter], hl = false;
+      if (q.quarter === 2) { const v = A.GeoMoon(q.time), km = Math.hypot(v.x, v.y, v.z) * 149597870.7; if (km < 360000) { what = `${c.supermoon} · ${what}`; hl = true; } }
+      push(q.time.date, ['🌑', '🌓', '🌕', '🌗'][q.quarter], what, '', { id: 'moon', time: q.time.date }, hl);
+      q = A.NextMoonQuarter(q);
+    }
+  } catch { }
+  try { // Eclipses lunares (hasta 400 días)
+    let e = A.SearchLunarEclipse(start);
+    while (e.peak.date < far) {
+      const alt = altAzAt('Moon', e.peak.date).altitude;
+      push(e.peak.date, '🌘', `${c.eclipseL} ${c.kinds[e.kind] || e.kind}`, alt > 0 ? c.visibleHere : c.notVisibleHere, { id: 'moon', time: e.peak.date }, alt > 0);
+      e = A.NextLunarEclipse(e.peak);
+    }
+  } catch { }
+  try { // Eclipses solares visibles desde aquí (hasta 400 días)
+    let e = A.SearchLocalSolarEclipse(start, observer);
+    while (e.peak.time.date < far) {
+      push(e.peak.time.date, '🌞', `${c.eclipseS} ${c.kinds[e.kind] || e.kind}`, `${c.visibleHere} · ${fmtNum(e.obscuration * 100)} % ${c.covered}`, { id: 'sun', time: e.peak.time.date }, true);
+      e = A.NextLocalSolarEclipse(e.peak.time, observer);
+    }
+  } catch { }
+  for (const id of ['mars', 'jupiter', 'saturn', 'uranus', 'neptune']) { // Oposiciones (hasta 400 días)
+    const b = BODIES.find(x => x.id === id);
+    const tt = tryTime(() => A.SearchRelativeLongitude(b.body, 0, start));
+    if (tt) push(tt, '🪐', `${c.opposition} ${pname(id)}`, c.oppMore, { id, time: new Date(+tt) }, id !== 'neptune' && id !== 'uranus');
+  }
+  for (const id of ['mercury', 'venus']) { // Máximas elongaciones
+    let t0 = start;
+    for (let k = 0; k < 4; k++) {
+      try {
+        const e = A.SearchMaxElongation(BODIES.find(x => x.id === id).body, t0);
+        if (e.time.date > end) break;
+        push(e.time.date, '✨', `${c.elong} ${pname(id)} (${fmtNum(e.elongation)}°)`, `${e.visibility === 'morning' ? c.morning : c.evening} · ${c.elongMore}`, { id, time: e.time.date });
+        t0 = new Date(+e.time.date + 10 * 864e5);
+      } catch { break; }
+    }
+  }
+  // Conjunciones: Luna con planetas y estrellas brillantes; planetas entre sí
+  const targets = ['mercury', 'venus', 'mars', 'jupiter', 'saturn'].map(id => ({ id, body: BODIES.find(b => b.id === id).body, name: pname(id) }));
+  const stars = ['Regulus', 'Spica', 'Antares', 'Aldebaran'].map(en => { const n = DATA.names.find(x => x[2] === en); if (!n) return null; const [ra, dec] = DATA.stars[n[0]]; const a = ra * 15 * D2R, d = dec * D2R; return { id: 's:' + en, vec: { x: Math.cos(d) * Math.cos(a), y: Math.cos(d) * Math.sin(a), z: Math.sin(d) }, name: S.lang === 'en' ? n[2] : n[1] }; }).filter(Boolean);
+  const pairs = [];
+  for (const tg of targets) pairs.push({ a: 'Moon', b: tg, thr: 3.5, moon: true });
+  for (const st of stars) pairs.push({ a: 'Moon', b: st, thr: 1.5, moon: true });
+  for (let i = 0; i < targets.length; i++) for (let j = i + 1; j < targets.length; j++) pairs.push({ a: targets[i], b: targets[j], thr: 2.2 });
+  const vecOf = (x, t) => (x === 'Moon' ? A.GeoVector('Moon', t, true) : x.vec ? new A.Vector(x.vec.x, x.vec.y, x.vec.z, t) : A.GeoVector(x.body, t, true));
+  const hist = pairs.map(() => []);
+  for (let t = +start; t <= +end; t += 3 * 3600e3) {
+    const tm = A.MakeTime(new Date(t)), sun = A.GeoVector('Sun', tm, true);
+    pairs.forEach((p, i) => {
+      const va = vecOf(p.a, tm), vb = vecOf(p.b, tm), sep = A.AngleBetween(va, vb);
+      const h = hist[i]; h.push([t, sep]); if (h.length > 3) h.shift();
+      if (h.length === 3 && h[1][1] < h[0][1] && h[1][1] <= h[2][1] && h[1][1] < p.thr) {
+        const when = new Date(h[1][0]), elong = A.AngleBetween(sun, vb);
+        if (elong < 15) return; // demasiado cerca del Sol para verse
+        const focus = p.moon ? p.b.id : p.a.id;
+        const what = p.moon ? `${c.moonNear} ${p.b.name}` : `${c.conj} ${p.a.name} ${c.and} ${p.b.name}`;
+        push(when, p.moon ? '🌙' : '🪐', what, `${c.sep} ${fmtNum(h[1][1], 1)}°`, { id: focus, time: when }, !p.moon && h[1][1] < 1);
+      }
+    });
+  }
+  for (const sh of SHOWERS) for (const y of [start.getFullYear(), start.getFullYear() + 1]) { // Lluvias de meteoros
+    const peak = new Date(Date.UTC(y, sh.peak[0] - 1, sh.peak[1], 22));
+    if (peak >= start && peak <= end) push(peak, '☄️', `${c.peakOf} ${S.lang === 'en' ? sh.en : sh.es}`, `~${sh.zhr} ${c.perHour}`, { time: peak }, sh.zhr >= 100);
+  }
+  const south = S.place.lat < 0; // Estaciones según el hemisferio
+  for (const y of [start.getFullYear(), start.getFullYear() + 1]) {
+    try {
+      const s = A.Seasons(y);
+      [['mar', s.mar_equinox, south ? 'autumn' : 'spring'], ['jun', s.jun_solstice, south ? 'winter' : 'summer'], ['sep', s.sep_equinox, south ? 'spring' : 'autumn'], ['dec', s.dec_solstice, south ? 'summer' : 'winter']]
+        .forEach(([k, tt, season]) => { if (tt.date <= end) push(tt.date, k === 'jun' || k === 'dec' ? '☀️' : '🌍', `${c.seasons[k]} ${c.seasonNames[season]}`, '', null); });
+    } catch { }
+  }
+  items.sort((a, b) => a.date - b.date);
+  eventsCache = { key, items };
+  return items;
+}
+function feedEvents() {
+  if (!FEED) return [];
+  const now = simDate(), items = [];
+  for (const l of FEED.lanzamientos || []) { const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
+  for (const m of FEED.manuales || []) { const d = new Date(m.fecha); if (!isNaN(d) && d > new Date(+now - 2 * 864e5)) items.push({ date: d, cat: 'news', ico: '📰', what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true }); }
+  return items;
+}
+function renderEvents(box) {
+  const c = CT();
+  // Vídeos de la última semana
+  const week = (FEED?.videos || []).filter(v => Date.parse(v.fecha) > Date.now() - 7 * 864e5);
+  if (S.calFilter === 'all' || S.calFilter === 'video') {
+    if (week.length) {
+      box.append(section(`${c.newVideos} · ${c.thisWeek}`));
+      week.forEach(v => box.append(evRow({ img: v.miniatura, when: fmtDay(new Date(v.fecha)), what: v.titulo, href: v.url })));
+    } else if (S.calFilter === 'video') { const p = document.createElement('p'); p.className = 'note'; p.textContent = FEED ? c.empty : c.noFeed; box.append(p); }
+  }
+  // Filtros
+  const chips = document.createElement('div'); chips.className = 'chips';
+  Object.entries(c.filters).forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.calFilter === k ? ' on' : ''); b.textContent = label; b.onclick = () => { S.calFilter = k; renderCal(); }; chips.append(b); });
+  box.prepend(chips);
+  if (S.calFilter === 'video') return;
+  const all = [...computeSkyEvents(), ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
+  let month = '';
+  all.forEach(e => {
+    const m = e.date.toLocaleDateString(S.lang, { month: 'long', year: 'numeric', ...tzOpt() });
+    if (m !== month) { month = m; box.append(section('📅 ' + m)); }
+    const onClick = e.action ? () => goToEvent(e.action.id, e.action.time) : null;
+    box.append(evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl }));
+  });
+  if (!all.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.empty; box.append(p); }
+  if (!FEED) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noFeed; box.append(p); }
+  else if (FEED.actualizado) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `${c.updated}: ${new Date(FEED.actualizado).toLocaleString(S.lang, { dateStyle: 'short', timeStyle: 'short' })}`; box.append(p); }
+}
+function renderCal() {
+  const box = $('calBody');
+  box.replaceChildren();
+  $('tabTonight').classList.toggle('on', S.calTab === 'tonight');
+  $('tabEvents').classList.toggle('on', S.calTab === 'events');
+  const wait = document.createElement('p'); wait.className = 'note'; wait.textContent = S.lang === 'en' ? 'Calculating…' : 'Calculando…';
+  box.append(wait);
+  setTimeout(() => { // dejamos que se pinte «Calculando…» antes del cálculo
+    box.replaceChildren();
+    try { S.calTab === 'tonight' ? renderTonight(box) : renderEvents(box); }
+    catch (err) { console.error(err); const p = document.createElement('p'); p.className = 'note'; p.textContent = '⚠️ ' + err.message; box.append(p); }
+    box.scrollTop = 0;
+  }, 30);
+}
+$('tabTonight').onclick = () => { S.calTab = 'tonight'; renderCal(); };
+$('tabEvents').onclick = () => { S.calTab = 'events'; renderCal(); };
+
 // ───────────── Bucle principal ─────────────
 const azEl = $('azText'), altEl = $('altText'), horEl = $('horizonTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
 const camDir = new THREE.Vector3();
@@ -1875,7 +2199,7 @@ async function init() {
   applyRed();
   $('placeLabel').textContent = S.place.name;
   setOffset(S.offset);
-  [DATA, DESC] = await Promise.all([fetch('data/cielo.json').then(r => r.json()), fetch('data/descripciones.json').then(r => r.json()).catch(() => ({}))]);
+  [DATA, DESC] = await Promise.all([fetch(`data/cielo.json?v=${APP_VERSION}`).then(r => r.json()), fetch(`data/descripciones.json?v=${APP_VERSION}`).then(r => r.json()).catch(() => ({}))]);
   buildStars();
   buildConstellations();
   buildBodies();
@@ -1902,6 +2226,7 @@ async function init() {
   persist();
   updateDeclination();
   autoStartSensor();
+  loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); });
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita
