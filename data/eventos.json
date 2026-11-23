@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-23T14:57:09.182Z",
+ "actualizado": "2026-11-23T15:50:14.700Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -431,17 +431,6 @@
    "enlace": null
   },
   {
-   "nombre": "Kinetica 1 | Unknown Payload",
-   "fecha": "2026-11-29T01:00:00Z",
-   "estado": "TBC",
-   "proveedor": "CAS Space",
-   "cohete": "Kinetica 1",
-   "lugar": "Haiyang Oriental Spaceport",
-   "mision": "Details TBD.",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193659.png",
-   "enlace": null
-  },
-  {
    "nombre": "Long March 6C | Unknown Payload",
    "fecha": "2026-11-29T03:50:00Z",
    "estado": "Go",
@@ -497,6 +486,17 @@
    "enlace": null
   },
   {
+   "nombre": "Kinetica 1 | Unknown Payload",
+   "fecha": "2026-12-01T01:45:00Z",
+   "estado": "Go",
+   "proveedor": "CAS Space",
+   "cohete": "Kinetica 1",
+   "lugar": "Haiyang Oriental Spaceport",
+   "mision": "Details TBD.",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193659.png",
+   "enlace": null
+  },
+  {
    "nombre": "Long March 12 | SatNet LEO Group TBD?",
    "fecha": "2026-12-10T07:00:00Z",
    "estado": "TBC",
@@ -517,6 +517,96 @@
    "mision": "Second of EUMETSAT's second generation of Metop weather satellites.",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_thumbnail_20240711132056.jpeg",
    "enlace": null
+  }
+ ],
+ "noticias": [
+  {
+   "titulo": "China details its path to a crewed Moon landing before 2030",
+   "resumen": "China has set out its most detailed roadmap yet for landing astronauts on the Moon…\r\nThe post China details its path to a crewed Moon landing before 2030 appeared first on NASASpaceFlight.com.",
+   "url": "https://www.nasaspaceflight.com/2026/11/china-roundup-2026-11/",
+   "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/Mengzhou-and-Lanyue-docking-in-orbit-render-3-Hero-CCTV.png",
+   "fuente": "NASASpaceflight",
+   "fecha": "2026-11-22T22:31:24Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 7
+  },
+  {
+   "titulo": "APOD: 2026 November 22 – Swirls and Colors on Jupiter from Juno",
+   "resumen": "APOD Science APOD APOD: 2026 November 22 –… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a b",
+   "url": "https://science.nasa.gov/image-article/apod-2026-november-22-swirls-and-colors-on-jupiter-from-juno/",
+   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/JupiterSwirls_JunoBrealey_3709.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-22T05:05:00Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
+  },
+  {
+   "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
+   "resumen": "APOD Science APOD APOD: 2026 November 21 –… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a b",
+   "url": "https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/",
+   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Neptune-South-Pole-Voyager-2_2327x1670.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-21T05:05:00Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
+  },
+  {
+   "titulo": "Lake Pelku",
+   "resumen": "An astronaut on the International Space Station captured this photograph of Lake Pelku (near center) as the station orbited above Asia. The International Space Station serves as a unique platform for observing Earth with both hands-on and automated equipment. Station crew members",
+   "url": "https://www.nasa.gov/image-article/lake-pelku/",
+   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/iss075e0267074orig.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-19T15:32:39Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
+  },
+  {
+   "titulo": "Voyager 1 reaches one light-day nearly 50 years after launch",
+   "resumen": "At 5:16:07 AM EST (10:16 UTC) on Nov. 18, and at a distance of 26…\r\nThe post Voyager 1 reaches one light-day nearly 50 years after launch appeared first on NASASpaceFlight.com.",
+   "url": "https://www.nasaspaceflight.com/2026/11/voyager-1-light-day/",
+   "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2024/12/voyager-scaled.jpg",
+   "fuente": "NASASpaceflight",
+   "fecha": "2026-11-18T21:48:55Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
+  },
+  {
+   "titulo": "NASA’s Voyager 1 is one light-day from Earth",
+   "resumen": "NASA's Voyager 1 spacecraft became the first human-made object to reach a distance of one light-day from Earth early Wednesday, crossing the threshold at 5:16:07 a.m. EST (10:16:07 UTC) as it sped away from the sun at nearly 38,000 mph.",
+   "url": "https://spaceflightnow.com/2026/11/18/nasas-voyager-1-is-one-light-day-from-earth/",
+   "imagen": "https://spaceflightnow.com/wp-content/uploads/2026/11/20261118-Voyager.jpg",
+   "fuente": "Spaceflight Now",
+   "fecha": "2026-11-18T17:46:40Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
+  },
+  {
+   "titulo": "What Is the Moon Base?",
+   "resumen": "This article is for students. NASA is returning astronauts to the Moon – and this time they will spend more time on the lunar surface. The Moon Base is humanity’s first lunar outpost. It will be a place where astronauts live, work, and explore. ___________________________________",
+   "url": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-moon-base/",
+   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/moon-base-artists-concept.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-18T17:36:03Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 7
+  },
+  {
+   "titulo": "Space Selfie",
+   "resumen": "NASA astronaut Anil Menon took this selfie during a spacewalk on Oct. 29, 2026. He and CSA (Canadian Space Agency) astronaut Joshua Kutryk installed a new roll-out solar array on the International Space Station. Get daily updates from the space station. Image credit: NASA/Anil Me",
+   "url": "https://www.nasa.gov/image-article/space-selfie-2/",
+   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/iss075e0253155orig.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-17T16:51:14Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 4
   }
  ],
  "manuales": [],
