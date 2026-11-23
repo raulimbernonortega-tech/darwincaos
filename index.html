@@ -103,12 +103,21 @@
     .stat { background: var(--card); border-radius: 10px; padding: 6px 9px; }
     .stat b { display: block; font-size: 13px; font-variant-numeric: tabular-nums; }
     .stat small { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-    #infoFact { font-size: 12.5px; color: #cbd5e1; line-height: 1.45; }
+    #infoCard { max-height: 74vh; overflow-y: auto; }
+    #infoText p { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin: 0 0 8px; }
+    #infoText p:last-child { margin-bottom: 0; }
+    #infoKeyData { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; background: var(--card); border-radius: 12px; padding: 9px 12px; font-size: 12px; }
+    #infoKeyData[hidden] { display: none; }
+    #infoKeyData div { display: flex; flex-direction: column; }
+    #infoKeyData span { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; }
+    #infoKeyData b { color: #f1f5f9; font-weight: 650; }
+    .linkbtn { background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 700; padding: 0; align-self: flex-start; }
     @media (max-width: 560px) {
       #infoCard { padding: 12px; gap: 7px; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 96px); }
       .info-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
       .stat { padding: 5px 7px; } .stat b { font-size: 12px; } .stat small { font-size: 9.5px; }
-      #infoFact { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+      #infoCard { max-height: 62vh; }
+      #infoText p { font-size: 12.5px; }
       #infoCard .btn { padding: 7px 10px; font-size: 12px; }
     }
 
@@ -227,7 +236,9 @@
       <button class="close" type="button" id="infoClose">✕</button>
     </div>
     <div id="infoGrid" class="info-grid"></div>
-    <p id="infoFact"></p>
+    <div id="infoText"></div>
+    <div id="infoKeyData" hidden></div>
+    <button id="infoMore" class="linkbtn" type="button">Leer más ▾</button>
     <div class="btn-row">
       <button id="infoPoint" class="btn ghost" type="button" data-i18n="pointTo">Apuntar</button>
       <button id="infoShare" class="btn ghost" type="button" data-i18n="share">Compartir</button>

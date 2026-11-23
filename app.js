@@ -15,7 +15,7 @@ const VIDEOS = {
 
 // Logo del canal en el centro de la rosa de los vientos: img/logo.png (cuadrado).
 // LOGO_CIRCLE = diámetro del círculo azul del logo / ancho de la imagen. Se recorta justo por ese círculo.
-const LOGO_CIRCLE = 0.84;
+const LOGO_CIRCLE = 0.80;
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const R = { dome: 950, ground: 930, stars: 900, lines: 895, art: 890, dso: 870, meteor: 860, body: 500, iss: 450 };
@@ -48,13 +48,13 @@ const I18N = {
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
     camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
-    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación',
+    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
       ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo',
-      skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)' },
+      skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)', realDay: 'Día realista (oculta las estrellas con luz solar)' },
     skyQ: 'Calidad del cielo', skyQOpts: ['🏙️ Ciudad', '🏘️ Pueblo', '🌲 Campo'],
     min: 'min', today: 'hoy', tomorrow: 'mañana',
   },
@@ -83,13 +83,13 @@ const I18N = {
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
     camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
-    hintPlace: 'Tap 📍 to see the sky from your location',
+    hintPlace: 'Tap 📍 to see the sky from your location', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
       ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight',
-      skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)' },
+      skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)', realDay: 'Realistic daytime (hide stars in sunlight)' },
     skyQ: 'Sky quality', skyQOpts: ['🏙️ City', '🏘️ Town', '🌲 Countryside'],
     min: 'min', today: 'today', tomorrow: 'tomorrow',
   },
@@ -168,7 +168,7 @@ const STORE_KEY = 'dc_planetario_v2';
 const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; } })();
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ lang: S.lang, place: S.place, layers: S.layers, skyQ: S.skyQ, red: S.red, tle: S.tleCache, hinted: true }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ lang: S.lang, place: S.place, layers: S.layers, skyQ: S.skyQ, skyQSet: S.skyQSet, red: S.red, tle: S.tleCache, hinted: true }));
   } catch { /* almacenamiento no disponible */ }
 }
 const params = new URLSearchParams(location.search);
@@ -179,8 +179,9 @@ const urlPlace = params.has('lat') && params.has('lon')
 const S = {
   lang: params.get('lang') || saved.lang || ((navigator.language || 'es').startsWith('es') ? 'es' : 'en'),
   place: urlPlace || saved.place || PRESET_CITIES[0],
-  layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true }, saved.layers),
-  skyQ: saved.skyQ ?? 1,
+  layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, realDay: false }, saved.layers),
+  skyQ: saved.skyQSet ? saved.skyQ : 2,
+  skyQSet: !!saved.skyQSet,
   red: !!saved.red,
   tleCache: saved.tle || null,
   offset: params.has('t') && !isNaN(Date.parse(params.get('t'))) ? Date.parse(params.get('t')) - Date.now() : 0,
@@ -523,7 +524,7 @@ const ringTex = (() => {
 })();
 
 // ───────────── Estrellas reales ─────────────
-let DATA = null;
+let DATA = null, DESC = {};
 const starsGroup = new THREE.Group(), linesGroup = new THREE.Group(), artGroup = new THREE.Group();
 const conNameGroup = new THREE.Group(), starNameGroup = new THREE.Group(), dsoGroup = new THREE.Group(), eclipticGroup = new THREE.Group();
 const bodiesGroup = new THREE.Group();
@@ -1052,6 +1053,7 @@ function openInfo(entry) {
   $('infoName').textContent = entry.name();
   $('infoType').textContent = entry.sub();
   refreshInfo();
+  renderInfoText(entry);
   $('infoVideo').href = videoUrl(entry);
   $('infoCard').classList.add('open');
   updateViewOffset();
@@ -1066,8 +1068,32 @@ function refreshInfo() {
     const b = document.createElement('b'); b.textContent = v;
     d.append(s, b); return d;
   }));
-  $('infoFact').textContent = fact;
-  $('infoFact').style.display = fact ? '' : 'none';
+  // Datos clave fijos de la ficha (diámetro, lunas, año…)
+  const d = DESC[S.selected.id]?.[S.lang];
+  $('infoKeyData').replaceChildren(...(d?.datos || []).map(([k, v]) => {
+    const row = document.createElement('div'); const a = document.createElement('span'); a.textContent = k;
+    const b = document.createElement('b'); b.textContent = v; row.append(a, b); return row;
+  }));
+  S.selected.shortFact = fact;
+}
+// Texto descriptivo: primer párrafo visible y el resto tras «Leer más»
+function renderInfoText(entry) {
+  const d = DESC[entry.id]?.[S.lang];
+  const paras = d?.texto?.length ? d.texto : (entry.shortFact ? [entry.shortFact] : []);
+  const box = $('infoText');
+  box.replaceChildren(...paras.map((t, i) => { const p = document.createElement('p'); p.textContent = t; if (i > 0) p.hidden = true; return p; }));
+  const more = $('infoMore');
+  more.hidden = paras.length < 2 && !(d?.datos?.length);
+  $('infoKeyData').hidden = true;
+  more.textContent = T().readMore;
+  more.onclick = () => {
+    const open = more.dataset.open !== '1';
+    more.dataset.open = open ? '1' : '';
+    box.querySelectorAll('p').forEach((p, i) => { if (i > 0) p.hidden = !open; });
+    $('infoKeyData').hidden = !open;
+    more.textContent = open ? T().readLess : T().readMore;
+  };
+  more.dataset.open = '';
 }
 function closeInfo() { S.selected = null; S.tracking = null; $('infoCard').classList.remove('open'); updateViewOffset(); }
 // En móvil la ficha ocupa la mitad inferior: subimos el centro de la vista para que el objeto quede visible.
@@ -1292,7 +1318,7 @@ function renderLayers() {
   const seg = document.createElement('div'); seg.className = 'seg';
   t.skyQOpts.forEach((label, i) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.skyQ === i ? ' on' : ''); b.textContent = label;
-    b.onclick = () => { S.skyQ = i; applyLayers(); persist(); renderLayers(); };
+    b.onclick = () => { S.skyQ = i; S.skyQSet = true; applyLayers(); persist(); renderLayers(); };
     seg.append(b);
   });
   list.append(q, seg);
@@ -1497,7 +1523,9 @@ function frame(now) {
   const [zen, hor] = skyColorsFor(atm ? sunAlt : -90);
   domeMat.uniforms.uZenith.value.copy(zen); domeMat.uniforms.uHorizon.value.copy(hor);
   domeMat.uniforms.uSunDir.value.copy(sunW); domeMat.uniforms.uSunGlow.value = atm ? THREE.MathUtils.clamp((sunAlt + 8) / 10, 0, 1) : 0;
-  const starFade = S.camera || !atm ? 1 : THREE.MathUtils.clamp((-sunAlt - 1) / 11, 0, 1);
+  const realFade = THREE.MathUtils.clamp((-sunAlt - 1) / 11, 0, 1);
+  // Por defecto se ven estrellas y constelaciones también de día (como en un planetario); «Día realista» las oculta.
+  const starFade = S.camera || !atm ? 1 : S.layers.realDay ? realFade : Math.max(realFade, 0.9);
   starUniforms.uFade.value = starFade;
   starUniforms.uScale.value = Math.min(2.2, Math.pow(62 / S.fov, 0.3));
   starUniforms.uLimit.value = SKY_LIMIT[S.skyQ] + Math.log10(62 / S.fov) * 1.5 - (1 - starFade) * 2;
@@ -1535,7 +1563,8 @@ function frame(now) {
     if (con.label) con.label.material.opacity = (con === focused ? 0.95 : 0.55) * lineFade;
   }
   lineMat.opacity = 0.3 * lineFade; hiLineMat.opacity = 0.85 * lineFade;
-  starNameGroup.children.forEach(l => (l.visible = l.userData.mag < (S.fov < 30 ? 2.6 : 1.6)));
+  const nameMag = S.fov < 15 ? 3.5 : S.fov < 35 ? 2.6 : 1.7; // con más zoom, más nombres
+  starNameGroup.children.forEach(l => (l.visible = l.userData.mag < nameMag));
   banner.textContent = focused ? (S.lang === 'en' ? focused.en : focused.es) : '';
   banner.style.opacity = focused && bestAng < 15 && S.layers.lines ? 1 : 0;
 
@@ -1600,7 +1629,7 @@ async function init() {
   applyRed();
   $('placeLabel').textContent = S.place.name;
   setOffset(S.offset);
-  DATA = await (await fetch('data/cielo.json')).json();
+  [DATA, DESC] = await Promise.all([fetch('data/cielo.json').then(r => r.json()), fetch('data/descripciones.json').then(r => r.json()).catch(() => ({}))]);
   buildStars();
   buildConstellations();
   buildBodies();
