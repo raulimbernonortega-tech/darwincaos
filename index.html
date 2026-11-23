@@ -55,6 +55,11 @@
     #homeBtn { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 108px); z-index: 16; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #e0f2fe; border: 1px solid var(--accent); display: none; }
     #homeBtn.show { display: block; }
     #debugBox { position: fixed; left: 8px; right: 8px; top: calc(max(10px, env(safe-area-inset-top)) + 96px); z-index: 90; margin: 0; padding: 8px; background: rgba(0,0,0,.75); color: #a7f3d0; font: 11px/1.45 ui-monospace, monospace; border-radius: 8px; white-space: pre-wrap; pointer-events: none; }
+    /* Pantalla limpia: solo cielo + brújula + botón para recuperar los menús */
+    #uiBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 58px); right: 12px; z-index: 13; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; color: #e0f2fe; display: none; align-items: center; justify-content: center; padding: 0; }
+    body.clean #uiBtn { display: flex; }
+    body.clean .top, body.clean .dock, body.clean .bottom, body.clean #showerBanner, body.clean #homeBtn,
+    body.clean #infoCard, body.clean .modal, body.clean #focusBanner, body.clean #toast { display: none !important; }
     #reticle { position: fixed; top: var(--cy, 50%); left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 1.5px solid rgba(186,230,253,.5); border-radius: 50%; z-index: 9; pointer-events: none; }
 
     #showerBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 84px); left: 12px; z-index: 11; font-size: 11.5px; padding: 5px 10px; border-radius: 999px; display: none; color: #fde68a; border-color: rgba(251,191,36,.4); }
@@ -156,6 +161,7 @@
     </div>
   </header>
   <div id="showerBanner" class="pill"></div>
+  <button id="uiBtn" class="pill" type="button" data-i18n-title="showMenus" title="Mostrar menús" aria-label="Mostrar menús">☰</button>
   <button id="compass" class="pill" type="button" title="Brújula · toca para mirar al Norte" aria-label="Brújula">
     <svg id="compassNeedle" viewBox="0 0 48 48"><polygon points="24,5 29,24 19,24" fill="#ef4444"/><polygon points="24,43 29,24 19,24" fill="#cbd5e1"/><circle cx="24" cy="24" r="2.5" fill="#0f172a"/><text x="24" y="15" text-anchor="middle" font-size="0" fill="#fff">N</text></svg>
     <span>N</span>
@@ -170,6 +176,9 @@
     </button>
     <button id="dockRed" class="dock-btn" type="button" data-i18n-title="redMode" title="Modo nocturno rojo">
       <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button id="dockClean" class="dock-btn" type="button" data-i18n-title="cleanMode" title="Pantalla limpia (ocultar menús)">
+      <svg viewBox="0 0 24 24"><path d="M3 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4"/></svg>
     </button>
     <button id="dockLang" class="dock-btn" type="button" title="ES / EN">ES</button>
     <button id="dockAbout" class="dock-btn" type="button" data-i18n-title="about" title="Acerca de">
@@ -268,6 +277,7 @@
 
   <script src="vendor/astronomy.browser.min.js"></script>
   <script src="vendor/satellite.min.js"></script>
+  <script src="vendor/geomag.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

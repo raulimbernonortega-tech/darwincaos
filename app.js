@@ -47,7 +47,7 @@ const I18N = {
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
     manualMode: 'Modo manual · toca 🧭 Seguir el móvil para volver', camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
-    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
+    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
@@ -83,7 +83,7 @@ const I18N = {
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
     manualMode: 'Manual mode · tap 🧭 Follow phone to go back', camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
-    hintPlace: 'Tap 📍 to see the sky from your location', readMore: 'Read more ▾', readLess: 'Read less ▴',
+    hintPlace: 'Tap 📍 to see the sky from your location', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
@@ -1319,7 +1319,7 @@ function startQuatSensor() {
           const q = quatSensor.quaternion;
           if (!q) return;
           qReading.set(q[0], q[1], q[2], q[3]);
-          sensorQ.copy(qENUtoThree).multiply(qReading); // la cámara mira por la parte trasera del móvil (−z del dispositivo)
+          sensorQ.copy(qYaw.setFromAxisAngle(yAxis, -magDecl * D2R)).multiply(qENUtoThree).multiply(qReading); // norte geográfico; la cámara mira por la parte trasera (−z)
           usingQuatSensor = sensorReady = true;
           finish(true);
         });
@@ -1330,16 +1330,29 @@ function startQuatSensor() {
     } catch { finish(false); }
   });
 }
-let compassSamples = 0, compassOutliers = 0, lastOrient = null;
+let compassSamples = 0, compassOutliers = 0, lastOrient = null, compassRef = '';
+const qRel = new THREE.Quaternion(), qYaw = new THREE.Quaternion(), vFwd = new THREE.Vector3(), vTop = new THREE.Vector3(), yAxis = new THREE.Vector3(0, 1, 0);
+// Declinación magnética del lugar (modelo WMM): la brújula marca el norte magnético, el cielo usa el geográfico
+let magDecl = 0;
+function updateDeclination() { try { magDecl = window.Geomag ? window.Geomag.declination(S.place.lat, S.place.lon, new Date()) : 0; } catch { magDecl = 0; } }
 function onOrientation(e) {
   if (usingQuatSensor || e.alpha == null) return;
   lastOrient = e;
-  let alpha = e.alpha;
-  if (typeof e.webkitCompassHeading === 'number') { // iOS: alpha es relativo; la brújula da el Norte real
+  const orient = (screen.orientation?.angle ?? window.orientation ?? 0) * D2R;
+  euler.set(e.beta * D2R, e.alpha * D2R, -e.gamma * D2R, 'YXZ');
+  qRel.setFromEuler(euler).multiply(qBack).multiply(qScreen.setFromAxisAngle(zee, -orient));
+  let yawOff = 0; // grados que hay que sumar al acimut para alinear con el norte geográfico
+  if (typeof e.webkitCompassHeading === 'number') {
+    // iOS: alpha es relativo. La brújula da el rumbo de la CÁMARA si el móvil está vertical y el de la PARTE DE ARRIBA si está plano.
+    // Calculamos ese mismo rumbo con la orientación completa (no solo alpha: en vertical el giro se reparte entre alpha y gamma).
+    vFwd.set(0, 0, -1).applyQuaternion(qRel); vTop.set(0, 1, 0).applyQuaternion(qRel);
+    const hF = Math.hypot(vFwd.x, vFwd.z), hT = Math.hypot(vTop.x, vTop.z), ref = hF >= hT ? vFwd : vTop;
+    compassRef = hF >= hT ? 'cámara' : 'parte de arriba';
     const h = e.webkitCompassHeading, acc = e.webkitCompassAccuracy;
-    // iOS envía −1 mientras la brújula no está calibrada: esas lecturas no valen
-    if (h >= 0 && !(acc < 0) && !(acc > 45)) {
-      const off = (((360 - h - e.alpha) % 360) + 360) % 360;
+    // Descartamos: brújula sin calibrar (−1), poca precisión y la zona ambigua (móvil inclinado ~45°)
+    if (h >= 0 && !(acc < 0) && !(acc > 45) && Math.max(hF, hT) > 0.8) {
+      const azRel = Math.atan2(ref.x, -ref.z) * R2D;
+      const off = (((h - azRel) % 360) + 360) % 360;
       if (compassOffset == null) compassOffset = off;
       else {
         const diff = ((off - compassOffset + 540) % 360) - 180;
@@ -1351,11 +1364,10 @@ function onOrientation(e) {
         }
       }
     }
-    alpha = e.alpha + (compassOffset ?? 0);
-  }
-  const orient = (screen.orientation?.angle ?? window.orientation ?? 0) * D2R;
-  euler.set(e.beta * D2R, alpha * D2R, -e.gamma * D2R, 'YXZ');
-  sensorQ.setFromEuler(euler).multiply(qBack).multiply(qScreen.setFromAxisAngle(zee, -orient));
+    yawOff = (compassOffset ?? 0) + magDecl;
+  } else if (e.absolute || e.type === 'deviceorientationabsolute') yawOff = magDecl; // Android: alpha ya es respecto al norte magnético
+  // Girar el mundo alrededor de la vertical: +acimut = giro negativo sobre Y
+  sensorQ.copy(qYaw.setFromAxisAngle(yAxis, -yawOff * D2R)).multiply(qRel);
   sensorReady = true;
 }
 let sensorBound = false;
@@ -1449,6 +1461,9 @@ $('infoShare').onclick = () => share(S.selected);
 $('subscribeBtn').href = `${CHANNEL_URL}?sub_confirmation=1`;
 
 $('dockRed').onclick = () => { S.red = !S.red; applyRed(); persist(); };
+// Pantalla limpia (sobre todo para móvil): oculta los menús; quedan la brújula y el botón ☰ para recuperarlos
+$('dockClean').onclick = () => { closeModals(); document.body.classList.add('clean'); };
+$('uiBtn').onclick = () => document.body.classList.remove('clean');
 function applyRed() { document.body.classList.toggle('red', S.red); $('dockRed').classList.toggle('active', S.red); }
 $('dockLang').onclick = () => { S.lang = S.lang === 'es' ? 'en' : 'es'; applyLanguage(); persist(); };
 function applyLanguage() {
@@ -1585,6 +1600,7 @@ function setPlace(p) {
   S.place = { name: p.name, lat: p.lat, lon: p.lon, tz: p.tz, pop: p.pop, gps: p.gps, env: p.env, envInfo: p.envInfo };
   if (!S.place.env) detectEnvironment(S.place);
   observer = new A.Observer(p.lat, p.lon, 0);
+  updateDeclination();
   $('placeLabel').textContent = p.name;
   ISS.passes = null;
   updateSkyMatrix(simDate(), true); updateBodies(simDate(), true);
@@ -1710,7 +1726,8 @@ function updateDebug(now) {
   debugEl.textContent = [
     `modo: ${usingQuatSensor ? 'cuaternión (AbsoluteOrientationSensor)' : e ? 'deviceorientation' : 'sin datos'} · sensor ${S.sensor ? 'ON' : 'OFF'}`,
     e ? `alpha ${f(e.alpha)}  beta ${f(e.beta)}  gamma ${f(e.gamma)}  absoluto ${e.absolute}` : '',
-    e && e.webkitCompassHeading !== undefined ? `brújula iOS ${f(e.webkitCompassHeading)}° (precisión ${f(e.webkitCompassAccuracy)}) · corrección ${f(compassOffset)}° · rechazos ${compassOutliers}` : '',
+    e && e.webkitCompassHeading !== undefined ? `brújula iOS ${f(e.webkitCompassHeading)}° (precisión ${f(e.webkitCompassAccuracy)}) · ref. ${compassRef} · corrección ${f(compassOffset)}° · rechazos ${compassOutliers}` : '',
+    `declinación magnética ${f(magDecl)}° · cámara apunta a acimut ${f(vecToAltAz(camera.getWorldDirection(new THREE.Vector3())).az)}°`,
     `pantalla ${screen.orientation?.angle ?? window.orientation ?? 0}° · ${debugFps} fps · resolución x${pixelRatio}`,
   ].filter(Boolean).join('\n');
 }
@@ -1883,6 +1900,7 @@ async function init() {
   setTimeout(() => $('loading').remove(), 600);
   if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1200);
   persist();
+  updateDeclination();
   autoStartSensor();
   loadISS().then(() => {
     updateISS(simDate());
@@ -1893,4 +1911,4 @@ async function init() {
 init();
 
 // Exponer para depuración
-window.__planetario = { S, CATALOG: () => CATALOG, BODIES, setOffset, setFov, openInfo, pick, camera, skyGroup, ISS, issAt, A };
+window.__planetario = { setSensor: (...a) => setSensor(...a), sensorState: () => ({ sensorReady, usingQuatSensor, sensorBound, compassOffset }), S, CATALOG: () => CATALOG, BODIES, setOffset, setFov, openInfo, pick, camera, skyGroup, ISS, issAt, A };
