@@ -8,6 +8,15 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 const CHANNEL_ID = 'UCkF3sD8dTyY7RW1ySN3CwdQ'; // @darwincaos
 const OUT = 'data/eventos.json';
+// Fuentes de noticias en español. Se prueban todas; se usan las que funcionen.
+//  · feeds: direcciones RSS conocidas (se prueban primero)
+//  · home: si ninguna funciona, el robot busca los RSS en esa página
+//  · espacio: true si TODA la fuente es de espacio/astronomía (no hace falta filtrar por tema)
+const ES_SOURCES = [
+  { nombre: 'NASA Ciencia', home: 'https://ciencia.nasa.gov/', feeds: ['https://ciencia.nasa.gov/feed/'], espacio: true },
+  { nombre: 'ESA', home: 'https://www.esa.int/Space_in_Member_States/Spain', feeds: ['https://www.esa.int/rssfeed/Space_in_Member_States/Spain'], espacio: true },
+  { nombre: 'Agencia SINC', home: 'https://www.agenciasinc.es/', feeds: [], espacio: false },
+];
 const MANUAL = 'data/eventos-manuales.json';
 
 // Palabras clave para enlazar cada astro de la app con el último vídeo del canal que habla de él
@@ -52,7 +61,8 @@ const SPACE_ES = ['espacio', 'espacial', 'astronom', 'astrofís', 'planeta', 'ex
 const MAJOR = ['artemis', 'crew', 'astronaut', 'spacewalk', 'mars', 'moon', 'lunar', 'webb', 'jwst', 'hubble', 'exoplanet', 'black hole', 'galaxy', 'supernova',
   'discover', 'first', 'record', 'eclipse', 'comet', 'asteroid', 'meteor', 'sample return', 'starship flight', 'new glenn', 'europa clipper', 'juice', 'bepicolombo',
   'iss ', 'space station', 'neptune', 'uranus', 'venus', 'mercury ', 'light-day', 'light-year', 'spacecraft', 'probe', 'rover', 'lander', 'telescope', 'nebula', 'star ', 'planet', 'neptuno', 'urano', 'júpiter', 'saturno', 'sonda', 'tiangong', 'shenzhou', "chang'e", 'tianwen', 'gaganyaan', 'chandrayaan', 'voyager', 'jupiter', 'saturn', 'pluto', 'sun ', 'solar storm', 'aurora',
-  'marte', 'luna', 'astronauta', 'telescopio', 'agujero negro', 'descubr', 'primer', 'récord', 'cometa', 'asteroide', 'eclipse', 'exoplaneta', 'galaxia'];
+  'marte', 'luna', 'astronauta', 'telescopio', 'agujero negro', 'descubr', 'primer', 'récord', 'cometa', 'asteroide', 'eclipse', 'exoplaneta', 'galaxia',
+  'sol ', 'solar', 'estrella', 'planeta', 'universo', 'misión', 'nave', 'estación espacial', 'nebulosa', 'supernova', 'lluvia de estrellas'];
 const NOISE = ['starlink group', 'contract', 'funding', 'raises', 'acquire', 'acquisition', 'earnings', 'revenue', 'stock', 'ipo', 'series a', 'series b', 'investor',
   'partnership', 'podcast', 'roundup', 'this week in', 'weekly', 'job', 'hiring', 'webinar', 'conference', 'award', 'sponsor', 'deal', 'merger', 'layoff', 'quarter'];
 const OFFICIAL = ['NASA', 'ESA', 'JPL', 'European Space Agency', 'SINC'];
@@ -66,13 +76,13 @@ const hit = (t, w) => (w.endsWith(' ') ? wholeWord(t, w) : startsWord(t, w)); //
 export function newsScore(n) {
   const t = `${n.titulo} ${n.resumen || ''}`.toLowerCase(), title = n.titulo.toLowerCase();
   if (NOISE.some(w => wholeWord(title, w))) return 0;
-  if (n.idioma === 'es' && !SPACE_ES.some(w => hit(t, w))) return 0; // SINC publica de toda la ciencia: solo espacio
+  if (n.idioma === 'es' && !n.espacio && !SPACE_ES.some(w => hit(t, w))) return 0; // fuentes de ciencia general: solo espacio
   let s = 0, inTitle = 0;
   for (const w of MAJOR) if (hit(title, w)) { s += 2; inTitle++; } else if (hit(t, w)) s += 1;
-  if (!inTitle && !n.destacado && n.idioma !== 'es') return 0; // el titular debe hablar de espacio (fuera fotos de la Tierra, selfis…)
+  if (!inTitle && !n.destacado && !n.espacio && n.idioma !== 'es') return 0; // el titular debe hablar de espacio (fuera fotos de la Tierra, selfis…)
   if (n.destacado) s += 3;
   if (OFFICIAL.some(o => (n.fuente || '').includes(o))) s += 1;
-  if (n.idioma === 'es') s += 3; // SINC: agencia científica pública; sus noticias de espacio (ya filtradas arriba) entran todas
+  if (n.idioma === 'es') s += 2; // preferimos noticias en español
   return s;
 }
 // Palabras significativas de un titular (para detectar la misma noticia contada por dos webs)
@@ -100,19 +110,44 @@ export function mapSnapi(json) {
   return (json.results || []).map(a => ({ titulo: a.title, resumen: (a.summary || '').slice(0, 280), url: a.url, imagen: a.image_url || null,
     fuente: a.news_site || '', fecha: a.published_at, destacado: !!a.featured, idioma: 'en' }));
 }
-export function parseRssItems(xml, fuente) {
+export function parseRssItems(xml, fuente, espacio = false) {
   return [...xml.matchAll(/<item[\s>]([\s\S]*?)<\/item>/g)].map(([, it]) => {
     const enc = (it.match(/<enclosure[^>]+url="([^"]+)"/) || [])[1] || (it.match(/<media:content[^>]+url="([^"]+)"/) || [])[1] || null;
     const desc = tag(it, 'description').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const cats = [...it.matchAll(/<category[^>]*>([\s\S]*?)<\/category>/g)].map(m => decode(m[1]).trim()).join(' ');
     return { titulo: tag(it, 'title'), resumen: (desc + ' ' + cats).slice(0, 280), url: tag(it, 'link'), imagen: enc,
-      fuente, fecha: new Date(tag(it, 'pubDate') || tag(it, 'dc:date')).toISOString(), destacado: false, idioma: 'es' };
+      fuente, fecha: new Date(tag(it, 'pubDate') || tag(it, 'dc:date') || Date.now()).toISOString(), destacado: false, idioma: 'es', espacio };
   }).filter(n => n.titulo && n.url);
 }
 // Encuentra los RSS de una web a partir de su página principal (<link rel="alternate" type="application/rss+xml">)
 export function discoverFeeds(html, base) {
   return [...html.matchAll(/<link[^>]+type="application\/(?:rss|atom)\+xml"[^>]*>/gi)]
     .map(([l]) => (l.match(/href="([^"]+)"/) || [])[1]).filter(Boolean).map(h => new URL(h.replace(/&amp;/g, '&'), base).href);
+}
+// Enlaces de la página que parecen llevar a RSS (p. ej. «RSS» en el pie de página)
+export function rssLinks(html, base) {
+  const out = new Set();
+  for (const [, href, text] of html.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const t = text.replace(/<[^>]+>/g, ' ');
+    if (/rss|feed|\.xml/i.test(href) || /\brss\b/i.test(t)) { try { out.add(new URL(href.replace(/&amp;/g, '&'), base).href); } catch { } }
+  }
+  return [...out];
+}
+const looksLikeFeed = body => /<(rss|feed|rdf:RDF)[\s>]/i.test(body.slice(0, 2000));
+// Búsqueda de RSS en dos niveles: portada → páginas «RSS» → feeds reales. Devuelve [{url, xml}]
+export async function findFeeds(home) {
+  const found = new Map(), tried = new Set();
+  const visit = async (url, depth) => {
+    if (tried.has(url) || tried.size > 25) return;
+    tried.add(url);
+    let body; try { body = await get(url); } catch { return; }
+    if (looksLikeFeed(body)) { found.set(url, body); return; }
+    if (depth >= 2) return;
+    for (const f of [...discoverFeeds(body, url), ...rssLinks(body, url)]) await visit(f, depth + 1);
+  };
+  await visit(home, 0);
+  for (const guess of ['rss', 'RSS', 'rss.xml', 'feed']) if (!found.size) await visit(new URL(guess, home).href, 1);
+  return [...found].map(([url, xml]) => ({ url, xml }));
 }
 
 export function videosByObject(videos) {
@@ -155,14 +190,19 @@ async function main() {
     const j = await get(`https://api.spaceflightnewsapi.net/v4/articles/?limit=80&ordering=-published_at&published_at_gte=${since}`, 'json');
     const items = mapSnapi(j); news.push(...items); console.log(`Spaceflight News: ${items.length} artículos`);
   } catch (e) { console.warn('Spaceflight News: no disponible →', e.message); }
-  try {
-    const home = 'https://www.agenciasinc.es/';
-    let feeds = discoverFeeds(await get(home), home);
-    const pref = feeds.filter(f => /espacio|astro|cosmo|universo/i.test(f));
-    feeds = (pref.length ? pref : feeds).slice(0, 3);
-    console.log('SINC: RSS encontrados →', feeds.join(' , ') || 'ninguno');
-    for (const f of feeds) { const items = parseRssItems(await get(f), 'Agencia SINC'); news.push(...items); console.log(`SINC: ${items.length} noticias en ${f}`); }
-  } catch (e) { console.warn('SINC: no disponible →', e.message); }
+  for (const src of ES_SOURCES) { // fuentes en español: cada una por separado
+    try {
+      let feeds = [];
+      for (const url of src.feeds) { try { const xml = await get(url); if (looksLikeFeed(xml)) feeds.push({ url, xml }); } catch { } }
+      if (!feeds.length) {
+        feeds = await findFeeds(src.home);
+        const pref = feeds.filter(f => /espacio|astro|cosmo|universo|space/i.test(f.url));
+        feeds = (pref.length ? pref : feeds).slice(0, 3);
+      }
+      if (!feeds.length) { console.log(`${src.nombre}: sin RSS disponible`); continue; }
+      for (const f of feeds) { const items = parseRssItems(f.xml, src.nombre, src.espacio); news.push(...items); console.log(`${src.nombre}: ${items.length} noticias en ${f.url}`); }
+    } catch (e) { console.warn(`${src.nombre}: no disponible →`, e.message); }
+  }
   if (news.length) {
     out.noticias = pickNews(news);
     console.log(`Noticias relevantes seleccionadas: ${out.noticias.length}`);
