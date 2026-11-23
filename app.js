@@ -19,7 +19,6 @@ const LOGO_CIRCLE = 0.80;
 
 const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 const R = { dome: 950, ground: 930, stars: 900, lines: 895, art: 890, dso: 870, meteor: 860, body: 500, iss: 450 };
-const SKY_LIMIT = [3.5, 5.0, 6.5]; // magnitud límite: ciudad, pueblo, campo
 
 // ───────────── Textos ─────────────
 const I18N = {
@@ -46,7 +45,7 @@ const I18N = {
     activeShower: 'Lluvia activa', nextShower: 'Próxima', peak: 'pico', radiantBelow: 'radiante bajo el horizonte',
     sporadic: 'Solo meteoros esporádicos esta noche',
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
-    camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
+    manualMode: 'Modo manual · toca 🧭 Seguir el móvil para volver', camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
     hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
@@ -55,7 +54,8 @@ const I18N = {
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
       ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo',
       skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)', realDay: 'Día realista (oculta las estrellas con luz solar)' },
-    skyQ: 'Calidad del cielo', skyQOpts: ['🏙️ Ciudad', '🏘️ Pueblo', '🌲 Campo'],
+    envTitle: 'Entorno (paisaje y contaminación lumínica)', envOpts: { auto: '🤖 Automático', city: '🏙️ Ciudad', town: '🏘️ Pueblo', country: '🌲 Campo' },
+    envDetected: 'Detectado', envDetecting: 'Detectando el entorno…', envNames: { city: 'ciudad', town: 'pueblo', country: 'campo / bosque' }, inhabitants: 'hab.', farFromTown: 'lejos del núcleo urbano', home: '⟲ Vista inicial',
     min: 'min', today: 'hoy', tomorrow: 'mañana',
   },
   en: {
@@ -81,7 +81,7 @@ const I18N = {
     activeShower: 'Active shower', nextShower: 'Next', peak: 'peak', radiantBelow: 'radiant below horizon',
     sporadic: 'Only sporadic meteors tonight',
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
-    camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
+    manualMode: 'Manual mode · tap 🧭 Follow phone to go back', camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
     hintPlace: 'Tap 📍 to see the sky from your location', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
@@ -90,7 +90,8 @@ const I18N = {
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
       ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight',
       skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)', realDay: 'Realistic daytime (hide stars in sunlight)' },
-    skyQ: 'Sky quality', skyQOpts: ['🏙️ City', '🏘️ Town', '🌲 Countryside'],
+    envTitle: 'Surroundings (landscape & light pollution)', envOpts: { auto: '🤖 Automatic', city: '🏙️ City', town: '🏘️ Town', country: '🌲 Countryside' },
+    envDetected: 'Detected', envDetecting: 'Detecting surroundings…', envNames: { city: 'city', town: 'town', country: 'countryside / forest' }, inhabitants: 'people', farFromTown: 'away from the town centre', home: '⟲ Initial view',
     min: 'min', today: 'today', tomorrow: 'tomorrow',
   },
 };
@@ -153,14 +154,14 @@ const SHOWERS = [
 ];
 
 const PRESET_CITIES = [
-  { name: 'Ciudad Real, España', lat: 38.9848, lon: -3.9274, tz: 'Europe/Madrid' },
-  { name: 'Madrid, España', lat: 40.4168, lon: -3.7038, tz: 'Europe/Madrid' },
-  { name: 'Ciudad de México', lat: 19.4326, lon: -99.1332, tz: 'America/Mexico_City' },
-  { name: 'Buenos Aires', lat: -34.6037, lon: -58.3816, tz: 'America/Argentina/Buenos_Aires' },
-  { name: 'Bogotá', lat: 4.711, lon: -74.0721, tz: 'America/Bogota' },
-  { name: 'Lima', lat: -12.0464, lon: -77.0428, tz: 'America/Lima' },
-  { name: 'Santiago de Chile', lat: -33.4489, lon: -70.6693, tz: 'America/Santiago' },
-  { name: 'New York', lat: 40.7128, lon: -74.006, tz: 'America/New_York' },
+  { name: 'Ciudad Real, España', pop: 75000, lat: 38.9848, lon: -3.9274, tz: 'Europe/Madrid' },
+  { name: 'Madrid, España', pop: 3300000, lat: 40.4168, lon: -3.7038, tz: 'Europe/Madrid' },
+  { name: 'Ciudad de México', pop: 9200000, lat: 19.4326, lon: -99.1332, tz: 'America/Mexico_City' },
+  { name: 'Buenos Aires', pop: 3100000, lat: -34.6037, lon: -58.3816, tz: 'America/Argentina/Buenos_Aires' },
+  { name: 'Bogotá', pop: 7400000, lat: 4.711, lon: -74.0721, tz: 'America/Bogota' },
+  { name: 'Lima', pop: 9700000, lat: -12.0464, lon: -77.0428, tz: 'America/Lima' },
+  { name: 'Santiago de Chile', pop: 6300000, lat: -33.4489, lon: -70.6693, tz: 'America/Santiago' },
+  { name: 'New York', pop: 8300000, lat: 40.7128, lon: -74.006, tz: 'America/New_York' },
 ];
 
 // ───────────── Estado y persistencia ─────────────
@@ -168,7 +169,7 @@ const STORE_KEY = 'dc_planetario_v2';
 const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; } })();
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ lang: S.lang, place: S.place, layers: S.layers, skyQ: S.skyQ, skyQSet: S.skyQSet, red: S.red, tle: S.tleCache, hinted: true }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ lang: S.lang, place: S.place, layers: S.layers, envMode: S.envMode, red: S.red, tle: S.tleCache, hinted: true }));
   } catch { /* almacenamiento no disponible */ }
 }
 const params = new URLSearchParams(location.search);
@@ -180,8 +181,7 @@ const S = {
   lang: params.get('lang') || saved.lang || ((navigator.language || 'es').startsWith('es') ? 'es' : 'en'),
   place: urlPlace || saved.place || PRESET_CITIES[0],
   layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, realDay: false }, saved.layers),
-  skyQ: saved.skyQSet ? saved.skyQ : 2,
-  skyQSet: !!saved.skyQSet,
+  envMode: saved.envMode || 'auto', // auto | city | town | country
   red: !!saved.red,
   tleCache: saved.tle || null,
   offset: params.has('t') && !isNaN(Date.parse(params.get('t'))) ? Date.parse(params.get('t')) - Date.now() : 0,
@@ -296,7 +296,13 @@ horizonGroup.add(ground);
 }
 // ── Silueta de ciudad en el horizonte (opaca: tapa lo que hay detrás, como en la realidad) ──
 const SKY_TOP_DEG = 12, SKY_BOTTOM_DEG = -1.5, SKY_HS = 1.5; // SKY_HS: escala de altura de los edificios
-function makeSkylineTexture() {
+// Entornos: paisaje del horizonte, contaminación lumínica (magnitud límite) y color del cielo nocturno
+const ENV = {
+  city: { limit: 4.5, zen: '#070b18', hor: '#3d3a55' },    // resplandor anaranjado-violeta de la ciudad
+  town: { limit: 5.5, zen: '#03060f', hor: '#1f2b48' },
+  country: { limit: 6.5, zen: '#01030a', hor: '#111a30' },  // cielo oscuro de campo
+};
+function makeSkylineTexture(kind = 'city') {
   const W = 4096, H = 512, c = document.createElement('canvas');
   c.width = W; c.height = H;
   const ctx = c.getContext('2d');
@@ -309,6 +315,66 @@ function makeSkylineTexture() {
   ctx.fillStyle = sil;
   ctx.fillRect(0, base - 2, W, H - base + 2);
   const block = (x, w, hDeg) => { const y = yOf(hDeg); ctx.fillRect(x, y, w, base - y + 2); return y; };
+  // Perfil continuo (colinas, montañas): hFn(x) en grados
+  const ridge = (color, hFn) => {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, base + 2);
+    for (let px = 0; px <= W; px += 8) ctx.lineTo(px, yOf(hFn(px)));
+    ctx.lineTo(W, base + 2); ctx.closePath(); ctx.fill(); ctx.fillStyle = sil;
+  };
+  const TAU = Math.PI * 2, per = k => (px) => Math.sin(px / W * TAU * k); // senos periódicos: el paisaje empalma sin cortes
+  const conifer = (x, h) => { // pino/abeto de tres pisos
+    const w = (base - yOf(h)) * 0.42;
+    for (let t = 0; t < 3; t++) { const yb = yOf(h * (0.15 + t * 0.27)), yt = yOf(h * (0.55 + t * 0.22)); ctx.beginPath(); ctx.moveTo(x - w * (1 - t * 0.25), yb); ctx.lineTo(x, yt - (t === 2 ? (base - yOf(h)) * 0.25 : 0)); ctx.lineTo(x + w * (1 - t * 0.25), yb); ctx.fill(); }
+    ctx.fillRect(x - 2, yOf(h * 0.2), 4, base - yOf(h * 0.2) + 2);
+  };
+  const leafy = (x, h) => { // árbol de copa redonda
+    const R = (base - yOf(h)) * 0.32; ctx.fillRect(x - 3, yOf(h * 0.5), 6, base);
+    for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(x + (rnd() - 0.5) * R * 1.3, yOf(h) + R + (rnd() - 0.3) * R * 0.8, R * (0.6 + rnd() * 0.4), 0, TAU); ctx.fill(); }
+  };
+  const cypress = (x, h) => { const hp = base - yOf(h); ctx.beginPath(); ctx.ellipse(x, base - hp / 2, Math.max(5, hp * 0.11), hp / 2, 0, 0, TAU); ctx.fill(); };
+  const house = (x, w, h) => { // casa baja con tejado a dos aguas
+    const y = block(x, w, h); ctx.beginPath(); ctx.moveTo(x - 4, y + 1); ctx.lineTo(x + w / 2, y - 8 - rnd() * 8); ctx.lineTo(x + w + 4, y + 1); ctx.fill();
+    if (rnd() < 0.25) ctx.fillRect(x + w * 0.25, y - 14, 5, 12);
+    return y;
+  };
+  if (kind === 'town') {
+    ridge('#0a1322', px => 1.9 + 0.7 * per(3)(px) + 0.4 * per(7)(px + 900) + 0.2 * per(13)(px));
+    let x = 0;
+    while (x < W) {
+      const r = rnd();
+      if (r < 0.5) { // grupo de casas
+        const n = 3 + Math.floor(rnd() * 6);
+        for (let i = 0; i < n && x < W; i++) { const w = 34 + rnd() * 40, y = house(x, w, 0.65 + rnd() * 0.6); lights.push([x, w, y]); x += w + (rnd() < 0.3 ? 6 : 1); }
+      } else if (r < 0.62) { // iglesia con campanario
+        const nave = 100 + rnd() * 50, th = 3.2 + rnd() * 0.8, tw = 34;
+        house(x, nave, 1.3);
+        const tx = x + nave - tw / 2, ty = yOf(th);
+        ctx.fillRect(tx, ty, tw, base - ty);
+        ctx.beginPath(); ctx.moveTo(tx - 3, ty); ctx.lineTo(tx + tw / 2, yOf(th + 0.55)); ctx.lineTo(tx + tw + 3, ty); ctx.fill();
+        ctx.fillRect(tx + tw / 2 - 1.5, yOf(th + 0.85), 3, yOf(th + 0.55) - yOf(th + 0.85));
+        ctx.fillRect(tx + tw / 2 - 6, yOf(th + 0.75), 12, 3);
+        ctx.clearRect(tx + 7, ty + 8, tw - 14, 12); // hueco de las campanas
+        lights.push(['warm', tx + tw / 2, ty + 30]);
+        x += nave + tw;
+      } else if (r < 0.85) { // olivos y cipreses
+        const w = 60 + rnd() * 120;
+        for (let i = 8; i < w; i += 16 + rnd() * 14) rnd() < 0.3 ? cypress(x + i, 2.0 + rnd() * 1.0) : leafy(x + i, 0.8 + rnd() * 0.5);
+        x += w;
+      } else x += 80 + rnd() * 160; // campo abierto
+    }
+  } else if (kind === 'country') {
+    ridge('#0b1424', px => 3.4 + 1.3 * per(2)(px + 400) + 0.7 * per(5)(px) + 0.35 * per(11)(px + 1500) + 0.15 * per(23)(px)); // montañas lejanas
+    ridge('#060b15', px => 1.6 + 0.6 * per(3)(px + 2000) + 0.3 * per(9)(px));                                                // colinas
+    let x = 0;
+    while (x < W) {
+      if (rnd() < 0.07) { x += 60 + rnd() * 140; continue; } // claro del bosque
+      if (rnd() < 0.006) { const w = 56, y = house(x, w, 0.8); lights.push(['warm', x + w * 0.35, y + 12]); x += w + 6; continue; } // casa de campo aislada
+      const h = 1.0 + rnd() * 1.6;
+      rnd() < 0.7 ? conifer(x, h) : leafy(x, h * 0.8);
+      x += 11 + rnd() * 18;
+    }
+    ctx.fillRect(0, yOf(0.5), W, base);
+  } else {
   let x = 0;
   while (x < W) {
     const r = rnd();
@@ -341,12 +407,15 @@ function makeSkylineTexture() {
       x += w;
     }
   }
+  }
   // Ventanas encendidas (pocas y tenues) y balizas rojas
+  const winP = kind === 'city' ? 0.09 : 0.05;
   for (const L of lights) {
     if (L[0] === 'red') { ctx.fillStyle = '#ff3b30'; ctx.fillRect(L[1] - 2, L[2] - 2, 4, 4); continue; }
+    if (L[0] === 'warm') { ctx.fillStyle = 'rgba(255,190,110,0.8)'; ctx.fillRect(L[1] - 2, L[2] - 2, 5, 5); continue; }
     const [bx, bw, by] = L;
     for (let wy = by + 8; wy < base - 6; wy += 9) for (let wx = bx + 5; wx < bx + bw - 6; wx += 8)
-      if (rnd() < 0.09) { ctx.fillStyle = rnd() < 0.7 ? 'rgba(255,196,120,0.55)' : 'rgba(180,215,255,0.45)'; ctx.fillRect(wx, wy, 3, 4); }
+      if (rnd() < winP) { ctx.fillStyle = rnd() < 0.7 ? 'rgba(255,196,120,0.55)' : 'rgba(180,215,255,0.45)'; ctx.fillRect(wx, wy, 3, 4); }
   }
   ctx.fillStyle = sil;
   const tex = new THREE.CanvasTexture(c);
@@ -360,11 +429,20 @@ const skylineGroup = new THREE.Group();
 horizonGroup.add(skylineGroup);
 {
   const r = R.ground - 15, yTop = r * Math.tan(SKY_TOP_DEG * D2R), yBot = r * Math.tan(SKY_BOTTOM_DEG * D2R);
-  const city = new THREE.Mesh(new THREE.CylinderGeometry(r, r, yTop - yBot, 180, 1, true),
-    new THREE.MeshBasicMaterial({ map: makeSkylineTexture(), transparent: true, side: THREE.BackSide, depthWrite: false, depthTest: false }));
-  city.position.y = (yTop + yBot) / 2;
-  city.renderOrder = 52;
-  skylineGroup.add(city);
+  skylineGroup.userData.mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, yTop - yBot, 180, 1, true),
+    new THREE.MeshBasicMaterial({ transparent: true, side: THREE.BackSide, depthWrite: false, depthTest: false }));
+  skylineGroup.userData.mesh.position.y = (yTop + yBot) / 2;
+  skylineGroup.userData.mesh.renderOrder = 52;
+  skylineGroup.add(skylineGroup.userData.mesh);
+}
+let skylineKind = null;
+function setSkyline(kind) {
+  if (kind === skylineKind) return;
+  skylineKind = kind;
+  const mat = skylineGroup.userData.mesh.material;
+  mat.map?.dispose();
+  mat.map = makeSkylineTexture(kind);
+  mat.needsUpdate = true;
 }
 
 // ── Rosa de los vientos en el cenit con el logo de DarwinCaos ──
@@ -1174,6 +1252,14 @@ canvas.addEventListener('pointermove', e => {
   } else if (gesture.kind === 'drag') {
     const dx = e.clientX - gesture.x, dy = e.clientY - gesture.y;
     if (Math.hypot(dx, dy) > 6) gesture.moved = true;
+    if (gesture.moved && (S.sensor || S.sensorPending) && !S.camera) { // el usuario quiere mover el cielo a mano
+      const wasPending = S.sensorPending;
+      S.sensorPending = false;
+      if (S.sensor) setSensor(false); else $('btnSensor').classList.remove('active');
+      Object.assign(gesture, { x: e.clientX, y: e.clientY, az: S.viewAz, alt: S.viewAlt });
+      if (!wasPending) toast(T().manualMode);
+      return;
+    }
     if (!S.sensor && gesture.moved) {
       const k = S.fov / innerHeight;
       S.viewAz = (gesture.az - dx * k + 360) % 360;
@@ -1184,7 +1270,8 @@ canvas.addEventListener('pointermove', e => {
 const endPtr = e => {
   if (!ptrs.has(e.pointerId)) return;
   ptrs.delete(e.pointerId);
-  if (gesture?.kind === 'drag' && !gesture.moved && performance.now() - gesture.t < 400) pick(e.clientX, e.clientY);
+  if (gesture?.kind === 'drag' && !gesture.moved && S.sensorPending) setSensor(true); // iOS: primer toque = permiso
+  else if (gesture?.kind === 'drag' && !gesture.moved && performance.now() - gesture.t < 400) pick(e.clientX, e.clientY);
   if (ptrs.size === 0) gesture = null;
 };
 canvas.addEventListener('pointerup', endPtr);
@@ -1200,6 +1287,13 @@ function setFov(f) {
   updateScreenSprites();
 }
 $('zoomBtn').onclick = () => setFov(62);
+// Volver a la vista inicial tras mover el cielo o hacer zoom
+$('homeBtn').onclick = () => { S.tracking = null; S.targetAz = S.home.az; S.targetAlt = S.home.alt; setFov(62); };
+function updateHomeBtn() {
+  if (!S.home) return;
+  const moved = Math.abs(((S.viewAz - S.home.az + 540) % 360) - 180) > 6 || Math.abs(S.viewAlt - S.home.alt) > 6 || Math.abs(S.fov - 62) > 1;
+  $('homeBtn').classList.toggle('show', moved && !S.sensor && !S.selected && S.targetAz == null);
+}
 $('zoomIn').onclick = () => setFov(S.fov / 1.8);
 $('zoomOut').onclick = () => setFov(S.fov * 1.8);
 
@@ -1208,13 +1302,56 @@ const sensorQ = new THREE.Quaternion();
 let sensorReady = false, compassOffset = null;
 const qBack = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
 const zee = new THREE.Vector3(0, 0, 1), euler = new THREE.Euler(), qScreen = new THREE.Quaternion();
+// Android/Chrome: «AbsoluteOrientationSensor» da directamente un cuaternión a 60 Hz respecto al Norte.
+// Sin ángulos de Euler no hay bloqueo de cardán al sostener el móvil vertical (la causa de los «atascos»).
+const qENUtoThree = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2); // Este-Norte-Arriba → escena
+const qReading = new THREE.Quaternion();
+let quatSensor = null, usingQuatSensor = false;
+function startQuatSensor() {
+  return new Promise(resolve => {
+    if (!('AbsoluteOrientationSensor' in window)) return resolve(false);
+    let done = false;
+    const finish = ok => { if (!done) { done = true; resolve(ok); } };
+    try {
+      if (!quatSensor) {
+        quatSensor = new AbsoluteOrientationSensor({ frequency: 60, referenceFrame: 'screen' });
+        quatSensor.addEventListener('reading', () => {
+          const q = quatSensor.quaternion;
+          if (!q) return;
+          qReading.set(q[0], q[1], q[2], q[3]);
+          sensorQ.copy(qENUtoThree).multiply(qReading); // la cámara mira por la parte trasera del móvil (−z del dispositivo)
+          usingQuatSensor = sensorReady = true;
+          finish(true);
+        });
+        quatSensor.addEventListener('error', () => { usingQuatSensor = false; finish(false); });
+      }
+      quatSensor.start();
+      setTimeout(() => finish(usingQuatSensor), 1200);
+    } catch { finish(false); }
+  });
+}
+let compassSamples = 0, compassOutliers = 0, lastOrient = null;
 function onOrientation(e) {
-  if (e.alpha == null) return;
+  if (usingQuatSensor || e.alpha == null) return;
+  lastOrient = e;
   let alpha = e.alpha;
-  if (typeof e.webkitCompassHeading === 'number') {
-    const off = (360 - e.webkitCompassHeading) - e.alpha;
-    compassOffset = compassOffset == null ? off : compassOffset + (((off - compassOffset + 540) % 360) - 180) * 0.1;
-    alpha = e.alpha + compassOffset;
+  if (typeof e.webkitCompassHeading === 'number') { // iOS: alpha es relativo; la brújula da el Norte real
+    const h = e.webkitCompassHeading, acc = e.webkitCompassAccuracy;
+    // iOS envía −1 mientras la brújula no está calibrada: esas lecturas no valen
+    if (h >= 0 && !(acc < 0) && !(acc > 45)) {
+      const off = (((360 - h - e.alpha) % 360) + 360) % 360;
+      if (compassOffset == null) compassOffset = off;
+      else {
+        const diff = ((off - compassOffset + 540) % 360) - 180;
+        if (Math.abs(diff) > 25) { // lectura suelta muy distinta: la ignoramos salvo que persista (recalibración real)
+          if (++compassOutliers > 45) { compassOffset = off; compassOutliers = 0; }
+        } else {
+          compassOutliers = 0;
+          compassOffset += diff * (compassSamples++ < 30 ? 0.15 : 0.03); // rápido al principio, luego muy suave
+        }
+      }
+    }
+    alpha = e.alpha + (compassOffset ?? 0);
   }
   const orient = (screen.orientation?.angle ?? window.orientation ?? 0) * D2R;
   euler.set(e.beta * D2R, alpha * D2R, -e.gamma * D2R, 'YXZ');
@@ -1223,11 +1360,12 @@ function onOrientation(e) {
 }
 let sensorBound = false;
 async function enableSensor() {
-  if (typeof DeviceOrientationEvent === 'undefined') return false;
+  if (typeof DeviceOrientationEvent === 'undefined' && !('AbsoluteOrientationSensor' in window)) return false;
   if (typeof DeviceOrientationEvent.requestPermission === 'function') {
     // iOS (y Chrome reciente) piden permiso. Solo abandonamos si el usuario lo deniega; si no llegan datos, setSensor lo detecta.
     try { if ((await DeviceOrientationEvent.requestPermission()) === 'denied') return false; } catch { /* seguimos intentándolo */ }
   }
+  if (await startQuatSensor()) return true; // Android: sensor fino por cuaterniones
   if (!sensorBound) {
     sensorBound = true;
     // Android da el norte real en «deviceorientationabsolute»; iOS en «deviceorientation» + webkitCompassHeading.
@@ -1238,20 +1376,44 @@ async function enableSensor() {
   return true;
 }
 let stream = null;
-async function setSensor(on) {
-  if (on && !(await enableSensor())) { toast(T().sensorFail); on = false; }
+async function setSensor(on, silent = false) {
+  S.sensorPending = false;
+  if (on && !(await enableSensor())) { if (!silent) toast(T().sensorFail); on = false; }
   if (!on && S.camera) await setCamera(false);
   S.sensor = on;
+  if (!on && quatSensor) { try { quatSensor.stop(); } catch { } usingQuatSensor = sensorReady = false; }
   if (!on) { const d = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), aa = vecToAltAz(d); S.viewAz = aa.az; S.viewAlt = aa.alt; }
   $('btnSensor').classList.toggle('active', on);
-  setTimeout(() => { if (S.sensor && !sensorReady) { toast(T().sensorFail); setSensor(false); } }, 2500);
+  setTimeout(() => { if (S.sensor && !sensorReady) { if (!silent) toast(T().sensorFail); setSensor(false); } }, 4000);
+}
+// Al entrar, «Seguir el móvil» viene activado en móviles y tabletas.
+// En iPhone el permiso exige un toque: el botón queda marcado y el primer toque en el cielo lo activa.
+async function autoStartSensor() {
+  if (!matchMedia('(pointer: coarse)').matches) return; // ordenador: sin sensores, modo manual
+  // ¿Llegan ya datos de orientación sin pedir permiso? (Android) → activamos directamente
+  const flowing = await new Promise(res => {
+    const h = e => { if (e.alpha != null) { cleanup(); res(true); } };
+    const cleanup = () => { removeEventListener('deviceorientation', h); removeEventListener('deviceorientationabsolute', h); };
+    addEventListener('deviceorientation', h); addEventListener('deviceorientationabsolute', h);
+    setTimeout(() => { cleanup(); res(false); }, 700);
+  });
+  if (flowing || 'AbsoluteOrientationSensor' in window) { S.sensorPending = false; return setSensor(true, true); }
+  const needsTap = typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
+  if (needsTap) {
+    let granted = false;
+    try { granted = (await DeviceOrientationEvent.requestPermission()) === 'granted'; } catch { /* iOS: hace falta un toque */ }
+    if (!granted) { S.sensorPending = true; $('btnSensor').classList.add('active'); return; }
+  }
+  setSensor(true, true);
 }
 async function setCamera(on) {
   if (on) {
+    // iOS solo concede el permiso de sensores dentro del toque: lo pedimos ANTES que la cámara
+    const sensorReq = S.sensor ? null : setSensor(true);
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
       $('cameraFeed').srcObject = stream;
-      if (!S.sensor) await setSensor(true);
+      await sensorReq;
       setFov(62);
     } catch { toast(T().camFail); on = false; }
   } else if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
@@ -1261,7 +1423,7 @@ async function setCamera(on) {
   applyLayers();
   $('btnCamera').classList.toggle('active', on);
 }
-$('btnSensor').onclick = () => setSensor(!S.sensor);
+$('btnSensor').onclick = () => setSensor(S.sensorPending ? true : !S.sensor); // marcado pero pendiente (iOS) → activar
 $('btnCamera').onclick = () => setCamera(!S.camera);
 
 // ───────────── Interfaz ─────────────
@@ -1309,19 +1471,20 @@ function applyLayers() {
   starNameGroup.visible = L.starNames; dsoGroup.visible = L.deep; eclipticGroup.visible = L.ecliptic; gridGroup.visible = L.grid;
   meteorGroup.visible = L.meteors;
   skylineGroup.visible = L.skyline && !S.camera; roseGroup.visible = L.rose;
-  starUniforms.uLimit.value = SKY_LIMIT[S.skyQ];
 }
 function renderLayers() {
   const list = $('layerList'), t = T();
   list.replaceChildren();
-  const q = document.createElement('div'); q.className = 'mini'; q.textContent = t.skyQ;
-  const seg = document.createElement('div'); seg.className = 'seg';
-  t.skyQOpts.forEach((label, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.skyQ === i ? ' on' : ''); b.textContent = label;
-    b.onclick = () => { S.skyQ = i; S.skyQSet = true; applyLayers(); persist(); renderLayers(); };
+  const q = document.createElement('div'); q.className = 'mini'; q.textContent = t.envTitle;
+  const seg = document.createElement('div'); seg.className = 'chips';
+  Object.entries(t.envOpts).forEach(([key, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.envMode === key ? ' on' : ''); b.textContent = label;
+    b.onclick = () => { S.envMode = key; applyEnvironment(); persist(); renderLayers(); };
     seg.append(b);
   });
-  list.append(q, seg);
+  const note = document.createElement('p'); note.className = 'note';
+  note.textContent = S.place.env ? `${t.envDetected}: ${t.envNames[S.place.env]}${S.place.envInfo ? ` (${S.place.envInfo})` : ''}` : t.envDetecting;
+  list.append(q, seg, note);
   Object.entries(t.L).forEach(([key, label]) => {
     const row = document.createElement('div'); row.className = 'row';
     const name = document.createElement('span'); name.className = 'name'; name.textContent = label;
@@ -1419,7 +1582,8 @@ function renderCities() {
   });
 }
 function setPlace(p) {
-  S.place = { name: p.name, lat: p.lat, lon: p.lon, tz: p.tz };
+  S.place = { name: p.name, lat: p.lat, lon: p.lon, tz: p.tz, pop: p.pop, gps: p.gps, env: p.env, envInfo: p.envInfo };
+  if (!S.place.env) detectEnvironment(S.place);
   observer = new A.Observer(p.lat, p.lon, 0);
   $('placeLabel').textContent = p.name;
   ISS.passes = null;
@@ -1432,7 +1596,7 @@ async function searchCity(q) {
   const btn = $('cityBtn'); btn.textContent = '…';
   try {
     const data = JSON.parse(await fetchText(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=${S.lang}&format=json`));
-    cityResults = (data.results || []).map(r => ({ name: [...new Set([r.name, r.admin1, r.country].filter(Boolean))].join(', '), lat: r.latitude, lon: r.longitude, tz: r.timezone }));
+    cityResults = (data.results || []).map(r => ({ name: [...new Set([r.name, r.admin1, r.country].filter(Boolean))].join(', '), lat: r.latitude, lon: r.longitude, tz: r.timezone, pop: r.population || 0 }));
     if (cityResults[0]) setPlace(cityResults[0]);
   } catch { /* sin conexión */ }
   btn.textContent = T().search;
@@ -1441,6 +1605,37 @@ async function searchCity(q) {
 $('cityBtn').onclick = () => searchCity($('cityInput').value.trim());
 $('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') searchCity(e.target.value.trim()); });
 // Nombre de la ciudad (y, sin coordenadas, ubicación aproximada por IP) con BigDataCloud, gratis y sin clave.
+// ── Entorno automático ──
+// Clasifica por la población de la localidad y, con GPS, por la distancia a su centro (lejos = campo/bosque).
+const kmBetween = (a, b, c, d) => { const R6 = 6371, p1 = a * D2R, p2 = c * D2R, dl = (d - b) * D2R; return 2 * R6 * Math.asin(Math.sqrt(Math.sin((p2 - p1) / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2)); };
+const envFromPop = pop => (pop >= 30000 ? 'city' : pop >= 1500 ? 'town' : 'country');
+async function detectEnvironment(place) {
+  let env = null, info = '';
+  try {
+    let pop = place.pop, dist = 0;
+    if (!pop || place.gps) { // buscamos la localidad para conocer su población y su centro
+      const q = place.name.split(',')[0].replace(/\(.*\)/, '').trim();
+      const data = JSON.parse(await fetchText(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=${S.lang}&format=json`));
+      const near = (data.results || []).map(r => ({ r, d: kmBetween(place.lat, place.lon, r.latitude, r.longitude) })).filter(x => x.d < 40).sort((a, b) => a.d - b.d)[0];
+      if (near) { pop = near.r.population || 0; dist = near.d; }
+    }
+    if (pop) {
+      env = envFromPop(pop);
+      info = `${fmtNum(pop)} ${T().inhabitants}`;
+      const radius = 1 + Math.sqrt(pop) / 120; // radio aproximado del casco urbano en km
+      if (place.gps && dist > radius * 1.3) { env = 'country'; info += ` · ${T().farFromTown}`; }
+    } else if (place.gps) env = 'country';
+  } catch { /* sin conexión: dejamos el entorno por defecto */ }
+  if (place !== S.place) return; // el usuario cambió de lugar mientras tanto
+  S.place.env = env || 'town';
+  S.place.envInfo = info;
+  persist();
+  applyEnvironment();
+  if ($('modalLayers').classList.contains('open')) renderLayers();
+}
+const currentEnv = () => (S.envMode === 'auto' ? S.place.env || 'town' : S.envMode);
+function applyEnvironment() { setSkyline(currentEnv()); }
+
 async function locate(lat, lon) {
   const q = lat != null ? `latitude=${lat}&longitude=${lon}&` : '';
   const j = JSON.parse(await fetchText(`https://api.bigdatacloud.net/data/reverse-geocode-client?${q}localityLanguage=${S.lang}`));
@@ -1461,8 +1656,9 @@ $('geoBtn').onclick = () => {
   toast(T().locating);
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lon } = pos.coords;
-    setPlace({ name: T().myLocation, lat, lon, tz }); closeModals();
-    try { const r = await locate(lat, lon); if (r.name) setPlace({ name: r.name, lat, lon, tz }); } catch { /* nos quedamos con «Mi ubicación» */ }
+    let name = T().myLocation;
+    try { const r = await locate(lat, lon); if (r.name) name = r.name; } catch { /* nos quedamos con «Mi ubicación» */ }
+    setPlace({ name, lat, lon, tz, gps: true }); closeModals();
     toast(`📍 ${S.place.name}`);
   }, err => useApproxLocation(err.code === 1 ? T().gpsDenied : T().gpsFail + '.'), { enableHighAccuracy: false, timeout: 12000, maximumAge: 600e3 });
 };
@@ -1489,8 +1685,39 @@ $('compass').onclick = () => { // tocar la brújula: mirar al Norte
   S.tracking = null; S.targetAz = 0; S.targetAlt = 12;
 };
 let last = performance.now(), slowTick = 0, focused = null;
+// Si el móvil no llega a ~40 fps, bajamos la resolución para que el movimiento sea fluido
+let perfFrames = 0, perfStart = 0, pixelRatio = renderer.getPixelRatio();
+function adaptQuality(now) {
+  if (!perfStart) perfStart = now;
+  perfFrames++;
+  if (now - perfStart < 2000) return;
+  const fps = perfFrames * 1000 / (now - perfStart);
+  perfFrames = 0; perfStart = now;
+  if (fps < 40 && pixelRatio > 1) {
+    pixelRatio = Math.max(1, pixelRatio - 0.25);
+    renderer.setPixelRatio(pixelRatio);
+    starUniforms.uPx.value = pixelRatio;
+  }
+}
+// Diagnóstico de sensores: añade ?debug=1 a la dirección
+const debugEl = params.has('debug') ? Object.assign(document.body.appendChild(document.createElement('pre')), { id: 'debugBox' }) : null;
+let debugFps = 0, debugT = 0, debugN = 0;
+function updateDebug(now) {
+  debugN++;
+  if (now - debugT < 500) return;
+  debugFps = Math.round(debugN * 1000 / (now - debugT)); debugN = 0; debugT = now;
+  const e = lastOrient, f = v => (v == null ? '—' : (+v).toFixed(1));
+  debugEl.textContent = [
+    `modo: ${usingQuatSensor ? 'cuaternión (AbsoluteOrientationSensor)' : e ? 'deviceorientation' : 'sin datos'} · sensor ${S.sensor ? 'ON' : 'OFF'}`,
+    e ? `alpha ${f(e.alpha)}  beta ${f(e.beta)}  gamma ${f(e.gamma)}  absoluto ${e.absolute}` : '',
+    e && e.webkitCompassHeading !== undefined ? `brújula iOS ${f(e.webkitCompassHeading)}° (precisión ${f(e.webkitCompassAccuracy)}) · corrección ${f(compassOffset)}° · rechazos ${compassOutliers}` : '',
+    `pantalla ${screen.orientation?.angle ?? window.orientation ?? 0}° · ${debugFps} fps · resolución x${pixelRatio}`,
+  ].filter(Boolean).join('\n');
+}
 function frame(now) {
   requestAnimationFrame(frame);
+  if (debugEl) updateDebug(now);
+  if (!document.hidden) adaptQuality(now);
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   const date = simDate();
@@ -1499,7 +1726,7 @@ function frame(now) {
   if (S.layers.iss) updateISS(date); else ISS.group.visible = false;
 
   // Cámara
-  if (S.sensor && sensorReady) camera.quaternion.slerp(sensorQ, 1 - Math.exp(-dt * 15)); // suavizado independiente de los fps
+  if (S.sensor && sensorReady) camera.quaternion.slerp(sensorQ, 1 - Math.exp(-dt * (usingQuatSensor ? 22 : 14))); // suavizado independiente de los fps
   else {
     const tr = S.tracking && S.targetAz == null && entryAltAz(S.tracking);
     if (tr) { S.viewAz = tr.az; S.viewAlt = THREE.MathUtils.clamp(tr.alt, -89, 89); }
@@ -1521,6 +1748,7 @@ function frame(now) {
   const sun = BODIES[0], sunW = sun.holder.getWorldPosition(new THREE.Vector3()).normalize(), sunAlt = Math.asin(sunW.y) * R2D;
   const atm = S.layers.atmosphere;
   const [zen, hor] = skyColorsFor(atm ? sunAlt : -90);
+  { const e = ENV[currentEnv()], k = atm ? THREE.MathUtils.clamp((-sunAlt - 6) / 6, 0, 1) : 1; zen.lerp(new THREE.Color(e.zen), k); hor.lerp(new THREE.Color(e.hor), k); }
   domeMat.uniforms.uZenith.value.copy(zen); domeMat.uniforms.uHorizon.value.copy(hor);
   domeMat.uniforms.uSunDir.value.copy(sunW); domeMat.uniforms.uSunGlow.value = atm ? THREE.MathUtils.clamp((sunAlt + 8) / 10, 0, 1) : 0;
   const realFade = THREE.MathUtils.clamp((-sunAlt - 1) / 11, 0, 1);
@@ -1528,7 +1756,7 @@ function frame(now) {
   const starFade = S.camera || !atm ? 1 : S.layers.realDay ? realFade : Math.max(realFade, 0.9);
   starUniforms.uFade.value = starFade;
   starUniforms.uScale.value = Math.min(2.2, Math.pow(62 / S.fov, 0.3));
-  starUniforms.uLimit.value = SKY_LIMIT[S.skyQ] + Math.log10(62 / S.fov) * 1.5 - (1 - starFade) * 2;
+  starUniforms.uLimit.value = ENV[currentEnv()].limit + Math.log10(62 / S.fov) * 1.5 - (1 - starFade) * 2;
   const lineFade = 0.35 + 0.65 * starFade;
   const artFade = starFade * THREE.MathUtils.clamp((S.fov - 6) / 20, 0, 1); // sin ilustraciones de día ni con mucho zoom
 
@@ -1586,6 +1814,7 @@ function frame(now) {
     altEl.textContent = `${alt >= 0 ? '+' : ''}${alt}°`;
     horEl.textContent = alt >= 0 ? T().above : T().below;
     horEl.className = 'tag ' + (alt >= 0 ? 'above' : 'below');
+    updateHomeBtn();
     timeLabel.textContent = date.toLocaleString(S.lang, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', ...tzOpt() });
     $('timeBtn').classList.toggle('shifted', Math.abs(S.offset) > 60e3);
     if (S.selected && now % 2000 < 260) refreshInfo();
@@ -1637,6 +1866,8 @@ async function init() {
   buildLabels();
   buildCatalog();
   applyLayers();
+  if (!S.place.env) detectEnvironment(S.place);
+  applyEnvironment();
   updateSkyMatrix(simDate(), true);
   updateBodies(simDate(), true);
   setFov(S.fov);
@@ -1645,12 +1876,14 @@ async function init() {
   const start = fromUrl || CATALOG.filter(e => e.kind === 'body' && e.id !== 'sun').map(e => [e, entryAltAz(e)]).filter(([, aa]) => aa.alt > 10).sort((a, b) => b[1].alt - a[1].alt)[0]?.[0];
   const aim = e => { const aa = e && entryAltAz(e); if (aa) { S.viewAz = aa.az; S.viewAlt = THREE.MathUtils.clamp(aa.alt, -30, 70); } };
   aim(start);
+  S.home = { az: S.viewAz, alt: S.viewAlt };
   if (fromUrl) openInfo(fromUrl);
   requestAnimationFrame(frame);
   $('loading').style.opacity = 0;
   setTimeout(() => $('loading').remove(), 600);
   if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1200);
   persist();
+  autoStartSensor();
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita
