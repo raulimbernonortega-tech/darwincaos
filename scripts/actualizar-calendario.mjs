@@ -258,7 +258,12 @@ async function main() {
         feeds = (pref.length ? pref : feeds).slice(0, 3);
       }
       if (!feeds.length) { console.log(`${src.nombre}: sin RSS disponible`); continue; }
-      for (const f of feeds) { const items = parseRssItems(f.xml, src.nombre, src.espacio); news.push(...items); console.log(`${src.nombre}: ${items.length} noticias en ${f.url}`); }
+      for (const f of feeds) {
+        const items = parseRssItems(f.xml, src.nombre, src.espacio); news.push(...items);
+        const recent = items.filter(n => Date.now() - Date.parse(n.fecha) < NEWS_DAYS * 864e5);
+        console.log(`${src.nombre}: ${items.length} noticias en ${f.url} (${recent.length} de los últimos ${NEWS_DAYS} días)`);
+        recent.forEach(n => console.log(`    [${newsScore(n)}] ${n.fecha.slice(0, 10)} ${n.titulo}`));
+      }
     } catch (e) { console.warn(`${src.nombre}: no disponible →`, e.message); }
   }
   if (news.length) {
