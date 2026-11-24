@@ -41,6 +41,22 @@ export function parseYouTubeRss(xml) {
   }).filter(v => v.id);
 }
 
+// ── Lanzamientos relevantes ──
+// Entran: tripulados, suministro a estaciones, Starship/New Glenn/Artemis, ciencia y exploración, primeros vuelos,
+// China destacada (Shenzhou, Mengzhou, Tianzhou, Chang'e, Tianwen…) y todo lo europeo (Ariane, Vega, Miura de PLD Space).
+// Fuera: constelaciones comerciales rutinarias, satélites secretos y cargas desconocidas.
+const LAUNCH_YES = ['crew', 'shenzhou', 'mengzhou', 'soyuz ms', 'gaganyaan', 'axiom', 'ax-', 'polaris', 'progress ms', 'crs-', 'cygnus', 'dream chaser', 'tianzhou', 'htv',
+  'starship', 'new glenn', 'artemis', 'sls', 'orion', "chang'e", 'chang’e', 'tianwen', 'chandrayaan', 'aditya', 'hera', 'psyche', 'europa', 'juice', 'roman', 'plato',
+  'ariane', 'vega', 'miura', 'pld space', 'maiden', 'first flight', 'flight 1', 'test flight', 'xuntian', 'iss', 'tiangong'];
+const LAUNCH_NO = ['starlink', 'oneweb', 'kuiper', 'amazon leo', 'guowang', 'qianfan', 'thousand sails', 'yaogan', 'unknown payload', 'nrol', 'classified', 'sda tranche', 'transporter-', 'bandwagon-'];
+const MISSION_YES = /human|resupply|planetary|astrophys|heliophys|lunar|test flight|space science|interplanetary/i;
+export function launchRelevance(l) {
+  const t = `${l.nombre} ${l.cohete} ${l.proveedor}`.toLowerCase();
+  if (LAUNCH_YES.some(w => t.includes(w)) || MISSION_YES.test(l.tipo || '')) {
+    if (/ariane|vega/i.test(t) || !LAUNCH_NO.some(w => t.includes(w))) return true; // lo europeo entra aunque lleve satélites comerciales
+  }
+  return false;
+}
 export function mapLaunches(json) {
   return (json.results || []).map(l => ({
     nombre: l.name, fecha: l.net, estado: l.status?.abbrev || l.status?.name || '',
@@ -48,9 +64,10 @@ export function mapLaunches(json) {
     cohete: l.rocket?.configuration?.full_name || l.rocket?.configuration?.name || '',
     lugar: l.pad?.location?.name || l.location || '',
     mision: l.mission?.description || '',
+    tipo: l.mission?.type || '',
     imagen: l.image?.thumbnail_url || l.image?.image_url || (typeof l.image === 'string' ? l.image : null),
     enlace: l.vid_urls?.[0]?.url || null,
-  })).filter(l => l.nombre && l.fecha);
+  })).filter(l => l.nombre && l.fecha).map(l => ({ ...l, relevante: launchRelevance(l) }));
 }
 
 // ── Noticias: solo espacio/astronomía y solo relevantes ──
@@ -89,17 +106,36 @@ export function newsScore(n) {
 const STOP = new Set('the a an of to in on for and is are its it from by with at as after near nasa nasas new el la los las de del en un una y que se por con su sus al'.split(' '));
 const words = t => new Set(t.toLowerCase().replace(/[’']s\b/g, '').split(/[^a-z0-9áéíóúüñ]+/).filter(w => w && !STOP.has(w)));
 const sameStory = (a, b) => { const A = words(a), B = words(b); let k = 0; for (const w of A) if (B.has(w)) k++; return k / Math.min(A.size, B.size) >= 0.6; };
+// Misma noticia en dos idiomas: comparten una misión/objeto concreto y (un número o fecha cercana)
+const ENTITIES = ['voyager', 'artemis', 'webb', 'jwst', 'hubble', 'juno', 'juice', 'europa clipper', 'perseverance', 'curiosity', 'ingenuity', 'starship',
+  'new glenn', 'orion', 'shenzhou', 'tianzhou', 'tianwen', "chang'e", 'tiangong', 'bepicolombo', 'psyche', 'osiris', 'hera', 'parker', 'solar orbiter', 'euclid',
+  'gaia', 'plato', 'chandra', 'spherex', 'roman', 'andromeda', 'betelgeuse', 'iss', 'dragon', 'crew-', 'soyuz', 'ariane', 'vega', 'kepler', 'tess', 'cassini', 'new horizons'];
+const fold = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const entitiesOf = t => ENTITIES.filter(e => wholeWord(fold(t), e) || (e.endsWith('-') && fold(t).includes(e)));
+const numbersOf = t => new Set((t.match(/\d+/g) || []).filter(n => !/^20\d\d$/.test(n)));
+export function sameStoryAnyLang(a, b) {
+  if (sameStory(a.titulo, b.titulo)) return true;
+  if (a.idioma === b.idioma) return false;
+  if (/^apod\b/i.test(a.titulo) || /^apod\b/i.test(b.titulo)) return false; // la foto del día va aparte
+  const ea = entitiesOf(a.titulo), eb = new Set(entitiesOf(b.titulo));
+  if (!ea.some(e => eb.has(e))) return false;
+  const na = numbersOf(a.titulo), nb = numbersOf(b.titulo);
+  const shareNum = [...na].some(n => nb.has(n));
+  return shareNum || Math.abs(Date.parse(a.fecha) - Date.parse(b.fecha)) < 36 * 3600e3;
+}
 export function pickNews(items, now = Date.now()) {
-  const kept = [];
+  const kept = [], urls = new Set();
   let apod = 0;
   items
     .filter(n => n.titulo && n.url && now - Date.parse(n.fecha) < NEWS_DAYS * 864e5)
+    .filter(n => !urls.has(n.url) && urls.add(n.url)) // la misma noticia en varios canales RSS
     .map(n => ({ ...n, puntos: newsScore(n) }))
     .filter(n => n.puntos >= 3)
     .sort((a, b) => b.puntos - a.puntos || Date.parse(b.fecha) - Date.parse(a.fecha))
     .forEach(n => {
       if (/^apod\b/i.test(n.titulo) && apod++ >= 1) return;        // la foto del día de la NASA: como mucho una
-      if (kept.some(k => sameStory(k.titulo, n.titulo))) return;   // misma noticia en otra web
+      const dup = kept.findIndex(k => sameStoryAnyLang(k, n));     // misma noticia en otra web u otro idioma
+      if (dup >= 0) { if (n.idioma === 'es' && kept[dup].idioma !== 'es') kept[dup] = n; return; } // preferimos la versión en español
       kept.push(n);
     });
   return kept
@@ -179,8 +215,9 @@ async function main() {
   } catch (e) { console.warn('YouTube: se conservan los datos anteriores →', e.message); }
 
   try {
-    out.lanzamientos = mapLaunches(await get('https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=15&hide_recent_previous=true', 'json'));
-    console.log(`Lanzamientos: ${out.lanzamientos.length}`);
+    out.lanzamientos = mapLaunches(await get('https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=40&hide_recent_previous=true', 'json'));
+    console.log(`Lanzamientos: ${out.lanzamientos.length} (relevantes: ${out.lanzamientos.filter(l => l.relevante).length})`);
+    out.lanzamientos.forEach(l => console.log(`  ${l.relevante ? '✔' : '·'} ${l.fecha.slice(0, 10)} ${l.nombre} [${l.tipo}]`));
   } catch (e) { console.warn('Lanzamientos: se conservan los datos anteriores →', e.message); }
 
   // Noticias: cada fuente por separado; si todas fallan se conservan las anteriores
