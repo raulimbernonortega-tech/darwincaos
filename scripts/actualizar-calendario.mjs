@@ -80,6 +80,11 @@ const NEWS_DAYS = 7, NEWS_MAX = 8;
 const SPACE_ES = ['espacio', 'espacial', 'astronom', 'astrofís', 'planeta', 'exoplaneta', 'estrella', 'galaxia', 'telescopio', 'nasa', 'esa ', 'agencia espacial',
   'marte', 'luna ', 'lunar', 'júpiter', 'saturno', 'venus', 'mercurio', 'urano', 'neptuno', 'plutón', 'cometa', 'asteroide', 'meteor', 'eclipse', 'agujero negro',
   'supernova', 'nebulosa', 'cosmo', 'universo', 'sonda', 'astronauta', 'satélite', 'cohete', 'órbita', 'webb', 'hubble', 'artemis', 'vía láctea', 'sistema solar', 'sol '];
+// Para fuentes de ciencia general (SINC): el TITULAR debe tener un término claramente espacial.
+// Sin «planeta», «satélite» o «sol» sueltos: en noticias de clima o geología se refieren a la Tierra.
+const SPACE_TITLE_ES = ['espacio', 'espacial', 'astronom', 'astrofís', 'exoplaneta', 'galaxia', 'telescopio', 'nasa', 'esa ', 'marte', 'marciano', 'luna ', 'lunar',
+  'júpiter', 'saturno', 'venus', 'mercurio ', 'urano', 'neptuno', 'plutón', 'cometa', 'asteroide', 'meteor', 'eclipse', 'agujero negro', 'supernova', 'nebulosa',
+  'cosmo', 'universo', 'sonda', 'astronauta', 'cohete', 'vía láctea', 'sistema solar', 'estrella', 'estelar', 'órbita', 'big bang', 'materia oscura', 'quásar', 'cuásar', 'púlsar'];
 const MAJOR = ['artemis', 'crew', 'astronaut', 'spacewalk', 'mars', 'moon', 'lunar', 'webb', 'jwst', 'hubble', 'exoplanet', 'black hole', 'galaxy', 'supernova',
   'discover', 'first', 'record', 'eclipse', 'comet', 'asteroid', 'meteor', 'sample return', 'starship flight', 'new glenn', 'europa clipper', 'juice', 'bepicolombo',
   'iss ', 'space station', 'neptune', 'uranus', 'venus', 'mercury ', 'light-day', 'light-year', 'spacecraft', 'probe', 'rover', 'lander', 'telescope', 'nebula', 'star ', 'planet', 'neptuno', 'urano', 'júpiter', 'saturno', 'sonda', 'tiangong', 'shenzhou', "chang'e", 'tianwen', 'gaganyaan', 'chandrayaan', 'voyager', 'jupiter', 'saturn', 'pluto', 'sun ', 'solar storm', 'aurora',
@@ -98,7 +103,7 @@ const hit = (t, w) => (w.endsWith(' ') ? wholeWord(t, w) : startsWord(t, w)); //
 export function newsScore(n) {
   const t = `${n.titulo} ${n.resumen || ''}`.toLowerCase(), title = n.titulo.toLowerCase();
   if (NOISE.some(w => wholeWord(title, w))) return 0;
-  if (n.idioma === 'es' && !n.espacio && !SPACE_ES.some(w => hit(t, w))) return 0; // fuentes de ciencia general: solo espacio
+  if (n.idioma === 'es' && !n.espacio && !SPACE_TITLE_ES.some(w => hit(title + ' ', w))) return 0; // fuentes de ciencia general: solo si el titular es de espacio
   let s = 0, inTitle = 0;
   for (const w of MAJOR) if (hit(title, w)) { s += 2; inTitle++; } else if (hit(t, w)) s += 1;
   if (!inTitle && !n.destacado && !n.espacio && n.idioma !== 'es') return 0; // el titular debe hablar de espacio (fuera fotos de la Tierra, selfis…)
