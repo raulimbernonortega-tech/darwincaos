@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.5.1 — 24 de noviembre de 2026 (corrección importante)
+- **Calendario › Eventos ya no se bloquea.** El cálculo de fases, eclipses, oposiciones y conjunciones de los próximos meses es 5 veces más rápido, se hace por partes sin congelar la pantalla (la ✕ y las pestañas responden siempre), se adelanta en segundo plano al abrir la app y se guarda para el resto del día. Las noticias, vídeos y lanzamientos se muestran al instante mientras se calcula.
+
 ### Versión 1.5 — 24 de noviembre de 2026
 Mejoras de uso a partir de las pruebas en iPhone:
 - **Cabecera en una fila**: ubicación, fecha y brújula. Sin azimut ni altura; solo aparece un aviso ámbar **«↓ Bajo el horizonte»** cuando miras al suelo.

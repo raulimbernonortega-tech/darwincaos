@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.5.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1790,7 +1790,7 @@ const CAL_TXT = {
     moonNear: 'La Luna pasa junto a', conj: 'Conjunción de', and: 'y', sep: 'separación', peakOf: 'Pico de las', perHour: 'meteoros/h en cielo oscuro',
     seasons: { mar: 'Equinoccio', jun: 'Solsticio', sep: 'Equinoccio', dec: 'Solsticio' }, seasonNames: { spring: 'de primavera', summer: 'de verano', autumn: 'de otoño', winter: 'de invierno' },
     launch: 'Lanzamiento', noFeed: 'Vídeos y lanzamientos no disponibles ahora mismo.', updated: 'Actualizado',
-    empty: 'No hay eventos en este filtro.', goTo: 'Ver en el cielo', liveAt: 'Mostrando el cielo del',
+    empty: 'No hay eventos en este filtro.', calculating: 'Calculando eventos del cielo…', goTo: 'Ver en el cielo', liveAt: 'Mostrando el cielo del',
   },
   en: {
     day: 'Daytime', night: 'Tonight', sunrise: 'Sunrise', sunset: 'Sunset', dark: 'Full darkness', dawn: 'Night ends',
@@ -1809,7 +1809,7 @@ const CAL_TXT = {
     moonNear: 'The Moon passes near', conj: 'Conjunction of', and: 'and', sep: 'separation', peakOf: 'Peak of the', perHour: 'meteors/h under dark skies',
     seasons: { mar: 'Equinox', jun: 'Solstice', sep: 'Equinox', dec: 'Solstice' }, seasonNames: { spring: '(spring)', summer: '(summer)', autumn: '(autumn)', winter: '(winter)' },
     launch: 'Launch', noFeed: 'Videos and launches unavailable right now.', updated: 'Updated',
-    empty: 'No events for this filter.', goTo: 'See in the sky', liveAt: 'Showing the sky on',
+    empty: 'No events for this filter.', calculating: 'Calculating sky events…', goTo: 'See in the sky', liveAt: 'Showing the sky on',
   },
 };
 const CT = () => CAL_TXT[S.lang];
@@ -1946,11 +1946,38 @@ function renderTonight(box) {
 }
 
 // ── Eventos ──
-let eventsCache = { key: '', items: [] };
-function computeSkyEvents() {
+// El cálculo es pesado (≈1 s en móvil): se hace por trozos, cediendo el control al navegador
+// para que la ventana nunca se congele, se guarda en caché (memoria + localStorage) y se adelanta en segundo plano.
+const EV_STORE = 'dc_eventos_cache_v1';
+let eventsCache = { key: '', items: null }, eventsJob = null;
+function eventsKey() { const d = new Date(simDate()); d.setHours(0, 0, 0, 0); return `${S.place.lat.toFixed(2)},${S.place.lon.toFixed(2)},${d.toDateString()},${S.lang}`; }
+function eventsReady() { return eventsCache.key === eventsKey() ? eventsCache.items : null; }
+function loadEventsStore(key) {
+  try {
+    const st = JSON.parse(localStorage.getItem(EV_STORE) || 'null');
+    if (!st || st.key !== key) return null;
+    return st.items.map(e => ({ ...e, date: new Date(e.date), action: e.action ? { ...e.action, time: e.action.time ? new Date(e.action.time) : null } : null }));
+  } catch { return null; }
+}
+function getSkyEvents() { // promesa con los eventos; reutiliza el cálculo en curso
+  const key = eventsKey();
+  if (eventsCache.key === key) return Promise.resolve(eventsCache.items);
+  const stored = loadEventsStore(key);
+  if (stored) { eventsCache = { key, items: stored }; return Promise.resolve(stored); }
+  if (eventsJob?.key === key) return eventsJob.promise;
+  const promise = computeSkyEvents(key).then(items => {
+    if (eventsJob?.key === key) eventsJob = null;
+    eventsCache = { key, items };
+    try { localStorage.setItem(EV_STORE, JSON.stringify({ key, items })); } catch { }
+    return items;
+  }, err => { if (eventsJob?.key === key) eventsJob = null; throw err; });
+  eventsJob = { key, promise };
+  return promise;
+}
+async function computeSkyEvents(key) {
+  let slice = performance.now();
+  const breathe = async () => { if (performance.now() - slice > 12) { await new Promise(r => setTimeout(r, 0)); slice = performance.now(); } if (eventsJob && eventsJob.key !== key) throw new Error('cancelado'); };
   const start = new Date(simDate()); start.setHours(0, 0, 0, 0);
-  const key = `${S.place.lat.toFixed(2)},${S.place.lon.toFixed(2)},${start.toDateString()},${S.lang}`;
-  if (eventsCache.key === key) return eventsCache.items;
   const c = CT(), end = new Date(+start + 120 * 864e5), far = new Date(+start + 400 * 864e5), items = [];
   const push = (date, ico, what, more, action, hl) => { if (date >= start && date <= far) items.push({ date, cat: 'sky', ico, what, more, action, hl }); };
   const pname = id => bodyName(BODIES.find(b => b.id === id));
@@ -1963,6 +1990,7 @@ function computeSkyEvents() {
       q = A.NextMoonQuarter(q);
     }
   } catch { }
+  await breathe();
   try { // Eclipses lunares (hasta 400 días)
     let e = A.SearchLunarEclipse(start);
     while (e.peak.date < far) {
@@ -1971,6 +1999,7 @@ function computeSkyEvents() {
       e = A.NextLunarEclipse(e.peak);
     }
   } catch { }
+  await breathe();
   try { // Eclipses solares visibles desde aquí (hasta 400 días)
     let e = A.SearchLocalSolarEclipse(start, observer);
     while (e.peak.time.date < far) {
@@ -2001,12 +2030,14 @@ function computeSkyEvents() {
   for (const tg of targets) pairs.push({ a: 'Moon', b: tg, thr: 3.5, moon: true });
   for (const st of stars) pairs.push({ a: 'Moon', b: st, thr: 1.5, moon: true });
   for (let i = 0; i < targets.length; i++) for (let j = i + 1; j < targets.length; j++) pairs.push({ a: targets[i], b: targets[j], thr: 2.2 });
-  const vecOf = (x, t) => (x === 'Moon' ? A.GeoVector('Moon', t, true) : x.vec ? new A.Vector(x.vec.x, x.vec.y, x.vec.z, t) : A.GeoVector(x.body, t, true));
+  // Cada astro se calcula una sola vez por paso (antes se repetía en cada pareja: 5 veces más lento)
+  const vecOf = (x, t, memo) => { const k = x === 'Moon' ? 'Moon' : x.id; if (!memo[k]) memo[k] = x === 'Moon' ? A.GeoVector('Moon', t, false) : x.vec ? new A.Vector(x.vec.x, x.vec.y, x.vec.z, t) : A.GeoVector(x.body, t, false); return memo[k]; };
   const hist = pairs.map(() => []);
   for (let t = +start; t <= +end; t += 3 * 3600e3) {
-    const tm = A.MakeTime(new Date(t)), sun = A.GeoVector('Sun', tm, true);
+    await breathe();
+    const tm = A.MakeTime(new Date(t)), sun = A.GeoVector('Sun', tm, false), memo = {};
     pairs.forEach((p, i) => {
-      const va = vecOf(p.a, tm), vb = vecOf(p.b, tm), sep = A.AngleBetween(va, vb);
+      const va = vecOf(p.a, tm, memo), vb = vecOf(p.b, tm, memo), sep = A.AngleBetween(va, vb);
       const h = hist[i]; h.push([t, sep]); if (h.length > 3) h.shift();
       if (h.length === 3 && h[1][1] < h[0][1] && h[1][1] <= h[2][1] && h[1][1] < p.thr) {
         const when = new Date(h[1][0]), elong = A.AngleBetween(sun, vb);
@@ -2030,7 +2061,6 @@ function computeSkyEvents() {
     } catch { }
   }
   items.sort((a, b) => a.date - b.date);
-  eventsCache = { key, items };
   return items;
 }
 function feedEvents() {
@@ -2065,7 +2095,16 @@ function renderEvents(box) {
   Object.entries(c.filters).forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.calFilter === k ? ' on' : ''); b.textContent = label; b.onclick = () => { S.calFilter = k; renderCal(); }; chips.append(b); });
   box.prepend(chips);
   if (S.calFilter === 'video' || S.calFilter === 'news') return;
-  const all = [...computeSkyEvents(), ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
+  const wantSky = S.calFilter === 'all' || S.calFilter === 'sky';
+  const sky = wantSky ? eventsReady() : [];
+  if (!sky) { // aún calculando: mostramos el resto ya y pintamos los eventos del cielo cuando estén
+    const wait = document.createElement('p'); wait.className = 'note calc'; wait.textContent = c.calculating; box.append(wait);
+    const gen = calGen;
+    getSkyEvents().then(() => { if (gen === calGen && $('modalCal').classList.contains('open')) renderCal(true); })
+      .catch(err => { if (gen === calGen && !/cancelado/.test(err.message)) wait.textContent = '⚠️ ' + err.message; });
+    return;
+  }
+  const all = [...sky, ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
   let month = '';
   all.forEach(e => {
     const m = e.date.toLocaleDateString(S.lang, { month: 'long', year: 'numeric', ...tzOpt() });
@@ -2077,8 +2116,9 @@ function renderEvents(box) {
   if (!FEED) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noFeed; box.append(p); }
   else if (FEED.actualizado) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `${c.updated}: ${new Date(FEED.actualizado).toLocaleString(S.lang, { dateStyle: 'short', timeStyle: 'short' })}`; box.append(p); }
 }
-function renderCal() {
-  const box = $('calBody');
+let calGen = 0;
+function renderCal(keepScroll = false) {
+  const box = $('calBody'), gen = ++calGen, top = box.scrollTop;
   box.replaceChildren();
   $('tabNow').classList.toggle('on', S.calTab === 'now');
   $('tabTonight').classList.toggle('on', S.calTab === 'tonight');
@@ -2086,10 +2126,11 @@ function renderCal() {
   const wait = document.createElement('p'); wait.className = 'note'; wait.textContent = S.lang === 'en' ? 'Calculating…' : 'Calculando…';
   box.append(wait);
   setTimeout(() => { // dejamos que se pinte «Calculando…» antes del cálculo
+    if (gen !== calGen || !$('modalCal').classList.contains('open')) return; // cambiaste de pestaña o cerraste
     box.replaceChildren();
     try { S.calTab === 'now' ? renderSkyList('', box) : S.calTab === 'tonight' ? renderTonight(box) : renderEvents(box); }
     catch (err) { console.error(err); const p = document.createElement('p'); p.className = 'note'; p.textContent = '⚠️ ' + err.message; box.append(p); }
-    box.scrollTop = 0;
+    box.scrollTop = keepScroll ? top : 0;
   }, 30);
 }
 $('tabNow').onclick = () => { S.calTab = 'now'; renderCal(); };
@@ -2521,6 +2562,8 @@ async function init() {
   persist();
   updateDeclination();
   loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); });
+  // Adelantamos el cálculo de eventos en segundo plano para que el calendario abra al instante
+  setTimeout(() => (window.requestIdleCallback || (f => f()))(() => getSkyEvents().catch(() => { })), 6000);
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita
