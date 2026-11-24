@@ -52,7 +52,9 @@ const LAUNCH_NO = ['starlink', 'oneweb', 'kuiper', 'amazon leo', 'guowang', 'qia
 const MISSION_YES = /human|resupply|planetary|astrophys|heliophys|lunar|test flight|space science|interplanetary/i;
 export function launchRelevance(l) {
   const t = `${l.nombre} ${l.cohete} ${l.proveedor}`.toLowerCase();
-  if (LAUNCH_YES.some(w => t.includes(w)) || MISSION_YES.test(l.tipo || '')) {
+  // Palabra completa («iss» no debe coincidir con «Mission»); las terminadas en «-» son prefijos (crs-, ax-)
+  const yes = w => (w.endsWith('-') ? t.includes(w) : wholeWord(t, w));
+  if (LAUNCH_YES.some(yes) || MISSION_YES.test(l.tipo || '')) {
     if (/ariane|vega/i.test(t) || !LAUNCH_NO.some(w => t.includes(w))) return true; // lo europeo entra aunque lleve satélites comerciales
   }
   return false;
