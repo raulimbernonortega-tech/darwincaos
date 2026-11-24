@@ -110,6 +110,7 @@ export function newsScore(n) {
   if (n.destacado) s += 3;
   if (OFFICIAL.some(o => (n.fuente || '').includes(o))) s += 1;
   if (n.idioma === 'es') s += 2; // preferimos noticias en español
+  if (n.espacio) s += 1; // fuentes 100 % de espacio y oficiales (NASA Ciencia, ESA): entran sus noticias de la semana
   return s;
 }
 // Palabras significativas de un titular (para detectar la misma noticia contada por dos webs)
@@ -125,7 +126,6 @@ const entitiesOf = t => ENTITIES.filter(e => wholeWord(fold(t), e) || (e.endsWit
 const numbersOf = t => new Set((t.match(/\d+/g) || []).filter(n => !/^20\d\d$/.test(n)));
 export function sameStoryAnyLang(a, b) {
   if (sameStory(a.titulo, b.titulo)) return true;
-  if (a.idioma === b.idioma) return false;
   if (/^apod\b/i.test(a.titulo) || /^apod\b/i.test(b.titulo)) return false; // la foto del día va aparte
   const ea = entitiesOf(a.titulo), eb = new Set(entitiesOf(b.titulo));
   if (!ea.some(e => eb.has(e))) return false;
