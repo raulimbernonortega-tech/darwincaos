@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5.3';
+const APP_VERSION = '1.5.4';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1829,12 +1829,13 @@ function goToEvent(id, time) {
   if (e) { openInfo(e); pointTo(e); }
 }
 
+const ytSmall = u => (u || '').replace(/\/(hq|sd|maxres)default\.jpg/, '/mqdefault.jpg'); // 320×180 en vez de 480×360
 function evRow({ ico, when, what, more, onClick, href, img, hl }) {
   const el = document.createElement(href ? 'a' : onClick ? 'button' : 'div');
   el.className = 'ev' + (hl ? ' hl' : '');
   if (href) { el.href = href; el.target = '_blank'; el.rel = 'noopener'; }
   if (onClick) { el.type = 'button'; el.onclick = onClick; }
-  if (img) { const i = document.createElement('img'); i.alt = ''; i.loading = 'lazy'; i.decoding = 'async'; i.src = img; el.append(i); }
+  if (img) { const i = document.createElement('img'); i.alt = ''; i.decoding = 'async'; i.width = 192; i.height = 108; i.src = ytSmall(img); i.onerror = () => i.replaceWith(Object.assign(document.createElement('span'), { className: 'ico', textContent: ico || '▶' })); el.append(i); }
   else { const i = document.createElement('span'); i.className = 'ico'; i.textContent = ico; el.append(i); }
   const box = document.createElement('div');
   for (const [cls, txt] of [['when', when], ['what', what], ['more', more]]) if (txt) { const d = document.createElement('div'); d.className = cls; d.textContent = txt; box.append(d); }
@@ -2112,7 +2113,7 @@ function buildEvents(sky) {
   if (mine.length || auto.length) {
     const g = grp('news'); g.append(section(c.latestNews));
     mine.forEach(m => g.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
-    auto.forEach(n => g.append(evRow({ img: n.imagen || null, ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
+    auto.forEach(n => g.append(evRow({ img: n.mini || null, /* solo miniaturas ligeras: las originales pesan MB y bloqueaban el iPhone */ ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
   }
   // Cielo y lanzamientos, por meses
   if (!sky) { const p = document.createElement('p'); p.className = 'note calc'; p.textContent = c.calculating; wrap.append(p); }

@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.5.4 — 24 de noviembre de 2026 (corrección importante)
+- **Las noticias ya no desaparecen al hacer scroll en iPhone.** Sus imágenes eran las originales (fotos de varios MB, alguna incluso un vídeo) y el iPhone se quedaba sin memoria al reducirlas. Ahora el robot genera **miniaturas ligeras** (~5 KB) en `data/miniaturas/` y la app solo usa esas; las de YouTube se piden en tamaño mediano.
+
 ### Versión 1.5.3 — 24 de noviembre de 2026 (corrección importante)
 - **Filtros del calendario instantáneos**: la lista de Eventos se construye una sola vez y los filtros (Todo, Cielo, Lanzamientos, Vídeos, Noticias) solo muestran u ocultan, sin recargar nada.
 - **Sin zonas en blanco en iPhone**: las ventanas ya no usan desenfoque sobre el cielo animado (era lo que saturaba el iPhone) y, con el calendario abierto, el cielo de fondo se detiene.

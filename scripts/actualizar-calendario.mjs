@@ -4,7 +4,8 @@
 //  · Noticias relevantes de espacio y astronomía: Spaceflight News API (inglés) y Agencia SINC (español, RSS)
 //  · Eventos y noticias manuales de data/eventos-manuales.json
 // Si una fuente falla, se conservan sus datos anteriores.
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, unlink, access } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 
 const CHANNEL_ID = 'UCkF3sD8dTyY7RW1ySN3CwdQ'; // @darwincaos
 const OUT = 'data/eventos.json';
@@ -216,6 +217,38 @@ export function videosByObject(videos) {
   return out;
 }
 
+// Miniaturas ligeras de las noticias (≈10 KB). Las imágenes originales pesan varios MB y en iPhone,
+// al reducirlas a 96 px dentro de una lista con scroll, se vaciaban y bloqueaban la ventana.
+const THUMB_DIR = 'data/miniaturas';
+const IS_IMAGE = u => typeof u === 'string' && /^https?:\/\//.test(u) && !/\.(mp4|mov|webm|m4v|mp3|pdf)(\?|$)/i.test(u);
+export async function makeThumbs(lists) {
+  const sharp = (await import('sharp').catch(() => null))?.default;
+  if (!sharp) { console.log('Miniaturas: sharp no disponible, se omiten'); return; }
+  await mkdir(THUMB_DIR, { recursive: true });
+  const keep = new Set(), bad = new Set();
+  let made = 0, reused = 0, failed = 0;
+  for (const list of lists) for (const n of list) {
+    delete n.mini;
+    if (!IS_IMAGE(n.imagen)) continue;
+    const file = `${THUMB_DIR}/${createHash('sha1').update(n.imagen).digest('hex').slice(0, 14)}.jpg`;
+    if (keep.has(file)) { n.mini = file; continue; }
+    if (bad.has(file)) continue;
+    try {
+      try { await access(file); reused++; } catch {
+        const r = await fetch(n.imagen, { headers: { 'User-Agent': 'planetario-calendario/1.0' }, signal: AbortSignal.timeout(25000) });
+        if (!r.ok) throw new Error(r.status);
+        const buf = Buffer.from(await r.arrayBuffer());
+        if (buf.length > 40e6) throw new Error('demasiado grande');
+        await writeFile(file, await sharp(buf, { limitInputPixels: 1e9 }).rotate().resize(240, 135, { fit: 'cover', position: 'attention' }).jpeg({ quality: 72, mozjpeg: true }).toBuffer());
+        made++;
+      }
+      keep.add(file); n.mini = file;
+    } catch (e) { bad.add(file); failed++; console.log(`  miniatura fallida (${e.message}): ${n.imagen}`); }
+  }
+  for (const f of await readdir(THUMB_DIR)) if (!keep.has(`${THUMB_DIR}/${f}`)) await unlink(`${THUMB_DIR}/${f}`).catch(() => {});
+  console.log(`Miniaturas: ${made} nuevas, ${reused} reutilizadas, ${failed} fallidas`);
+}
+
 async function get(url, type = 'text') {
   const r = await fetch(url, { headers: { 'User-Agent': 'planetario-calendario/1.0' }, signal: AbortSignal.timeout(20000) });
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
@@ -270,6 +303,7 @@ async function main() {
     out.noticias = pickNews(news);
     out.noticiasPorIdioma = { es: pickNews(news.filter(n => n.idioma === 'es'), Date.now(), NEWS_DAYS_ES), en: pickNews(news.filter(n => n.idioma === 'en')) };
     console.log(`Noticias por idioma: ${out.noticiasPorIdioma.es.length} en español, ${out.noticiasPorIdioma.en.length} en inglés`);
+    await makeThumbs([out.noticias, out.noticiasPorIdioma.es, out.noticiasPorIdioma.en]).catch(e => console.log('Miniaturas: ' + e.message));
     console.log(`Noticias relevantes seleccionadas: ${out.noticias.length}`);
     out.noticias.forEach(n => console.log(`  [${n.puntos}] ${n.fuente}: ${n.titulo}`));
   }
