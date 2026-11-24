@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T11:39:29.300Z",
+ "actualizado": "2026-11-24T13:27:53.772Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -1054,7 +1054,8 @@
    "fecha": "2026-11-22T22:31:24Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 7
+   "puntos": 7,
+   "mini": "data/miniaturas/527ae1519e78c7.jpg"
   },
   {
    "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
@@ -1202,7 +1203,8 @@
     "fecha": "2026-11-23T21:32:11Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 5
+    "puntos": 5,
+    "mini": "data/miniaturas/61a5c07252b2f5.jpg"
    },
    {
     "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
@@ -1237,7 +1239,8 @@
     "fecha": "2026-11-22T22:31:24Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 7
+    "puntos": 7,
+    "mini": "data/miniaturas/527ae1519e78c7.jpg"
    },
    {
     "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
