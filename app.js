@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -49,7 +49,10 @@ const I18N = {
     linkCopied: 'Enlace copiado ✔', gpsFail: 'No se pudo obtener tu ubicación', myLocation: 'Mi ubicación',
     manualMode: 'Modo manual · toca 🧭 Seguir el móvil para volver', camFail: 'No se pudo abrir la cámara. Sigues en modo sensor.', sensorFail: 'Este dispositivo no ofrece brújula/giroscopio.',
     noResults: 'Sin resultados. Pulsa Intro para buscarlo como ciudad.', searchCity: 'Buscar como ciudad',
-    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', shotTitle: '📸 Compartir el cielo', shotShare: '📤 Compartir', shotSave: '💾 Guardar',
+    hintPlace: 'Toca 📍 para ver el cielo desde tu ubicación', shotNow: '📸 Lo que ves ahora', shotSpecial: '🎂 Fecha especial', postTitlePh: 'Título: «El día que nací»…', postCityPh: 'Ciudad (por defecto, la actual)', postMake: '✨ Crear postal', postDefault: 'El cielo de un día especial',
+    phFull: 'Luna llena', phNew: 'Luna nueva', phWax: 'Luna creciente', phWan: 'Luna menguante', dayTime: 'era de día', belowTag: '↓ Bajo el horizonte', searchTitle: '🔎 Buscar', tabNow: '🔭 Ahora',
+    locHelpIOS: '📍 Tu iPhone tiene bloqueada la ubicación para las webs. Para activarla: Ajustes › Privacidad y seguridad › Localización (activada) › Sitios web de Safari › «Preguntar» o «Al usar la app». Después vuelve a pulsar «Usar mi ubicación». Mientras tanto usamos tu ubicación aproximada.',
+    locHelpOther: '📍 La ubicación está bloqueada para esta web. Actívala en los ajustes del navegador (icono del candado junto a la dirección › Permisos › Ubicación) y vuelve a pulsar «Usar mi ubicación».', shotTitle: '📸 Compartir el cielo', shotShare: '📤 Compartir', shotSave: '💾 Guardar',
     shotFormats: { square: '◻️ Cuadrado', story: '▯ Vertical', wide: '▭ Horizontal' }, shotDefault: 'El cielo de esta noche', shotText: 'Míralo en el Planetario DarwinCaos:', shotSaved: 'Imagen guardada ✔', calTitle: '📅 Calendario', tabTonight: '🌙 Esta noche', tabEvents: '📅 Eventos', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
@@ -86,7 +89,10 @@ const I18N = {
     linkCopied: 'Link copied ✔', gpsFail: 'Could not get your location', myLocation: 'My location',
     manualMode: 'Manual mode · tap 🧭 Follow phone to go back', camFail: 'Could not open the camera. Staying in sensor mode.', sensorFail: 'This device has no compass/gyroscope.',
     noResults: 'No results. Press Enter to search it as a city.', searchCity: 'Search as a city',
-    hintPlace: 'Tap 📍 to see the sky from your location', shotTitle: '📸 Share the sky', shotShare: '📤 Share', shotSave: '💾 Save',
+    hintPlace: 'Tap 📍 to see the sky from your location', shotNow: '📸 What you see now', shotSpecial: '🎂 Special date', postTitlePh: 'Title: “The day I was born”…', postCityPh: 'City (current one by default)', postMake: '✨ Create postcard', postDefault: 'The sky on a special day',
+    phFull: 'Full Moon', phNew: 'New Moon', phWax: 'Waxing Moon', phWan: 'Waning Moon', dayTime: 'it was daytime', belowTag: '↓ Below the horizon', searchTitle: '🔎 Search', tabNow: '🔭 Now',
+    locHelpIOS: '📍 Your iPhone blocks location for websites. To enable it: Settings › Privacy & Security › Location Services (on) › Safari Websites › “Ask” or “While Using the App”. Then tap “Use my location” again. Meanwhile we use your approximate location.',
+    locHelpOther: '📍 Location is blocked for this site. Enable it in your browser settings (padlock icon next to the address › Permissions › Location) and tap “Use my location” again.', shotTitle: '📸 Share the sky', shotShare: '📤 Share', shotSave: '💾 Save',
     shotFormats: { square: '◻️ Square', story: '▯ Vertical', wide: '▭ Landscape' }, shotDefault: 'Tonight’s sky', shotText: 'See it in the DarwinCaos Planetarium:', shotSaved: 'Image saved ✔', calTitle: '📅 Calendar', tabTonight: '🌙 Tonight', tabEvents: '📅 Events', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
@@ -1013,12 +1019,6 @@ function buildLabels() {
     starNameGroup.add(lbl);
   });
   const t = T();
-  [['N', 0], ['NE', 45], ['E', 90], ['SE', 135], ['S', 180], ['SW', 225], ['W', 270], ['NW', 315]].forEach(([k, az]) => {
-    const major = k.length === 1;
-    const sp = major ? cardinalBadge(t[k], k === 'N') : makeLabel(t[k], { color: '#7dd3fc', px: 15, weight: 800, below: false, order: 62 });
-    sp.position.copy(altAzVec(az, major ? 10.5 : 9.5, R.ground - 20));
-    horizonGroup.add(sp);
-  });
   drawRose();
   updateScreenSprites();
 }
@@ -1091,9 +1091,22 @@ function defineStar(raH, dec, ly = 1000) { A.DefineStar(A.Body.Star1, raH, dec, 
 
 // ───────────── Ficha de información ─────────────
 const $ = id => document.getElementById(id);
+const relatedOf = entry => FEED?.videosRelacionados?.[entry.id] || [];
 function videoUrl(entry) {
+  if (VIDEOS[entry.id]) return VIDEOS[entry.id];
   const q = entry.names[0].replace(/\s*\(.*\)/, '');
-  return VIDEOS[entry.id] || FEED?.videosPorObjeto?.[entry.id]?.url || `${CHANNEL_URL}/search?query=${encodeURIComponent(q)}`;
+  return relatedOf(entry).length ? `${CHANNEL_URL}/search?query=${encodeURIComponent(q)}` : CHANNEL_URL; // sin vídeos sobre el tema → el canal
+}
+// Mini lista «▶ DarwinCaos sobre Júpiter» en la ficha: largos y shorts relacionados
+function renderInfoVideos(entry) {
+  const box = $('infoVideos'), list = relatedOf(entry).slice(0, 4);
+  box.replaceChildren();
+  if (!list.length) return;
+  box.append(section(`▶ DarwinCaos · ${entry.name()}`));
+  list.forEach(v => {
+    const row = evRow({ img: v.miniatura, what: v.titulo, when: v.corto ? 'SHORT' : '', href: v.url });
+    box.append(row);
+  });
 }
 function infoStats(entry) {
   const t = T(), date = simDate(), aa = entryAltAz(entry);
@@ -1136,8 +1149,10 @@ function openInfo(entry) {
   $('infoType').textContent = entry.sub();
   refreshInfo();
   renderInfoText(entry);
+  renderInfoVideos(entry);
   $('infoVideo').href = videoUrl(entry);
   $('infoCard').classList.add('open');
+  $('infoCard').scrollTop = 0; // siempre desde arriba (nombre visible)
   updateViewOffset();
 }
 function refreshInfo() {
@@ -1200,18 +1215,33 @@ function renderInfoText(entry) {
   };
   more.dataset.open = '';
 }
-function closeInfo() { S.selected = null; S.tracking = null; $('infoCard').classList.remove('open'); updateViewOffset(); }
+function closeInfo() { S.selected = null; S.tracking = null; $('infoCard').classList.remove('open'); stopFinding(); updateViewOffset(); }
+function startFinding(entry) {
+  S.finding = entry; S.found = false;
+  $('infoCard').classList.remove('open'); // la ficha se recoge en una pastilla para dejar ver el cielo
+  $('findOpen').textContent = `🎯 ${entry.name()}`;
+  $('findChip').classList.add('show');
+  document.body.classList.add('finding');
+  updateViewOffset();
+}
+function stopFinding() {
+  S.finding = null;
+  $('findChip').classList.remove('show'); $('finder').classList.remove('show', 'found');
+  document.body.classList.remove('finding');
+}
 // En móvil la ficha ocupa la mitad inferior: subimos el centro de la vista para que el objeto quede visible.
 function updateViewOffset() {
-  const shift = S.selected && innerWidth < 900 ? Math.round(innerHeight * 0.22) : 0;
+  const shift = S.selected && !S.finding && innerWidth < 900 ? Math.round(innerHeight * 0.22) : 0;
   if (shift) camera.setViewOffset(innerWidth, innerHeight, 0, shift, innerWidth, innerHeight); else camera.clearViewOffset();
   document.documentElement.style.setProperty('--cy', `calc(50% - ${shift}px)`);
 }
-function pointTo(entry) {
+// find: modo «Buscar» (pastilla + flecha). Se activa con «Apuntar» o siempre que se sigue el móvil (el cielo no puede girar solo).
+function pointTo(entry, find = false) {
   const aa = entryAltAz(entry);
   if (!aa) return;
   if (aa.alt < 0) toast(`${entry.name()}: ${T().belowNow}`);
-  if (S.sensor && sensorReady) { toast(`${T().turnTo} ${azName(aa.az)} · Alt ${fmtNum(aa.alt)}°`); return; } // la flecha guía en pantalla
+  if (find || (S.sensor && sensorReady)) startFinding(entry);
+  if (S.sensor && sensorReady) return; // con el móvil, la flecha del centro guía hasta el objeto
   S.targetAz = aa.az; S.targetAlt = THREE.MathUtils.clamp(aa.alt, -85, 85);
   S.tracking = entry.kind === 'iss' ? entry : null; // la ISS se mueve ~1°/s: la seguimos
 }
@@ -1468,23 +1498,23 @@ $('btnCamera').onclick = () => setCamera(!S.camera);
 // ───────────── Interfaz ─────────────
 let toastTimer;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 2600); }
-const MODALS = { modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: 'dockSky', modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
-function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); $(b).classList.remove('active'); }); }
+const MODALS = { modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: null, modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
+function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); if (b) $(b).classList.remove('active'); }); }
 function toggleModal(id) {
   const open = $(id).classList.contains('open');
   closeModals();
   if (open) return;
   closeInfo();
-  $(id).classList.add('open'); $(MODALS[id]).classList.add('active');
+  $(id).classList.add('open'); if (MODALS[id]) $(MODALS[id]).classList.add('active');
   if (id === 'modalSky') renderSkyList($('search').value);
   if (id === 'modalLayers') renderLayers();
   if (id === 'modalPlace') renderCities();
   if (id === 'modalCal') renderCal();
 }
-Object.entries(MODALS).forEach(([m, b]) => ($(b).onclick = () => toggleModal(m)));
+Object.entries(MODALS).forEach(([m, b]) => { if (b) $(b).onclick = () => toggleModal(m); });
 document.querySelectorAll('.modal .close').forEach(b => (b.onclick = closeModals));
 $('infoClose').onclick = closeInfo;
-$('infoPoint').onclick = () => S.selected && pointTo(S.selected);
+$('infoPoint').onclick = () => S.selected && pointTo(S.selected, true);
 $('infoShare').onclick = () => share(S.selected);
 $('subscribeBtn').href = `${CHANNEL_URL}?sub_confirmation=1`;
 
@@ -1554,8 +1584,8 @@ function rowFor(entry, metaText, dim = false) {
 }
 function section(title) { const d = document.createElement('div'); d.className = 'mini'; d.textContent = title; return d; }
 function posText(aa) { return aa ? `${aa.alt >= 0 ? T().visibleNow : T().belowNow} · Alt ${fmtNum(aa.alt)}° · ${azName(aa.az)}` : ''; }
-function renderSkyList(filter = '') {
-  const list = $('skyList'), t = T(), q = fold(filter.trim());
+function renderSkyList(filter = '', list = $('skyList')) {
+  const t = T(), q = fold(filter.trim());
   list.replaceChildren();
   if (q) {
     const hits = CATALOG.filter(e => e.names.some(n => fold(n).includes(q))).slice(0, 30);
@@ -1696,18 +1726,31 @@ async function useApproxLocation(reason) {
     closeModals(); toast(`${reason} ${T().usedApprox}`);
   } catch { toast(`${reason} ${T().searchCityHint}`); }
 }
-$('geoBtn').onclick = () => {
+// Pide la ubicación. Si iOS la tiene bloqueada (no llega ni a preguntar), explicamos cómo activarla.
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function showLocationHelp() {
+  const h = $('locHelp');
+  h.textContent = isIOS ? T().locHelpIOS : T().locHelpOther;
+  h.hidden = false;
+  if (!$('modalPlace').classList.contains('open')) toggleModal('modalPlace');
+}
+function requestLocation(quiet = false) {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   if (!navigator.geolocation || !isSecureContext) return useApproxLocation(T().gpsFail + '.');
-  toast(T().locating);
+  $('locHelp').hidden = true;
+  if (!quiet) toast(T().locating);
   navigator.geolocation.getCurrentPosition(async pos => {
     const { latitude: lat, longitude: lon } = pos.coords;
     let name = T().myLocation;
     try { const r = await locate(lat, lon); if (r.name) name = r.name; } catch { /* nos quedamos con «Mi ubicación» */ }
     setPlace({ name, lat, lon, tz, gps: true }); closeModals();
     toast(`📍 ${S.place.name}`);
-  }, err => useApproxLocation(err.code === 1 ? T().gpsDenied : T().gpsFail + '.'), { enableHighAccuracy: false, timeout: 12000, maximumAge: 600e3 });
-};
+  }, err => {
+    if (err.code === 1 && !quiet) { showLocationHelp(); useApproxLocation(T().gpsDenied); return; } // permiso bloqueado: cómo activarlo
+    useApproxLocation(err.code === 1 ? T().gpsDenied : T().gpsFail + '.');
+  }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 600e3 });
+}
+$('geoBtn').onclick = () => requestLocation(false);
 
 // Tiempo
 function setOffset(ms) {
@@ -1770,7 +1813,7 @@ const CAL_TXT = {
   },
 };
 const CT = () => CAL_TXT[S.lang];
-S.calTab = 'tonight'; S.calFilter = 'all';
+S.calTab = 'now'; S.calFilter = 'all';
 const bodyEntry = id => CATALOG.find(e => e.id === id);
 const fmtDay = d => d.toLocaleDateString(S.lang, { weekday: 'short', day: 'numeric', month: 'short', ...tzOpt() });
 const fmtHM = d => (d ? d.toLocaleTimeString(S.lang, { hour: '2-digit', minute: '2-digit', ...tzOpt() }) : '—');
@@ -2010,7 +2053,7 @@ function renderEvents(box) {
   if (S.calFilter === 'all' || S.calFilter === 'news') {
     const now = simDate();
     const mine = (FEED?.manuales || []).filter(m => { const d = new Date(m.fecha); return !isNaN(d) && d > new Date(+now - 7 * 864e5); }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    const auto = FEED?.noticias || [];
+    const auto = FEED?.noticiasPorIdioma?.[S.lang] || (FEED?.noticias || []).filter(n => !n.idioma || n.idioma === S.lang);
     if (mine.length || auto.length) {
       box.append(section(c.latestNews));
       mine.forEach(m => box.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
@@ -2037,22 +2080,24 @@ function renderEvents(box) {
 function renderCal() {
   const box = $('calBody');
   box.replaceChildren();
+  $('tabNow').classList.toggle('on', S.calTab === 'now');
   $('tabTonight').classList.toggle('on', S.calTab === 'tonight');
   $('tabEvents').classList.toggle('on', S.calTab === 'events');
   const wait = document.createElement('p'); wait.className = 'note'; wait.textContent = S.lang === 'en' ? 'Calculating…' : 'Calculando…';
   box.append(wait);
   setTimeout(() => { // dejamos que se pinte «Calculando…» antes del cálculo
     box.replaceChildren();
-    try { S.calTab === 'tonight' ? renderTonight(box) : renderEvents(box); }
+    try { S.calTab === 'now' ? renderSkyList('', box) : S.calTab === 'tonight' ? renderTonight(box) : renderEvents(box); }
     catch (err) { console.error(err); const p = document.createElement('p'); p.className = 'note'; p.textContent = '⚠️ ' + err.message; box.append(p); }
     box.scrollTop = 0;
   }, 30);
 }
+$('tabNow').onclick = () => { S.calTab = 'now'; renderCal(); };
 $('tabTonight').onclick = () => { S.calTab = 'tonight'; renderCal(); };
 $('tabEvents').onclick = () => { S.calTab = 'events'; renderCal(); };
 
 // ───────────── Bucle principal ─────────────
-const azEl = $('azText'), altEl = $('altText'), horEl = $('horizonTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
+const belowEl = $('belowTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
 const camDir = new THREE.Vector3();
 const compassNeedle = $('compassNeedle');
 $('compass').onclick = () => { // tocar la brújula: mirar al Norte
@@ -2174,10 +2219,11 @@ function frame(now) {
 
   // Flecha guía hacia el objeto seleccionado si está fuera de la pantalla
   updateGuide();
+  if (S.finding) updateFinder(view); else finderEl.classList.remove('show');
   // Marcador del objeto seleccionado
-  const selW = S.selected?.world();
-  selMarker.visible = !!selW && S.fov > 3;
-  if (selW) selMarker.position.copy(selW);
+  const target = S.finding || S.selected, selW2 = target?.world();
+  selMarker.visible = !!selW2 && S.fov > 3;
+  if (selW2) { selMarker.position.copy(selW2); selMarker.material.opacity = S.finding && S.found ? 0.55 + 0.45 * Math.sin(now / 180) : 1; }
 
   updateMeteors(dt, starFade, date);
 
@@ -2185,11 +2231,7 @@ function frame(now) {
   compassNeedle.style.transform = `rotate(${-view.az}deg)`;
   if (now - slowTick > 250) {
     slowTick = now;
-    const az = Math.round(view.az) % 360, alt = Math.round(view.alt);
-    azEl.textContent = `${az}° ${azName(az)}`;
-    altEl.textContent = `${alt >= 0 ? '+' : ''}${alt}°`;
-    horEl.textContent = alt >= 0 ? T().above : T().below;
-    horEl.className = 'tag ' + (alt >= 0 ? 'above' : 'below');
+    belowEl.classList.toggle('show', view.alt < -2 && !S.camera); // solo avisamos cuando miras bajo el horizonte
     updateHomeBtn();
     timeLabel.textContent = date.toLocaleString(S.lang, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', ...tzOpt() });
     $('timeBtn').classList.toggle('shifted', Math.abs(S.offset) > 60e3);
@@ -2205,7 +2247,31 @@ function frame(now) {
 }
 
 const guideEl = $('guide'), guideTmp = new THREE.Vector3();
+const finderEl = $('finder'), finderArrow = $('finderArrow'), finderText = $('finderText');
+$('findOpen').onclick = () => { const e = S.finding; stopFinding(); if (e) openInfo(e); };
+$('findClose').onclick = () => closeInfo();
+// Flecha grande en el centro: gira hacia el objeto y dice cuánto falta («→ 40° · ↑ 20°»)
+function updateFinder(view) {
+  const e = S.finding, w = e?.world();
+  if (!w) { finderEl.classList.remove('show'); return; }
+  const aa = vecToAltAz(w), dAz = ((aa.az - view.az + 540) % 360) - 180, dAlt = aa.alt - view.alt;
+  const c = guideTmp.copy(w).applyMatrix4(camera.matrixWorldInverse), ndc = w.clone().project(camera);
+  const inView = c.z < 0 && Math.abs(ndc.x) < 0.75 && Math.abs(ndc.y) < 0.75;
+  finderEl.classList.add('show');
+  if (inView) {
+    if (!S.found) { S.found = true; navigator.vibrate?.(60); }
+    finderEl.classList.add('found');
+    finderText.textContent = `✔ ${e.name()}`;
+  } else {
+    finderEl.classList.remove('found');
+    finderArrow.style.transform = `rotate(${-Math.atan2(c.y, c.x)}rad)`;
+    const h = Math.abs(dAz) >= 2 ? `${dAz > 0 ? '→' : '←'} ${fmtNum(Math.abs(dAz))}°` : '';
+    const v = Math.abs(dAlt) >= 2 ? `${dAlt > 0 ? '↑' : '↓'} ${fmtNum(Math.abs(dAlt))}°` : '';
+    finderText.textContent = [h, v].filter(Boolean).join(' · ') || e.name();
+  }
+}
 function updateGuide() {
+  if (S.finding) { guideEl.style.display = 'none'; return; } // en modo «Buscar» guía la flecha central
   const w = S.selected?.world();
   if (!w) { guideEl.style.display = 'none'; return; }
   const c = guideTmp.copy(w).applyMatrix4(camera.matrixWorldInverse);
@@ -2261,7 +2327,7 @@ function renderShot(w, h) {
   if (view?.enabled) camera.setViewOffset(view.fullWidth, view.fullHeight, view.offsetX, view.offsetY, view.width, view.height); else camera.updateProjectionMatrix();
 
   // Pie de foto
-  const u = Math.min(w, h) / 1080, band = 190 * u, y0 = h - band;
+  const u = Math.min(w, h) / 1080, band = (S.shotExtra ? 240 : 190) * u, y0 = h - band;
   const g = ctx.createLinearGradient(0, y0 - 80 * u, 0, h);
   g.addColorStop(0, 'rgba(2,6,18,0)'); g.addColorStop(0.45, 'rgba(2,6,18,0.82)'); g.addColorStop(1, 'rgba(2,6,18,0.95)');
   ctx.fillStyle = g; ctx.fillRect(0, y0 - 80 * u, w, band + 80 * u);
@@ -2278,9 +2344,11 @@ function renderShot(w, h) {
   ctx.textBaseline = 'alphabetic'; ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 8 * u;
   const caption = S.shotCap || T().shotDefault, date = simDate();
   const when = date.toLocaleString(S.lang, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', ...tzOpt() });
-  fit(caption, 44, 800); ctx.fillStyle = '#f8fafc'; ctx.fillText(caption, tx, cy - 22 * u);
-  fit(`📍 ${S.place.name} · ${when}`, 28, 600); ctx.fillStyle = '#bae6fd'; ctx.fillText(`📍 ${S.place.name} · ${when}`, tx, cy + 18 * u);
-  fit('DarwinCaos · youtube.com/@darwincaos', 26, 700); ctx.fillStyle = '#38bdf8'; ctx.fillText('DarwinCaos · youtube.com/@darwincaos', tx, cy + 54 * u);
+  const y1 = S.shotExtra ? cy - 46 * u : cy - 22 * u;
+  fit(caption, 44, 800); ctx.fillStyle = '#f8fafc'; ctx.fillText(caption, tx, y1);
+  fit(`📍 ${S.place.name} · ${when}`, 28, 600); ctx.fillStyle = '#bae6fd'; ctx.fillText(`📍 ${S.place.name} · ${when}`, tx, y1 + 40 * u);
+  if (S.shotExtra) { fit(S.shotExtra, 26, 500); ctx.fillStyle = '#e2e8f0'; ctx.fillText(S.shotExtra, tx, y1 + 76 * u); }
+  fit('DarwinCaos · youtube.com/@darwincaos', 26, 700); ctx.fillStyle = '#38bdf8'; ctx.fillText('DarwinCaos · youtube.com/@darwincaos', tx, y1 + (S.shotExtra ? 112 : 76) * u);
   ctx.shadowBlur = 0;
   return out;
 }
@@ -2289,9 +2357,23 @@ function makeShot() {
   const c = renderShot(w, h);
   return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.92));
 }
+S.shotMode = 'now';
 async function openShot() {
-  S.shotCap = shotCaption(); S.shotEntry = S.selected; // antes de que la ventana cierre la ficha
+  S.shotCap = shotCaption(); S.shotEntry = S.selected; S.shotExtra = ''; // antes de que la ventana cierre la ficha
+  S.shotMode = 'now'; S.postal = null;
   toggleModal('modalShot');
+  const modes = $('shotModes'); modes.replaceChildren();
+  [['now', T().shotNow], ['special', T().shotSpecial]].forEach(([k, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.shotMode === k ? ' on' : ''); b.textContent = label;
+    b.onclick = () => {
+      S.shotMode = k; modes.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b));
+      $('shotForm').hidden = k !== 'special';
+      if (k === 'now') { S.postal = null; S.shotCap = shotCaption(); S.shotExtra = ''; openShot.refresh(); }
+      else { $('postPlace').textContent = `📍 ${(S.postPlace || S.place).name}`; if (!$('postDate').value) $('postDate').value = '1990-03-14T03:20'; }
+    };
+    modes.append(b);
+  });
+  $('shotForm').hidden = true;
   const box = $('shotFormats'); box.replaceChildren();
   Object.entries(T().shotFormats).forEach(([k, label]) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.shotFormat === k ? ' on' : ''); b.textContent = label;
@@ -2301,12 +2383,72 @@ async function openShot() {
   await openShot.refresh();
 }
 openShot.refresh = async () => {
-  shotBlob = await makeShot();
+  shotBlob = S.postal ? await makePostal() : await makeShot();
   if (shotUrl) URL.revokeObjectURL(shotUrl);
   shotUrl = URL.createObjectURL(shotBlob);
   $('shotImg').src = shotUrl;
 };
-const shotName = () => `darwincaos-cielo-${simDate().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.jpg`;
+const shotName = () => `darwincaos-cielo-${(S.postal ? S.postal.date : simDate()).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.jpg`;
+
+// ── Postal «El cielo de una fecha especial»: reconstruye el cielo de cualquier fecha, hora y lugar ──
+// Hora local del lugar elegido → instante UTC (respeta su zona horaria, incluso en fechas antiguas)
+function zonedToUtc(str, tz) {
+  const [d, t = '00:00'] = str.split('T'), [y, mo, da] = d.split('-').map(Number), [h, mi] = t.split(':').map(Number);
+  if (!tz) return new Date(y, mo - 1, da, h, mi);
+  const want = Date.UTC(y, mo - 1, da, h, mi);
+  let guess = want;
+  for (let i = 0; i < 3; i++) {
+    const p = new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(guess));
+    const g = k => +p.find(x => x.type === k).value;
+    guess += want - Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute'));
+  }
+  return new Date(guess);
+}
+async function makePostal() {
+  const P = S.postal, keep = { place: S.place, offset: S.offset, q: camera.quaternion.clone(), fov: S.fov, sel: S.selected };
+  // Cielo de ese momento y lugar (sin guardar nada: al terminar se restaura todo)
+  S.place = P.place; observer = new A.Observer(P.place.lat, P.place.lon, 0);
+  S.offset = +P.date - Date.now(); S.selected = null;
+  updateSkyMatrix(simDate(), true); updateBodies(simDate(), true);
+  // Dato curioso: fase de la Luna y astros sobre el horizonte
+  const t = T(), ph = A.MoonPhase(P.date), ill = A.Illumination('Moon', P.date).phase_fraction;
+  const moonName = Math.min(Math.abs(ph - 180), 360 - Math.abs(ph - 180)) < 12 ? t.phFull : Math.min(ph, 360 - ph) < 12 ? t.phNew : ph < 180 ? t.phWax : t.phWan;
+  const up = BODIES.filter(b => !['sun', 'moon', 'pluto', 'neptune', 'uranus'].includes(b.id) && vecToAltAz(b.holder.getWorldPosition(new THREE.Vector3())).alt > 3);
+  const sunAlt = vecToAltAz(BODIES[0].holder.getWorldPosition(new THREE.Vector3())).alt;
+  S.shotExtra = `🌙 ${moonName} (${fmtNum(ill * 100)} %)` + (up.length ? ` · ✨ ${up.map(bodyName).join(', ')}` : '') + (sunAlt > 0 ? ` · ☀️ ${t.dayTime}` : '');
+  S.shotCap = P.title || t.postDefault;
+  // Encuadre: hacia el astro brillante más alto, o al sur (al norte en el hemisferio sur), con campo amplio
+  const best = up.concat(BODIES.filter(b => b.id === 'moon')).map(b => vecToAltAz(b.holder.getWorldPosition(new THREE.Vector3()))).filter(a => a.alt > 5).sort((a, b) => b.alt - a.alt)[0];
+  const az = best ? best.az : (P.place.lat >= 0 ? 180 : 0), alt = best ? THREE.MathUtils.clamp(best.alt, 25, 60) : 40;
+  camera.lookAt(altAzVec(az, alt)); setFov(80);
+  const issVis = ISS.group.visible; ISS.group.visible = false; selMarker.visible = false; // la ISS y el marcador son de hoy, no de esa fecha
+  const blob = await makeShot();
+  ISS.group.visible = issVis;
+  // Restaurar
+  S.place = keep.place; observer = new A.Observer(keep.place.lat, keep.place.lon, 0); S.offset = keep.offset; S.selected = keep.sel;
+  camera.quaternion.copy(keep.q); setFov(keep.fov);
+  updateSkyMatrix(simDate(), true); updateBodies(simDate(), true);
+  return blob;
+}
+$('postCityBtn').onclick = async () => {
+  const q = $('postCity').value.trim();
+  if (!q) return;
+  try {
+    const r = (JSON.parse(await fetchText(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=${S.lang}&format=json`)).results || [])[0];
+    if (r) { S.postPlace = { name: [...new Set([r.name, r.admin1, r.country].filter(Boolean))].join(', '), lat: r.latitude, lon: r.longitude, tz: r.timezone }; $('postPlace').textContent = `📍 ${S.postPlace.name}`; }
+    else $('postPlace').textContent = T().noResults;
+  } catch { $('postPlace').textContent = T().gpsFail; }
+};
+$('postMake').onclick = async () => {
+  const v = $('postDate').value;
+  if (!v) return;
+  const place = S.postPlace || S.place;
+  S.postal = { title: $('postTitle').value.trim(), place, date: zonedToUtc(v, place.tz) };
+  $('postMake').textContent = '…';
+  await openShot.refresh();
+  $('postMake').textContent = T().postMake;
+  S.shotEntry = null;
+};
 function saveShot() {
   const a = document.createElement('a'); a.href = shotUrl; a.download = shotName(); document.body.append(a); a.click(); a.remove();
 }
@@ -2316,7 +2458,7 @@ $('shotSave').onclick = saveShot;
 $('shotShare').onclick = async () => {
   if (!shotBlob) return;
   const file = new File([shotBlob], shotName(), { type: 'image/jpeg' });
-  const text = `${S.shotCap || T().shotDefault} · ${T().shotText} ${shareUrl(S.shotEntry)}`;
+  const text = S.postal ? `${S.shotCap} · ${S.postal.place.name} · ${T().shotText} ${location.href.split('?')[0]}` : `${S.shotCap || T().shotDefault} · ${T().shotText} ${shareUrl(S.shotEntry)}`;
   try {
     if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: 'Planetario DarwinCaos', text });
     else { saveShot(); toast(T().shotSaved); }
@@ -2372,6 +2514,7 @@ async function init() {
   if (!window.__splash) startSensors(false);
   window.__splash?.ready(firstVisit, byUser => {
     startSensors(byUser);
+    if (byUser && firstVisit && !saved.place && !urlPlace) requestLocation(true); // primera visita: «Empezar» pide también la ubicación
     if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1400);
     try { const st = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); st.welcomed = true; localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch { }
   });

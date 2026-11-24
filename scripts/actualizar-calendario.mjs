@@ -26,7 +26,9 @@ const KEYWORDS = {
   saturn: ['saturno'], uranus: ['urano'], neptune: ['neptuno'], pluto: ['plutón', 'pluton'],
   iss: ['estación espacial', 'estacion espacial', ' iss'], m31: ['andrómeda', 'andromeda'], m42: ['nebulosa de orión', 'nebulosa de orion'],
   m45: ['pléyades', 'pleyades'], sgra: ['sagitario a', 'agujero negro de la vía láctea', 'centro de la galaxia'], cygx1: ['cygnus x-1'],
-  's:Betelgeuse': ['betelgeuse'], 's:Sirius': ['sirio'], 's:Polaris': ['estrella polar'], 's:Vega': ['vega'],
+  's:Betelgeuse': ['betelgeuse'], 's:Sirius': ['sirio'], 's:Polaris': ['estrella polar'], 's:Vega': ['vega'], 's:Antares': ['antares'],
+  'c:Ori': ['orión', 'orion'], 'c:UMa': ['osa mayor', 'el carro'], 'c:Cas': ['casiopea'], 'c:Sco': ['escorpio', 'escorpión'], 'c:Gem': ['géminis', 'gemínidas', 'geminidas'],
+  'c:Per': ['perseo', 'perseidas'], 'c:Leo': ['leónidas', 'leonidas', 'constelación de leo'], 'c:Lyr': ['líridas', 'liridas'], 'c:Cyg': ['cisne'], 'c:Tau': ['tauro'], 'c:And': ['andrómeda'],
 };
 
 const decode = s => s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -36,7 +38,8 @@ const tag = (xml, name) => { const m = xml.match(new RegExp(`<${name}[^>]*>([\\s
 export function parseYouTubeRss(xml) {
   return [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map(([, e]) => {
     const id = tag(e, 'yt:videoId');
-    return { id, titulo: tag(e, 'title'), fecha: tag(e, 'published'), url: `https://www.youtube.com/watch?v=${id}`,
+    const corto = /youtube\.com\/shorts\//.test(e);
+    return { id, titulo: tag(e, 'title'), fecha: tag(e, 'published'), corto, url: corto ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`,
       miniatura: (e.match(/<media:thumbnail url="([^"]+)"/) || [])[1] || `https://i.ytimg.com/vi/${id}/mqdefault.jpg` };
   }).filter(v => v.id);
 }
@@ -188,6 +191,16 @@ export async function findFeeds(home) {
   return [...found].map(([url, xml]) => ({ url, xml }));
 }
 
+export function relatedVideos(videos, max = 6) {
+  const out = {};
+  const sorted = [...videos].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha));
+  for (const [obj, words] of Object.entries(KEYWORDS)) {
+    const list = sorted.filter(v => words.some(w => (' ' + v.titulo.toLowerCase()).includes(w))).slice(0, max)
+      .map(v => ({ id: v.id, titulo: v.titulo, url: v.url, miniatura: v.miniatura, fecha: v.fecha, corto: !!v.corto }));
+    if (list.length) out[obj] = list;
+  }
+  return out;
+}
 export function videosByObject(videos) {
   const out = {};
   const sorted = [...videos].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha));
@@ -206,13 +219,14 @@ async function get(url, type = 'text') {
 
 async function main() {
   const prev = JSON.parse(await readFile(OUT, 'utf8').catch(() => '{}'));
-  const out = { actualizado: new Date().toISOString(), videos: prev.videos || [], lanzamientos: prev.lanzamientos || [], noticias: prev.noticias || [], manuales: [], videosPorObjeto: prev.videosPorObjeto || {} };
+  const out = { actualizado: new Date().toISOString(), videos: prev.videos || [], lanzamientos: prev.lanzamientos || [], noticias: prev.noticias || [], noticiasPorIdioma: prev.noticiasPorIdioma || {}, manuales: [], videosPorObjeto: prev.videosPorObjeto || {}, videosRelacionados: prev.videosRelacionados || {} };
 
   try {
     const nuevos = parseYouTubeRss(await get(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`));
     const all = new Map([...out.videos, ...nuevos].map(v => [v.id, v]));
-    out.videos = [...all.values()].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha)).slice(0, 120);
+    out.videos = [...all.values()].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha)).slice(0, 2000); // todo el catálogo del canal
     out.videosPorObjeto = videosByObject(out.videos);
+    out.videosRelacionados = relatedVideos(out.videos);
     console.log(`Vídeos: ${nuevos.length} en el RSS, ${out.videos.length} guardados`);
   } catch (e) { console.warn('YouTube: se conservan los datos anteriores →', e.message); }
 
@@ -244,6 +258,8 @@ async function main() {
   }
   if (news.length) {
     out.noticias = pickNews(news);
+    out.noticiasPorIdioma = { es: pickNews(news.filter(n => n.idioma === 'es')), en: pickNews(news.filter(n => n.idioma === 'en')) };
+    console.log(`Noticias por idioma: ${out.noticiasPorIdioma.es.length} en español, ${out.noticiasPorIdioma.en.length} en inglés`);
     console.log(`Noticias relevantes seleccionadas: ${out.noticias.length}`);
     out.noticias.forEach(n => console.log(`  [${n.puntos}] ${n.fuente}: ${n.titulo}`));
   }

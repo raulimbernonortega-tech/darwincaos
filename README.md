@@ -70,6 +70,18 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.5 — 24 de noviembre de 2026
+Mejoras de uso a partir de las pruebas en iPhone:
+- **Cabecera en una fila**: ubicación, fecha y brújula. Sin azimut ni altura; solo aparece un aviso ámbar **«↓ Bajo el horizonte»** cuando miras al suelo.
+- **Barra inferior en una línea**: buscador, 🧭 seguir el móvil, 📷 cámara y zoom (− y + solo en ordenador).
+- **Calendario con tres pestañas**: **Ahora** (antes «Qué hay en el cielo»), **Esta noche** y **Eventos**.
+- **Modo «Buscar»** al pulsar 🎯 Apuntar: la ficha se recoge en una pastilla, una flecha grande indica hacia dónde girar («→ 40° · ↑ 20°») y el objeto se marca al encontrarlo (vibración en Android).
+- **Ubicación**: «Empezar» la pide en la primera visita; si el iPhone la tiene bloqueada, se explica cómo activarla.
+- **Vídeos relacionados** en la ficha de cada astro (largos y shorts) con miniatura; «Ver en el canal» busca en el canal o, si no hay vídeos del tema, abre el canal. Catálogo completo del canal.
+- **Noticias según el idioma** de la app (español o inglés).
+- **🎂 Postal «El cielo de una fecha especial»** en 📸: cielo reconstruido de cualquier fecha, hora y ciudad, con título, fase de la Luna y planetas visibles.
+- Pantalla limpia: muestra la ficha del astro tocado. Sin N/E/S/O en el horizonte. Campos a 16 px (el iPhone ya no amplía al escribir). Nombre de la constelación sin solaparse con la hora.
+
 ### Versión 1.4 — 23 de noviembre de 2026
 - **Mitología de las 88 constelaciones** (`data/mitologia.json`, en español e inglés). Al tocar una constelación, su ficha muestra:
   - las 52 clásicas: su **mito griego** (Orión y el escorpión, Perseo y Medusa, Calisto y las osas…);

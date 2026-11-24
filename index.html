@@ -34,17 +34,31 @@
     .pill { background: var(--panel); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
 
     /* Cabecera */
-    .top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 70px; z-index: 12; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; }
+    .top { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 70px; z-index: 12; display: flex; flex-wrap: nowrap; gap: 6px; pointer-events: none; min-width: 0; }
+    .top > #placeBtn { flex: 0 1 auto; min-width: 0; } .top > #timeBtn { flex: 0 0 auto; }
     .top > * { pointer-events: auto; }
-    .top-btn { display: flex; align-items: center; gap: 6px; padding: 7px 11px; font-size: 12.5px; font-weight: 650; border: 1px solid var(--border); white-space: nowrap; max-width: 100%; }
+    .top-btn { display: flex; align-items: center; gap: 6px; padding: 9px 11px; font-size: 12.5px; font-weight: 650; border: 1px solid var(--border); white-space: nowrap; max-width: 100%; min-width: 0; }
+    .top-btn span { min-width: 0; }
     .top-btn span { overflow: hidden; text-overflow: ellipsis; }
     #timeBtn.shifted { border-color: var(--warn); color: var(--warn); }
-    .orient { display: flex; align-items: center; gap: 9px; padding: 7px 11px; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #belowTag { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 110px); z-index: 14; padding: 6px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--warn); border-color: rgba(251,191,36,.5); display: none; pointer-events: none; }
+    #belowTag.show { display: block; }
     .tag { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
     .tag.above { background: rgba(34,197,94,0.16); color: var(--ok); }
     .tag.below { background: rgba(245,158,11,0.18); color: var(--warn); }
 
-    #focusBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 52px); left: 50%; transform: translateX(-50%); z-index: 9; color: #e0f2fe; font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; text-shadow: 0 1px 6px #000; pointer-events: none; opacity: 0; transition: opacity .3s; white-space: nowrap; }
+    #focusBanner { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 58px); left: 50%; transform: translateX(-50%); z-index: 9; color: #e0f2fe; font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; text-shadow: 0 1px 6px #000; pointer-events: none; opacity: 0; transition: opacity .3s; white-space: nowrap; max-width: calc(100vw - 150px); overflow: hidden; text-overflow: ellipsis; }
+    #finder { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 14; display: none; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+    #finder.show { display: flex; }
+    #finderArrow { font-size: 64px; line-height: 1; color: #38bdf8; text-shadow: 0 0 18px rgba(56,189,248,.9), 0 2px 6px #000; transition: transform .12s linear; }
+    #finderText { font-size: 15px; font-weight: 800; color: #fff; background: rgba(3,7,18,.72); border: 1px solid rgba(56,189,248,.5); border-radius: 999px; padding: 6px 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #finder.found #finderArrow { display: none; }
+    #finder.found #finderText { border-color: var(--ok); color: var(--ok); }
+    #findChip { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 56px); left: 50%; transform: translateX(-50%); z-index: 16; display: none; align-items: center; gap: 4px; padding: 4px 4px 4px 14px; border-radius: 999px; border-color: var(--accent); }
+    #findChip.show { display: flex; }
+    #findChip button { background: none; border: none; color: #e0f2fe; font-size: 14px; font-weight: 700; padding: 6px 4px; }
+    #findClose { color: var(--muted) !important; padding: 6px 10px !important; }
+    body.finding #focusBanner { display: none; }
     #guide { position: fixed; z-index: 14; display: none; flex-direction: column; align-items: center; gap: 2px; transform: translate(-50%, -50%); pointer-events: none; color: #38bdf8; text-shadow: 0 0 8px rgba(56,189,248,.8), 0 1px 4px #000; }
     #guide span { font-size: 30px; line-height: 1; display: block; }
     #guide small { font-size: 11px; font-weight: 700; color: #e0f2fe; white-space: nowrap; }
@@ -52,20 +66,20 @@
     #compass { position: fixed; top: max(10px, env(safe-area-inset-top)); right: 12px; z-index: 13; width: 48px; height: 48px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; }
     #compass svg { width: 40px; height: 40px; transition: transform .15s linear; }
     #compass span { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; color: #fecaca; background: #b91c1c; border-radius: 6px; padding: 0 4px; line-height: 14px; }
-    #homeBtn { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 108px); z-index: 16; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #e0f2fe; border: 1px solid var(--accent); display: none; }
+    #homeBtn { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 62px); z-index: 16; padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #e0f2fe; border: 1px solid var(--accent); display: none; }
     #homeBtn.show { display: block; }
     #debugBox { position: fixed; left: 8px; right: 8px; top: calc(max(10px, env(safe-area-inset-top)) + 96px); z-index: 90; margin: 0; padding: 8px; background: rgba(0,0,0,.75); color: #a7f3d0; font: 11px/1.45 ui-monospace, monospace; border-radius: 8px; white-space: pre-wrap; pointer-events: none; }
     /* Pantalla limpia: solo cielo + brújula + botón para recuperar los menús */
     #uiBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 58px); right: 12px; z-index: 13; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; color: #e0f2fe; display: none; align-items: center; justify-content: center; padding: 0; }
     body.clean #uiBtn { display: flex; }
     body.clean .top, body.clean .dock, body.clean .bottom, body.clean #showerBanner, body.clean #homeBtn,
-    body.clean #infoCard, body.clean .modal, body.clean #toast { display: none !important; }
+    body.clean .modal, body.clean #toast, body.clean #belowTag { display: none !important; }
     body.clean #focusBanner { top: calc(max(10px, env(safe-area-inset-top)) + 14px); } /* el nombre de la constelación se mantiene */
     /* Calendario */
     #modalCal { width: min(520px, calc(100vw - 80px)); }
     @media (max-width: 560px) { #modalCal { width: calc(100vw - 24px); max-height: 78vh; } }
     .tabs { display: flex; gap: 6px; }
-    .tab { flex: 1; padding: 8px; border-radius: 10px; border: 1px solid rgba(56,189,248,.28); background: var(--card); color: var(--muted); font-size: 13px; font-weight: 700; }
+    .tab { flex: 1; padding: 8px 4px; white-space: nowrap; border-radius: 10px; border: 1px solid rgba(56,189,248,.28); background: var(--card); color: var(--muted); font-size: 13px; font-weight: 700; }
     .tab.on { background: rgba(14,165,233,.22); color: #fff; border-color: var(--accent); }
     .ev { display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 11px; text-align: left; width: 100%; }
     button.ev:hover, a.ev:hover { border-color: var(--accent); }
@@ -75,10 +89,16 @@
     .ev .what { font-size: 13px; font-weight: 700; margin-top: 1px; }
     .ev .more { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .ev img { width: 96px; height: 54px; object-fit: cover; border-radius: 8px; flex: none; }
+    #infoVideos { display: flex; flex-direction: column; gap: 6px; }
+    #infoVideos .ev { padding: 6px 8px; }
+    #infoVideos .ev img { width: 80px; height: 45px; }
+    .badge-short { display: inline-block; font-size: 10px; font-weight: 800; color: #fff; background: #dc2626; border-radius: 4px; padding: 0 5px; margin-right: 5px; vertical-align: 1px; }
     .ev.hl { border-color: rgba(251,191,36,.55); background: rgba(120,80,10,.25); }
     .sunbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .sunbar .stat b { font-size: 14px; }
     /* Compartir el cielo */
+    #shotForm { display: flex; flex-direction: column; gap: 8px; }
+    #shotForm[hidden] { display: none; }
     .shot-wrap { background: #000; border-radius: 12px; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 160px; }
     #shotImg { display: block; max-width: 100%; max-height: 52vh; object-fit: contain; }
     #reticle { position: fixed; top: var(--cy, 50%); left: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border: 1.5px solid rgba(186,230,253,.5); border-radius: 50%; z-index: 9; pointer-events: none; }
@@ -112,7 +132,7 @@
     .btn.ghost { background: rgba(14,165,233,.14); border: 1px solid rgba(56,189,248,.4); color: var(--accent); }
     .btn.yt { background: #dc2626; }
     .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-    input[type=text], input[type=datetime-local] { background: rgba(15,23,42,.9); border: 1px solid rgba(56,189,248,.35); color: #fff; border-radius: 10px; padding: 8px 11px; font-size: 13px; outline: none; min-width: 0; }
+    input[type=text], input[type=datetime-local] { background: rgba(15,23,42,.9); border: 1px solid rgba(56,189,248,.35); color: #fff; border-radius: 10px; padding: 8px 11px; font-size: 16px; outline: none; min-width: 0; } /* 16 px: el iPhone no hace zoom al escribir */
     input[type=range] { width: 100%; accent-color: var(--accent); }
     .switch { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid rgba(148,163,184,.35); background: rgba(100,116,139,.2); color: var(--muted); min-width: 48px; }
     .switch.on { background: rgba(14,165,233,.22); color: var(--accent); border-color: var(--accent); }
@@ -125,7 +145,7 @@
     .note a { color: var(--accent); }
 
     /* Ficha de objeto */
-    #infoCard { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 104px); width: min(440px, calc(100vw - 24px)); z-index: 25; padding: 14px; border-radius: 18px; display: none; flex-direction: column; gap: 8px; }
+    #infoCard { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 62px); width: min(440px, calc(100vw - 24px)); z-index: 25; padding: 14px; border-radius: 18px; display: none; flex-direction: column; gap: 8px; }
     #infoCard.open { display: flex; }
     @media (min-width: 900px) { #infoCard { left: 16px; transform: none; bottom: 16px; width: 400px; } }
     .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; }
@@ -142,7 +162,7 @@
     #infoKeyData b { color: #f1f5f9; font-weight: 650; }
     .linkbtn { background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 700; padding: 0; align-self: flex-start; }
     @media (max-width: 560px) {
-      #infoCard { padding: 12px; gap: 7px; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 96px); }
+      #infoCard { padding: 12px; gap: 7px; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 60px); }
       .info-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
       .stat { padding: 5px 7px; } .stat b { font-size: 12px; } .stat small { font-size: 9.5px; }
       #infoCard { max-height: 62vh; }
@@ -151,13 +171,15 @@
     }
 
     /* Barra inferior */
-    .bottom { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 15; display: flex; flex-direction: column; align-items: center; gap: 7px; width: min(470px, calc(100vw - 24px)); }
+    .bottom { position: fixed; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 15; width: min(540px, calc(100vw - 24px)); }
     .search { width: 100%; display: flex; align-items: center; gap: 8px; border-radius: 999px; padding: 6px 8px 6px 14px; }
-    .search input { flex: 1; background: transparent; border: none; padding: 4px 0; }
+    .search input { flex: 1; background: transparent; border: none; padding: 4px 0; min-width: 0; -webkit-appearance: none; }
+    .search input::-webkit-search-cancel-button { display: none; }
     .zoom { font-size: 11px; font-weight: 750; color: var(--accent); background: rgba(14,165,233,.14); border: 1px solid rgba(56,189,248,.35); border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
     .modes { display: flex; gap: 5px; border-radius: 999px; padding: 5px; }
-    .mode { border: 1px solid transparent; background: transparent; color: var(--muted); font-size: 12px; font-weight: 650; padding: 7px 13px; border-radius: 999px; white-space: nowrap; }
-    .mode.active { background: rgba(56,189,248,.22); color: #fff; border-color: var(--accent); }
+    .mode { flex: none; width: 38px; height: 38px; border: 1px solid rgba(148,163,184,.3); background: rgba(15,23,42,.6); font-size: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; opacity: .75; }
+    @media (pointer: coarse) { .zoom.desk { display: none; } }
+    .mode.active { background: rgba(56,189,248,.28); border-color: var(--accent); opacity: 1; box-shadow: 0 0 12px rgba(56,189,248,.45); }
 
     #toast { position: fixed; left: 50%; top: calc(max(10px, env(safe-area-inset-top)) + 96px); transform: translateX(-50%); z-index: 60; padding: 9px 14px; border-radius: 12px; font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; text-align: center; max-width: calc(100vw - 40px); }
     /* Bienvenida */
@@ -193,12 +215,14 @@
   <div id="reticle"></div>
   <div id="focusBanner"></div>
   <div id="guide"><span>➤</span><small></small></div>
+  <div id="finder"><div id="finderArrow">➤</div><div id="finderText"></div></div>
+  <div id="findChip" class="pill"><button id="findOpen" type="button"></button><button id="findClose" type="button" aria-label="Cerrar">✕</button></div>
   <div id="redFilter"></div>
   <!-- Bienvenida: amanecer orbital + marca. Sustituye a la pantalla de carga -->
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.4" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.5" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -303,12 +327,8 @@
   <header class="top">
     <button id="placeBtn" class="pill top-btn" type="button">📍 <span id="placeLabel">—</span></button>
     <button id="timeBtn" class="pill top-btn" type="button">🕒 <span id="timeLabel">—</span></button>
-    <div class="pill orient">
-      <span>Az <strong id="azText">0°</strong></span>
-      <span>Alt <strong id="altText">0°</strong></span>
-      <span id="horizonTag" class="tag above"></span>
-    </div>
   </header>
+  <div id="belowTag" class="pill" data-i18n="belowTag">↓ Bajo el horizonte</div>
   <div id="showerBanner" class="pill"></div>
   <button id="uiBtn" class="pill" type="button" data-i18n-title="showMenus" title="Mostrar menús" aria-label="Mostrar menús">☰</button>
   <button id="compass" class="pill" type="button" title="Brújula · toca para mirar al Norte" aria-label="Brújula">
@@ -317,9 +337,6 @@
   </button>
 
   <aside class="dock pill" aria-label="Herramientas">
-    <button id="dockSky" class="dock-btn" type="button" data-i18n-title="skyNow" title="Qué hay en el cielo">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-    </button>
     <button id="dockCal" class="dock-btn" type="button" data-i18n-title="calTitle" title="Calendario">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.6"/></svg>
     </button>
@@ -349,6 +366,7 @@
       <input id="cityInput" type="text" style="flex:1" data-i18n-ph="cityPh" placeholder="Busca una ciudad: Tokio, Lima…" />
       <button id="cityBtn" class="btn ghost" type="button" data-i18n="search">Buscar</button>
     </div>
+    <p id="locHelp" class="note" hidden></p>
     <div id="cityChips" class="chips"></div>
   </section>
 
@@ -368,7 +386,7 @@
 
   <!-- Qué hay en el cielo -->
   <section id="modalSky" class="modal pill">
-    <div class="modal-head"><div class="modal-title" data-i18n="skyNow">🔭 Qué hay en el cielo</div><button class="close" type="button">✕</button></div>
+    <div class="modal-head"><div class="modal-title" data-i18n="searchTitle">🔎 Buscar</div><button class="close" type="button">✕</button></div>
     <div id="skyList" class="scroll"></div>
   </section>
 
@@ -376,7 +394,8 @@
   <section id="modalCal" class="modal pill">
     <div class="modal-head"><div class="modal-title" data-i18n="calTitle">📅 Calendario</div><button class="close" type="button">✕</button></div>
     <div class="tabs">
-      <button id="tabTonight" class="tab on" type="button" data-i18n="tabTonight">🌙 Esta noche</button>
+      <button id="tabNow" class="tab on" type="button" data-i18n="tabNow">🔭 Ahora</button>
+      <button id="tabTonight" class="tab" type="button" data-i18n="tabTonight">🌙 Esta noche</button>
       <button id="tabEvents" class="tab" type="button" data-i18n="tabEvents">📅 Eventos</button>
     </div>
     <div id="calBody" class="scroll"></div>
@@ -385,6 +404,17 @@
   <!-- Compartir el cielo -->
   <section id="modalShot" class="modal pill">
     <div class="modal-head"><div class="modal-title" data-i18n="shotTitle">📸 Compartir el cielo</div><button class="close" type="button">✕</button></div>
+    <div id="shotModes" class="seg"></div>
+    <div id="shotForm" hidden>
+      <input id="postTitle" type="text" data-i18n-ph="postTitlePh" placeholder="El día que nací" maxlength="60" />
+      <input id="postDate" type="datetime-local" />
+      <div class="btn-row">
+        <input id="postCity" type="text" style="flex:1" data-i18n-ph="postCityPh" placeholder="Ciudad (por defecto, la actual)" />
+        <button id="postCityBtn" class="btn ghost" type="button" data-i18n="search">Buscar</button>
+      </div>
+      <p id="postPlace" class="note"></p>
+      <button id="postMake" class="btn" type="button" data-i18n="postMake">✨ Crear postal</button>
+    </div>
     <div id="shotFormats" class="seg"></div>
     <div class="shot-wrap"><img id="shotImg" alt="" /></div>
     <div class="btn-row">
@@ -404,7 +434,7 @@
     <div class="modal-head"><div class="modal-title">🪐 Planetario DarwinCaos</div><button class="close" type="button">✕</button></div>
     <div class="scroll">
       <p class="note" data-i18n="aboutText">Posiciones calculadas en tiempo real para tu ubicación. La ISS usa sus elementos orbitales actuales.</p>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.4</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 1.5</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -431,6 +461,7 @@
     <div id="infoText"></div>
     <div id="infoKeyData" hidden></div>
     <button id="infoMore" class="linkbtn" type="button">Leer más ▾</button>
+    <div id="infoVideos"></div>
     <div class="btn-row">
       <button id="infoPoint" class="btn ghost" type="button" data-i18n="pointTo">Apuntar</button>
       <button id="infoShare" class="btn ghost" type="button" data-i18n="share">Compartir</button>
@@ -443,22 +474,20 @@
   <div class="bottom">
     <div class="search pill">
       <span>🔎</span>
-      <input id="search" type="text" autocomplete="off" data-i18n-ph="searchPh" placeholder="Busca Saturno, Orión, Sirio, ISS…" />
-      <button id="zoomOut" class="zoom" type="button" title="Alejar" aria-label="Alejar">−</button>
+      <input id="search" type="search" autocomplete="off" enterkeyhint="search" data-i18n-ph="searchPh" placeholder="Busca Saturno, Orión, Sirio, ISS…" />
+      <button id="zoomOut" class="zoom desk" type="button" title="Alejar" aria-label="Alejar">−</button>
       <button id="zoomBtn" class="zoom" type="button" title="Restablecer zoom">1.0x</button>
-      <button id="zoomIn" class="zoom" type="button" title="Ampliar" aria-label="Ampliar">+</button>
+      <button id="zoomIn" class="zoom desk" type="button" title="Ampliar" aria-label="Ampliar">+</button>
+      <button id="btnSensor" class="mode" type="button" data-i18n-title="sensor" title="Seguir el móvil" aria-label="Seguir el móvil">🧭</button>
+      <button id="btnCamera" class="mode" type="button" data-i18n-title="camera" title="Cámara" aria-label="Cámara">📷</button>
     </div>
-    <nav class="modes pill">
-      <button id="btnSensor" class="mode" type="button" data-i18n="sensor">🧭 Seguir el móvil</button>
-      <button id="btnCamera" class="mode" type="button" data-i18n="camera">📷 Cámara</button>
-    </nav>
   </div>
 
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.4"></script>
-  <script src="vendor/satellite.min.js?v=1.4"></script>
-  <script src="vendor/geomag.min.js?v=1.4"></script>
-  <script type="module" src="app.js?v=1.4"></script>
+  <script src="vendor/astronomy.browser.min.js?v=1.5"></script>
+  <script src="vendor/satellite.min.js?v=1.5"></script>
+  <script src="vendor/geomag.min.js?v=1.5"></script>
+  <script type="module" src="app.js?v=1.5"></script>
 </body>
 </html>
