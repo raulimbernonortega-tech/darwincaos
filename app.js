@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.5.2';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1948,7 +1948,7 @@ function renderTonight(box) {
 // ── Eventos ──
 // El cálculo es pesado (≈1 s en móvil): se hace por trozos, cediendo el control al navegador
 // para que la ventana nunca se congele, se guarda en caché (memoria + localStorage) y se adelanta en segundo plano.
-const EV_STORE = 'dc_eventos_cache_v1';
+const EV_STORE = 'dc_eventos_cache_v2', EV_DAYS = 61; // dos meses vista
 let eventsCache = { key: '', items: null }, eventsJob = null;
 function eventsKey() { const d = new Date(simDate()); d.setHours(0, 0, 0, 0); return `${S.place.lat.toFixed(2)},${S.place.lon.toFixed(2)},${d.toDateString()},${S.lang}`; }
 function eventsReady() { return eventsCache.key === eventsKey() ? eventsCache.items : null; }
@@ -1965,20 +1965,21 @@ function getSkyEvents() { // promesa con los eventos; reutiliza el cálculo en c
   const stored = loadEventsStore(key);
   if (stored) { eventsCache = { key, items: stored }; return Promise.resolve(stored); }
   if (eventsJob?.key === key) return eventsJob.promise;
-  const promise = computeSkyEvents(key).then(items => {
-    if (eventsJob?.key === key) eventsJob = null;
+  const job = { key };
+  eventsJob = job; // se registra ANTES de empezar: un cálculo viejo se cancela, el nuevo nunca
+  const promise = job.promise = computeSkyEvents(job).then(items => {
+    if (eventsJob === job) eventsJob = null;
     eventsCache = { key, items };
     try { localStorage.setItem(EV_STORE, JSON.stringify({ key, items })); } catch { }
     return items;
-  }, err => { if (eventsJob?.key === key) eventsJob = null; throw err; });
-  eventsJob = { key, promise };
+  }, err => { if (eventsJob === job) eventsJob = null; throw err; });
   return promise;
 }
-async function computeSkyEvents(key) {
+async function computeSkyEvents(job) {
   let slice = performance.now();
-  const breathe = async () => { if (performance.now() - slice > 12) { await new Promise(r => setTimeout(r, 0)); slice = performance.now(); } if (eventsJob && eventsJob.key !== key) throw new Error('cancelado'); };
+  const breathe = async () => { if (performance.now() - slice > 8) { await new Promise(r => setTimeout(r, 0)); slice = performance.now(); } if (eventsJob !== job) throw new Error('cancelado'); };
   const start = new Date(simDate()); start.setHours(0, 0, 0, 0);
-  const c = CT(), end = new Date(+start + 120 * 864e5), far = new Date(+start + 400 * 864e5), items = [];
+  const c = CT(), end = new Date(+start + EV_DAYS * 864e5), far = end, items = [];
   const push = (date, ico, what, more, action, hl) => { if (date >= start && date <= far) items.push({ date, cat: 'sky', ico, what, more, action, hl }); };
   const pname = id => bodyName(BODIES.find(b => b.id === id));
   try { // Fases de la Luna y superlunas
@@ -2100,8 +2101,10 @@ function renderEvents(box) {
   if (!sky) { // aún calculando: mostramos el resto ya y pintamos los eventos del cielo cuando estén
     const wait = document.createElement('p'); wait.className = 'note calc'; wait.textContent = c.calculating; box.append(wait);
     const gen = calGen;
-    getSkyEvents().then(() => { if (gen === calGen && $('modalCal').classList.contains('open')) renderCal(true); })
-      .catch(err => { if (gen === calGen && !/cancelado/.test(err.message)) wait.textContent = '⚠️ ' + err.message; });
+    const again = () => gen === calGen && $('modalCal').classList.contains('open');
+    const run = (tries) => getSkyEvents().then(() => { if (again()) renderCal(true); })
+      .catch(err => { if (!again()) return; if (/cancelado/.test(err.message) && tries < 3) run(tries + 1); else wait.textContent = '⚠️ ' + err.message; });
+    run(0);
     return;
   }
   const all = [...sky, ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
@@ -2176,10 +2179,12 @@ function updateDebug(now) {
     `pantalla ${screen.orientation?.angle ?? window.orientation ?? 0}° · ${debugFps} fps · resolución x${pixelRatio}`,
   ].filter(Boolean).join('\n');
 }
+const calOpenEl = $('modalCal'); let calSkip = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   if (debugEl) updateDebug(now);
   if (!document.hidden) adaptQuality(now);
+  if (calOpenEl.classList.contains('open') && (++calSkip % 6)) return; // con el calendario abierto el cielo se pinta a ~10 fps y el móvil calcula holgado
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   const date = simDate();
