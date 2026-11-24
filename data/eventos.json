@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T08:54:50.865Z",
+ "actualizado": "2026-11-24T11:39:29.300Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -500,32 +500,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Soyuz 2.1b | Progress MS-36 (97P)",
-   "fecha": "2026-11-24T10:17:00Z",
-   "estado": "TBC",
-   "proveedor": "Russian Federal Space Agency (ROSCOSMOS)",
-   "cohete": "Soyuz 2.1b",
-   "lugar": "Baikonur Cosmodrome, Republic of Kazakhstan",
-   "mision": "Progress resupply mission to the International Space Station.",
-   "tipo": "Resupply",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193901.jpeg",
-   "enlace": null,
-   "relevante": true
-  },
-  {
-   "nombre": "Ariane 64 Block 2 | Amazon Leo (LE-04)",
-   "fecha": "2026-11-24T10:45:00Z",
-   "estado": "Go",
-   "proveedor": "Arianespace",
-   "cohete": "Ariane 64 Block 2",
-   "lugar": "Guiana Space Centre, French Guiana",
-   "mision": "Amazon Leo, formerly known as Project Kuiper, is a mega constellation of satellites in Low Earth Orbit that will offer broadband internet access, this constellation will be managed by Kuiper Systems LLC, a subsidiary of Amazon. This constellation is planned to be composed of 3,276 satellites. The satellites are projected to be placed in 98 orbital planes in three orbital layers, one at 590 km, 610 km and 630 km altitude.\r\n\r\n35-40 satellites will be carried on each Ariane 6 launch.",
-   "tipo": "Communications",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_64_lifto_image_thumbnail_20260618063419.jpeg",
-   "enlace": null,
-   "relevante": true
-  },
-  {
    "nombre": "Falcon 9 Block 5 | USSF-266",
    "fecha": "2026-11-24T16:08:59Z",
    "estado": "Go",
@@ -630,19 +604,6 @@
    "relevante": true
   },
   {
-   "nombre": "Kuaizhou 11 | Unknown Payload",
-   "fecha": "2026-11-30T00:00:00Z",
-   "estado": "TBD",
-   "proveedor": "ExPace",
-   "cohete": "Kuaizhou 11",
-   "lugar": "Jiuquan Satellite Launch Center, People's Republic of China",
-   "mision": "Details TBD.",
-   "tipo": "Unknown",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kuaizhou_11_lif_image_thumbnail_20240520155835.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
    "nombre": "Mir | Demo Flight",
    "fecha": "2026-11-30T00:00:00Z",
    "estado": "TBD",
@@ -665,6 +626,19 @@
    "mision": "Details TBD.",
    "tipo": "Unknown",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193659.png",
+   "enlace": null,
+   "relevante": false
+  },
+  {
+   "nombre": "Kuaizhou 11 | Unknown Payload",
+   "fecha": "2026-12-01T08:00:00Z",
+   "estado": "TBC",
+   "proveedor": "ExPace",
+   "cohete": "Kuaizhou 11",
+   "lugar": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "mision": "Details TBD.",
+   "tipo": "Unknown",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/kuaizhou_11_lif_image_thumbnail_20240520155835.jpeg",
    "enlace": null,
    "relevante": false
   },
@@ -1018,6 +992,32 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
+  },
+  {
+   "nombre": "Falcon 9 Block 5 | Rivada 10",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Vandenberg SFB, CA, USA",
+   "mision": "24 satellites for Rivada's internet constellation.",
+   "tipo": "Communications",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
+  },
+  {
+   "nombre": "Falcon 9 Block 5 | Rivada 11",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Vandenberg SFB, CA, USA",
+   "mision": "24 satellites for Rivada's internet constellation.",
+   "tipo": "Communications",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
   }
  ],
  "noticias": [
@@ -1030,7 +1030,8 @@
    "fecha": "2026-11-23T17:23:50Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 7
+   "puntos": 7,
+   "mini": "data/miniaturas/9d219078a92ba6.jpg"
   },
   {
    "titulo": "NASA’s Webb Shows How Supernova Dust Chronicles Star Evolution",
@@ -1041,7 +1042,8 @@
    "fecha": "2026-11-23T15:00:00Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 10
+   "puntos": 10,
+   "mini": "data/miniaturas/49fa93e4cbf5ac.jpg"
   },
   {
    "titulo": "China details its path to a crewed Moon landing before 2030",
@@ -1063,7 +1065,8 @@
    "fecha": "2026-11-21T05:05:00Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 6
+   "puntos": 6,
+   "mini": "data/miniaturas/bf4fbd021bb9ab.jpg"
   },
   {
    "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
@@ -1098,7 +1101,8 @@
    "fecha": "2026-11-18T17:36:03Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 7
+   "puntos": 7,
+   "mini": "data/miniaturas/2944bee1f3eb53.jpg"
   },
   {
    "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
@@ -1186,11 +1190,12 @@
     "fecha": "2026-11-24T08:50:01Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 5
+    "puntos": 5,
+    "mini": "data/miniaturas/74bc823d7203b6.jpg"
    },
    {
     "titulo": "Progress MS-36 set to launch to ISS from Baikonur",
-    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
+    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\r\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
     "url": "https://www.nasaspaceflight.com/2026/11/progress-ms-36/",
     "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/04/IMG_9490.png",
     "fuente": "NASASpaceflight",
@@ -1208,7 +1213,8 @@
     "fecha": "2026-11-23T17:23:50Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 7
+    "puntos": 7,
+    "mini": "data/miniaturas/9d219078a92ba6.jpg"
    },
    {
     "titulo": "NASA’s Webb Shows How Supernova Dust Chronicles Star Evolution",
@@ -1219,7 +1225,8 @@
     "fecha": "2026-11-23T15:00:00Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 10
+    "puntos": 10,
+    "mini": "data/miniaturas/49fa93e4cbf5ac.jpg"
    },
    {
     "titulo": "China details its path to a crewed Moon landing before 2030",
@@ -1241,7 +1248,8 @@
     "fecha": "2026-11-21T05:05:00Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 6
+    "puntos": 6,
+    "mini": "data/miniaturas/bf4fbd021bb9ab.jpg"
    },
    {
     "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
@@ -1252,7 +1260,8 @@
     "fecha": "2026-11-19T14:31:15Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 7
+    "puntos": 7,
+    "mini": "data/miniaturas/61a8b02d812d0f.jpg"
    },
    {
     "titulo": "What Is the Moon Base?",
@@ -1263,7 +1272,8 @@
     "fecha": "2026-11-18T17:36:03Z",
     "destacado": false,
     "idioma": "en",
-    "puntos": 7
+    "puntos": 7,
+    "mini": "data/miniaturas/2944bee1f3eb53.jpg"
    }
   ]
  },
