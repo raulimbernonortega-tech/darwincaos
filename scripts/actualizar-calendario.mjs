@@ -76,7 +76,7 @@ export function mapLaunches(json) {
 }
 
 // ── Noticias: solo espacio/astronomía y solo relevantes ──
-const NEWS_DAYS = 7, NEWS_MAX = 8;
+const NEWS_DAYS = 7, NEWS_DAYS_ES = 21, NEWS_MAX = 8; // en español hay menos noticias de espacio: ventana más larga
 const SPACE_ES = ['espacio', 'espacial', 'astronom', 'astrofís', 'planeta', 'exoplaneta', 'estrella', 'galaxia', 'telescopio', 'nasa', 'esa ', 'agencia espacial',
   'marte', 'luna ', 'lunar', 'júpiter', 'saturno', 'venus', 'mercurio', 'urano', 'neptuno', 'plutón', 'cometa', 'asteroide', 'meteor', 'eclipse', 'agujero negro',
   'supernova', 'nebulosa', 'cosmo', 'universo', 'sonda', 'astronauta', 'satélite', 'cohete', 'órbita', 'webb', 'hubble', 'artemis', 'vía láctea', 'sistema solar', 'sol '];
@@ -133,11 +133,11 @@ export function sameStoryAnyLang(a, b) {
   const shareNum = [...na].some(n => nb.has(n));
   return shareNum || Math.abs(Date.parse(a.fecha) - Date.parse(b.fecha)) < 36 * 3600e3;
 }
-export function pickNews(items, now = Date.now()) {
+export function pickNews(items, now = Date.now(), days = NEWS_DAYS) {
   const kept = [], urls = new Set();
   let apod = 0;
   items
-    .filter(n => n.titulo && n.url && now - Date.parse(n.fecha) < NEWS_DAYS * 864e5)
+    .filter(n => n.titulo && n.url && now - Date.parse(n.fecha) < days * 864e5)
     .filter(n => !urls.has(n.url) && urls.add(n.url)) // la misma noticia en varios canales RSS
     .map(n => ({ ...n, puntos: newsScore(n) }))
     .filter(n => n.puntos >= 3)
@@ -260,15 +260,15 @@ async function main() {
       if (!feeds.length) { console.log(`${src.nombre}: sin RSS disponible`); continue; }
       for (const f of feeds) {
         const items = parseRssItems(f.xml, src.nombre, src.espacio); news.push(...items);
-        const recent = items.filter(n => Date.now() - Date.parse(n.fecha) < NEWS_DAYS * 864e5);
-        console.log(`${src.nombre}: ${items.length} noticias en ${f.url} (${recent.length} de los últimos ${NEWS_DAYS} días)`);
-        recent.forEach(n => console.log(`    [${newsScore(n)}] ${n.fecha.slice(0, 10)} ${n.titulo}`));
+        const recent = items.filter(n => Date.now() - Date.parse(n.fecha) < NEWS_DAYS_ES * 864e5);
+        console.log(`${src.nombre}: ${items.length} noticias en ${f.url} (${recent.length} de los últimos ${NEWS_DAYS_ES} días)`);
+        recent.filter(n => newsScore(n) >= 3).forEach(n => console.log(`    ✔ [${newsScore(n)}] ${n.fecha.slice(0, 10)} ${n.titulo}`));
       }
     } catch (e) { console.warn(`${src.nombre}: no disponible →`, e.message); }
   }
   if (news.length) {
     out.noticias = pickNews(news);
-    out.noticiasPorIdioma = { es: pickNews(news.filter(n => n.idioma === 'es')), en: pickNews(news.filter(n => n.idioma === 'en')) };
+    out.noticiasPorIdioma = { es: pickNews(news.filter(n => n.idioma === 'es'), Date.now(), NEWS_DAYS_ES), en: pickNews(news.filter(n => n.idioma === 'en')) };
     console.log(`Noticias por idioma: ${out.noticiasPorIdioma.es.length} en español, ${out.noticiasPorIdioma.en.length} en inglés`);
     console.log(`Noticias relevantes seleccionadas: ${out.noticias.length}`);
     out.noticias.forEach(n => console.log(`  [${n.puntos}] ${n.fuente}: ${n.titulo}`));
