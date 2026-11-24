@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T13:27:53.772Z",
+ "actualizado": "2026-11-24T19:10:00.834Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -500,19 +500,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Falcon 9 Block 5 | USSF-266",
-   "fecha": "2026-11-24T16:08:59Z",
-   "estado": "Go",
-   "proveedor": "SpaceX",
-   "cohete": "Falcon 9 Block 5",
-   "lugar": "Vandenberg SFB, CA, USA",
-   "mision": "A classified mission for the United States Space Force. It is possibly a batch of classified LEO satellites based on SpaceX’s Starshield satellite bus, based on locations of ascent rocket stage drop zones being fits with previous SDA Transport Layer launches.",
-   "tipo": "Government/Top Secret",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_9_liftof_image_thumbnail_20260816171423.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
    "nombre": "Long March 2F/G | Shenzhou 24",
    "fecha": "2026-11-25T00:18:00Z",
    "estado": "Go",
@@ -981,46 +968,71 @@
    "relevante": false
   },
   {
-   "nombre": "Falcon 9 Block 5 | Rivada 1",
+   "nombre": "Falcon 9 Block 5 | SDA Tranche 2 Tracking Layer A",
    "fecha": "2026-12-31T00:00:00Z",
    "estado": "TBD",
    "proveedor": "SpaceX",
    "cohete": "Falcon 9 Block 5",
-   "lugar": "Vandenberg SFB, CA, USA",
-   "mision": "24 satellites for Rivada's internet constellation.",
-   "tipo": "Communications",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "Classified mission launched by the Space Development Agency (SDA) for Tranche 2 Tracking Layer.",
+   "tipo": "Government/Top Secret",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
   },
   {
-   "nombre": "Falcon 9 Block 5 | Rivada 10",
+   "nombre": "Falcon 9 Block 5 | SDA Tranche 2 Tracking Layer B",
    "fecha": "2026-12-31T00:00:00Z",
    "estado": "TBD",
    "proveedor": "SpaceX",
    "cohete": "Falcon 9 Block 5",
-   "lugar": "Vandenberg SFB, CA, USA",
-   "mision": "24 satellites for Rivada's internet constellation.",
-   "tipo": "Communications",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "Classified mission launched by the Space Development Agency (SDA) for Tranche 2 Tracking Layer.",
+   "tipo": "Government/Top Secret",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
   },
   {
-   "nombre": "Falcon 9 Block 5 | Rivada 11",
+   "nombre": "Falcon 9 Block 5 | SDA Tranche 2 Transport Layer A",
    "fecha": "2026-12-31T00:00:00Z",
    "estado": "TBD",
    "proveedor": "SpaceX",
    "cohete": "Falcon 9 Block 5",
    "lugar": "Vandenberg SFB, CA, USA",
-   "mision": "24 satellites for Rivada's internet constellation.",
-   "tipo": "Communications",
+   "mision": "Classified mission launched by the Space Development Agency (SDA) for Tranche 2 Transport Layer.",
+   "tipo": "Government/Top Secret",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
+  },
+  {
+   "nombre": "Falcon 9 Block 5 | USSF-31",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "Classified US Space Force carrying two payloads directly to geostationary orbit.",
+   "tipo": "Government/Top Secret",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
   }
  ],
  "noticias": [
+  {
+   "titulo": "Tiangong Space Station to welcome first international visitor",
+   "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
+   "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/",
+   "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/Chang-Zheng-2FG-Y24-carrying-Shenzhou-24-spacecraft-arrives-at-the-launch-site-on-November-17-CMSA.webp",
+   "fuente": "NASASpaceflight",
+   "fecha": "2026-11-24T16:26:52Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 10,
+   "mini": "data/miniaturas/22ec70cd45bb11.jpg"
+  },
   {
    "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
    "resumen": "NASA is seeking industry partners to develop and test the first nuclear reactor designed to provide electricity on the Moon, a major step toward establishing a sustained human presence on the lunar surface.  Lunar Reactor-1 (LR-1) will be a small fission power system that will ge",
@@ -1056,18 +1068,6 @@
    "idioma": "en",
    "puntos": 7,
    "mini": "data/miniaturas/527ae1519e78c7.jpg"
-  },
-  {
-   "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
-   "resumen": "APOD Science APOD APOD: 2026 November 21 –… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a b",
-   "url": "https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/",
-   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Neptune-South-Pole-Voyager-2_2327x1670.jpg",
-   "fuente": "NASA",
-   "fecha": "2026-11-21T05:05:00Z",
-   "destacado": false,
-   "idioma": "en",
-   "puntos": 6,
-   "mini": "data/miniaturas/bf4fbd021bb9ab.jpg"
   },
   {
    "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
@@ -1183,6 +1183,18 @@
   ],
   "en": [
    {
+    "titulo": "Tiangong Space Station to welcome first international visitor",
+    "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
+    "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/",
+    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/Chang-Zheng-2FG-Y24-carrying-Shenzhou-24-spacecraft-arrives-at-the-launch-site-on-November-17-CMSA.webp",
+    "fuente": "NASASpaceflight",
+    "fecha": "2026-11-24T16:26:52Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 10,
+    "mini": "data/miniaturas/22ec70cd45bb11.jpg"
+   },
+   {
     "titulo": "BepiColombo Enters Orbit Around Mercury Despite “Software Glitch”",
     "resumen": "The European Space Agency’s BepiColombo mission has successfully entered orbit around Mercury despite a software glitch that resulted in a shorter-than-planned thruster burn. According to the agency’s 23 November update, the BepiColombo spacecraft reoriented itself at 17:51 CET o",
     "url": "https://europeanspaceflight.com/bepicolombo-enters-orbit-around-mercury-despite-software-glitch/",
@@ -1193,18 +1205,6 @@
     "idioma": "en",
     "puntos": 5,
     "mini": "data/miniaturas/74bc823d7203b6.jpg"
-   },
-   {
-    "titulo": "Progress MS-36 set to launch to ISS from Baikonur",
-    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\r\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
-    "url": "https://www.nasaspaceflight.com/2026/11/progress-ms-36/",
-    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/04/IMG_9490.png",
-    "fuente": "NASASpaceflight",
-    "fecha": "2026-11-23T21:32:11Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 5,
-    "mini": "data/miniaturas/61a5c07252b2f5.jpg"
    },
    {
     "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
