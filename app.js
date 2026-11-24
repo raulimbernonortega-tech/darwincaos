@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5.4';
+const APP_VERSION = '1.5.5';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -225,7 +225,7 @@ const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const canvas = document.getElementById('sky');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(innerWidth, innerHeight, false);
 renderer.setClearColor(0x000000, 0);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(S.fov, innerWidth / innerHeight, 0.1, 3000);
@@ -2541,12 +2541,28 @@ $('shotShare').onclick = async () => {
   } catch { /* el usuario canceló */ }
 };
 
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+// Ajuste del lienzo al tamaño real de la pantalla. En iPhone, al abrir y cerrar el teclado del buscador
+// la página se encoge, se desplaza o se amplía y a veces NO avisa al volver: el cielo quedaba deformado
+// hasta recargar. Por eso, además del aviso, lo comprobamos nosotros mismos varias veces por segundo.
+let fitW = innerWidth, fitH = innerHeight;
+function fitRenderer(force = false) {
+  const w = innerWidth, h = innerHeight;
+  if (!force && w === fitW && h === fitH) return;
+  fitW = w; fitH = h;
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(w, h, false); // el CSS ya ocupa toda la pantalla; no fijamos píxeles en el estilo
   updateViewOffset();
   updateScreenSprites();
+}
+addEventListener('resize', () => fitRenderer());
+addEventListener('orientationchange', () => setTimeout(() => fitRenderer(true), 300));
+window.visualViewport?.addEventListener('resize', () => fitRenderer());
+setInterval(() => fitRenderer(), 500);
+// Al cerrar el teclado, devolvemos la página a su sitio (iOS la deja desplazada) y reajustamos
+document.addEventListener('focusout', e => {
+  if (!e.target.matches?.('input, textarea')) return;
+  setTimeout(() => { if (scrollX || scrollY) scrollTo(0, 0); fitRenderer(true); }, 250);
 });
 
 // ───────────── Arranque ─────────────

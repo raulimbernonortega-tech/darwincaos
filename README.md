@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.5.5 — 24 de noviembre de 2026
+- **El cielo ya no se deforma después de buscar en iPhone.** Al abrir y cerrar el teclado, iOS cambiaba el tamaño de la página sin avisar siempre y el cielo quedaba estirado hasta recargar. Ahora la app comprueba sola el tamaño de la pantalla, recoloca la página al cerrar el teclado y evita el zoom automático del iPhone.
+
 ### Versión 1.5.4 — 24 de noviembre de 2026 (corrección importante)
 - **Las noticias ya no desaparecen al hacer scroll en iPhone.** Sus imágenes eran las originales (fotos de varios MB, alguna incluso un vídeo) y el iPhone se quedaba sin memoria al reducirlas. Ahora el robot genera **miniaturas ligeras** (~5 KB) en `data/miniaturas/` y la app solo usa esas; las de YouTube se piden en tamaño mediano.
 
