@@ -70,6 +70,11 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.5.3 — 24 de noviembre de 2026 (corrección importante)
+- **Filtros del calendario instantáneos**: la lista de Eventos se construye una sola vez y los filtros (Todo, Cielo, Lanzamientos, Vídeos, Noticias) solo muestran u ocultan, sin recargar nada.
+- **Sin zonas en blanco en iPhone**: las ventanas ya no usan desenfoque sobre el cielo animado (era lo que saturaba el iPhone) y, con el calendario abierto, el cielo de fondo se detiene.
+- Las imágenes de noticias y vídeos se cargan sin bloquear la pantalla.
+
 ### Versión 1.5.2 — 24 de noviembre de 2026 (corrección importante)
 - **Eventos a dos meses vista**: menos información y cálculo casi instantáneo (≈0,4 s en un móvil lento frente a ≈6 s).
 - Corregido un fallo por el que, si la ubicación cambiaba mientras se calculaba, los eventos del cielo no llegaban a aparecer.

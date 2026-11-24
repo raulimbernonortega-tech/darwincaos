@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1834,7 +1834,7 @@ function evRow({ ico, when, what, more, onClick, href, img, hl }) {
   el.className = 'ev' + (hl ? ' hl' : '');
   if (href) { el.href = href; el.target = '_blank'; el.rel = 'noopener'; }
   if (onClick) { el.type = 'button'; el.onclick = onClick; }
-  if (img) { const i = document.createElement('img'); i.src = img; i.alt = ''; i.loading = 'lazy'; el.append(i); }
+  if (img) { const i = document.createElement('img'); i.alt = ''; i.loading = 'lazy'; i.decoding = 'async'; i.src = img; el.append(i); }
   else { const i = document.createElement('span'); i.className = 'ico'; i.textContent = ico; el.append(i); }
   const box = document.createElement('div');
   for (const [cls, txt] of [['when', when], ['what', what], ['more', more]]) if (txt) { const d = document.createElement('div'); d.className = cls; d.textContent = txt; box.append(d); }
@@ -2070,54 +2070,78 @@ function feedEvents() {
   for (const l of FEED.lanzamientos || []) { if (l.relevante === false) continue; /* solo los relevantes */ const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
   return items;
 }
-function renderEvents(box) {
-  const c = CT();
-  // Vídeos de la última semana
-  const week = (FEED?.videos || []).filter(v => Date.parse(v.fecha) > Date.now() - 7 * 864e5);
-  if (S.calFilter === 'all' || S.calFilter === 'video') {
-    if (week.length) {
-      box.append(section(`${c.newVideos} · ${c.thisWeek}`));
-      week.forEach(v => box.append(evRow({ img: v.miniatura, when: fmtDay(new Date(v.fecha)), what: v.titulo, href: v.url })));
-    } else if (S.calFilter === 'video') { const p = document.createElement('p'); p.className = 'note'; p.textContent = FEED ? c.empty : c.noFeed; box.append(p); }
-  }
-  // Últimas noticias: primero las tuyas (manuales), luego las automáticas relevantes
-  if (S.calFilter === 'all' || S.calFilter === 'news') {
-    const now = simDate();
-    const mine = (FEED?.manuales || []).filter(m => { const d = new Date(m.fecha); return !isNaN(d) && d > new Date(+now - 7 * 864e5); }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    const auto = FEED?.noticiasPorIdioma?.[S.lang] || (FEED?.noticias || []).filter(n => !n.idioma || n.idioma === S.lang);
-    if (mine.length || auto.length) {
-      box.append(section(c.latestNews));
-      mine.forEach(m => box.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
-      auto.forEach(n => box.append(evRow({ img: n.imagen || null, ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
-    } else if (S.calFilter === 'news') { const p = document.createElement('p'); p.className = 'note'; p.textContent = FEED ? c.empty : c.noFeed; box.append(p); }
-  }
+// La pestaña Eventos se construye UNA vez (con todo) y se guarda; los filtros solo muestran u ocultan
+// elementos, sin rehacer la lista ni recargar imágenes: así responden al instante en el iPhone.
+let evDom = { key: '', el: null };
+function applyEvFilter(wrap) {
+  const f = S.calFilter;
+  wrap.querySelectorAll('.chips .chip').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+  let any = false;
+  wrap.querySelectorAll('.evgrp').forEach(g => {
+    let vis;
+    if (g.dataset.cat) vis = f === 'all' || f === g.dataset.cat;
+    else { vis = false; g.querySelectorAll('[data-cat]').forEach(r => { const on = f === 'all' || f === r.dataset.cat; r.hidden = !on; vis ||= on; }); }
+    g.hidden = !vis; any ||= vis;
+  });
+  const calc = wrap.querySelector('.calc');
+  if (calc) calc.hidden = !(f === 'all' || f === 'sky');
+  wrap.querySelector('.evempty').hidden = any || (calc && !calc.hidden);
+}
+function buildEvents(sky) {
+  const c = CT(), wrap = document.createElement('div');
+  wrap.className = 'evwrap';
+  const grp = cat => { const g = document.createElement('div'); g.className = 'evgrp'; if (cat) g.dataset.cat = cat; wrap.append(g); return g; };
   // Filtros
   const chips = document.createElement('div'); chips.className = 'chips';
-  Object.entries(c.filters).forEach(([k, label]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.calFilter === k ? ' on' : ''); b.textContent = label; b.onclick = () => { S.calFilter = k; renderCal(); }; chips.append(b); });
-  box.prepend(chips);
-  if (S.calFilter === 'video' || S.calFilter === 'news') return;
-  const wantSky = S.calFilter === 'all' || S.calFilter === 'sky';
-  const sky = wantSky ? eventsReady() : [];
-  if (!sky) { // aún calculando: mostramos el resto ya y pintamos los eventos del cielo cuando estén
-    const wait = document.createElement('p'); wait.className = 'note calc'; wait.textContent = c.calculating; box.append(wait);
-    const gen = calGen;
-    const again = () => gen === calGen && $('modalCal').classList.contains('open');
-    const run = (tries) => getSkyEvents().then(() => { if (again()) renderCal(true); })
-      .catch(err => { if (!again()) return; if (/cancelado/.test(err.message) && tries < 3) run(tries + 1); else wait.textContent = '⚠️ ' + err.message; });
-    run(0);
-    return;
+  Object.entries(c.filters).forEach(([k, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.dataset.f = k; b.textContent = label;
+    b.onclick = () => { S.calFilter = k; applyEvFilter(wrap); $('calBody').scrollTop = 0; };
+    chips.append(b);
+  });
+  wrap.append(chips);
+  // Vídeos de la última semana
+  const week = (FEED?.videos || []).filter(v => Date.parse(v.fecha) > Date.now() - 7 * 864e5);
+  if (week.length) {
+    const g = grp('video'); g.append(section(`${c.newVideos} · ${c.thisWeek}`));
+    week.forEach(v => g.append(evRow({ img: v.miniatura, when: fmtDay(new Date(v.fecha)), what: v.titulo, href: v.url })));
   }
-  const all = [...sky, ...feedEvents()].filter(e => S.calFilter === 'all' || e.cat === S.calFilter).sort((a, b) => a.date - b.date);
-  let month = '';
+  // Últimas noticias: primero las tuyas (manuales), luego las automáticas relevantes
+  const now = simDate();
+  const mine = (FEED?.manuales || []).filter(m => { const d = new Date(m.fecha); return !isNaN(d) && d > new Date(+now - 7 * 864e5); }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+  const auto = FEED?.noticiasPorIdioma?.[S.lang] || (FEED?.noticias || []).filter(n => !n.idioma || n.idioma === S.lang);
+  if (mine.length || auto.length) {
+    const g = grp('news'); g.append(section(c.latestNews));
+    mine.forEach(m => g.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
+    auto.forEach(n => g.append(evRow({ img: n.imagen || null, ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
+  }
+  // Cielo y lanzamientos, por meses
+  if (!sky) { const p = document.createElement('p'); p.className = 'note calc'; p.textContent = c.calculating; wrap.append(p); }
+  const all = [...(sky || []), ...feedEvents()].sort((a, b) => a.date - b.date);
+  let month = '', g = null;
   all.forEach(e => {
     const m = e.date.toLocaleDateString(S.lang, { month: 'long', year: 'numeric', ...tzOpt() });
-    if (m !== month) { month = m; box.append(section('📅 ' + m)); }
+    if (m !== month) { month = m; g = grp(null); g.append(section('📅 ' + m)); }
     const onClick = e.action ? () => goToEvent(e.action.id, e.action.time) : null;
-    box.append(evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl }));
+    const row = evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl });
+    row.dataset.cat = e.cat; g.append(row);
   });
-  if (!all.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.empty; box.append(p); }
-  if (!FEED) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noFeed; box.append(p); }
-  else if (FEED.actualizado) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `${c.updated}: ${new Date(FEED.actualizado).toLocaleString(S.lang, { dateStyle: 'short', timeStyle: 'short' })}`; box.append(p); }
+  const empty = document.createElement('p'); empty.className = 'note evempty'; empty.textContent = FEED ? c.empty : c.noFeed; wrap.append(empty);
+  if (FEED?.actualizado) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `${c.updated}: ${new Date(FEED.actualizado).toLocaleString(S.lang, { dateStyle: 'short', timeStyle: 'short' })}`; wrap.append(p); }
+  else if (!FEED) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noFeed; wrap.append(p); }
+  return wrap;
+}
+function renderEvents(box) {
+  const sky = eventsReady(), key = `${eventsKey()}|${FEED?.actualizado || ''}|${!!sky}`;
+  if (evDom.key !== key) evDom = { key, el: buildEvents(sky) };
+  applyEvFilter(evDom.el);
+  box.append(evDom.el);
+  if (!sky) { // aún calculando: el resto ya se ve; los eventos del cielo se añaden al terminar
+    const gen = calGen, again = () => gen === calGen && $('modalCal').classList.contains('open');
+    const calc = evDom.el.querySelector('.calc');
+    const run = tries => getSkyEvents().then(() => { if (again()) renderCal(true); })
+      .catch(err => { if (!again()) return; if (/cancelado/.test(err.message) && tries < 3) run(tries + 1); else if (calc) calc.textContent = '⚠️ ' + err.message; });
+    run(0);
+  }
 }
 let calGen = 0;
 function renderCal(keepScroll = false) {
@@ -2126,6 +2150,11 @@ function renderCal(keepScroll = false) {
   $('tabNow').classList.toggle('on', S.calTab === 'now');
   $('tabTonight').classList.toggle('on', S.calTab === 'tonight');
   $('tabEvents').classList.toggle('on', S.calTab === 'events');
+  if (S.calTab === 'events') { // ya construida o rápida de construir: sin esperas
+    try { renderEvents(box); } catch (err) { console.error(err); const p = document.createElement('p'); p.className = 'note'; p.textContent = '⚠️ ' + err.message; box.append(p); }
+    box.scrollTop = keepScroll ? top : 0;
+    return;
+  }
   const wait = document.createElement('p'); wait.className = 'note'; wait.textContent = S.lang === 'en' ? 'Calculating…' : 'Calculando…';
   box.append(wait);
   setTimeout(() => { // dejamos que se pinte «Calculando…» antes del cálculo
@@ -2184,7 +2213,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   if (debugEl) updateDebug(now);
   if (!document.hidden) adaptQuality(now);
-  if (calOpenEl.classList.contains('open') && (++calSkip % 6)) return; // con el calendario abierto el cielo se pinta a ~10 fps y el móvil calcula holgado
+  if (calOpenEl.classList.contains('open') && (++calSkip % 30)) return; // con el calendario abierto (tapa el cielo) casi no pintamos: el iPhone queda libre para la lista
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   const date = simDate();
