@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T08:51:47.582Z",
+ "actualizado": "2026-11-24T08:52:58.224Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -1087,7 +1087,7 @@
    "destacado": false,
    "idioma": "es",
    "espacio": true,
-   "puntos": 7
+   "puntos": 8
   },
   {
    "titulo": "What Is the Moon Base?",
@@ -1137,7 +1137,7 @@
     "destacado": false,
     "idioma": "es",
     "espacio": true,
-    "puntos": 7
+    "puntos": 8
    },
    {
     "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
@@ -1160,6 +1160,17 @@
     "imagen": "https://europeanspaceflight.com/wp-content/uploads/2026/11/BepiColombo-Enters-Orbit-Around-Mercury-Despite-Software-Glitch.webp",
     "fuente": "European Spaceflight",
     "fecha": "2026-11-24T08:50:01Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 5
+   },
+   {
+    "titulo": "Progress MS-36 set to launch to ISS from Baikonur",
+    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
+    "url": "https://www.nasaspaceflight.com/2026/11/progress-ms-36/",
+    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/04/IMG_9490.png",
+    "fuente": "NASASpaceflight",
+    "fecha": "2026-11-23T21:32:11Z",
     "destacado": false,
     "idioma": "en",
     "puntos": 5
@@ -1218,17 +1229,6 @@
     "destacado": false,
     "idioma": "en",
     "puntos": 7
-   },
-   {
-    "titulo": "Voyager 1 reaches one light-day nearly 50 years after launch",
-    "resumen": "At 5:16:07 AM EST (10:16 UTC) on Nov. 18, and at a distance of 26…\r\nThe post Voyager 1 reaches one light-day nearly 50 years after launch appeared first on NASASpaceFlight.com.",
-    "url": "https://www.nasaspaceflight.com/2026/11/voyager-1-light-day/",
-    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2024/12/voyager-scaled.jpg",
-    "fuente": "NASASpaceflight",
-    "fecha": "2026-11-18T21:48:55Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 6
    },
    {
     "titulo": "What Is the Moon Base?",
