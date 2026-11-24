@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T08:53:49.259Z",
+ "actualizado": "2026-11-24T08:54:50.865Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -1150,6 +1150,30 @@
     "idioma": "es",
     "espacio": false,
     "puntos": 7
+   },
+   {
+    "titulo": "Calendario de Ciencia de la NASA 2027",
+    "resumen": "Muy pronto estará aquí el nuevo Calendario de Ciencia de la NASA. The post Calendario de Ciencia de la NASA 2027 appeared first on NASA Ciencia . Multimedia ArtemisII Asteroides Ciencias terrestres Luna Marte Sistema solar Universo Webb",
+    "url": "https://ciencia.nasa.gov/multimedia/calendario-de-ciencia-de-la-nasa-2027/",
+    "imagen": null,
+    "fuente": "NASA Ciencia",
+    "fecha": "2026-11-13T20:30:09.000Z",
+    "destacado": false,
+    "idioma": "es",
+    "espacio": true,
+    "puntos": 13
+   },
+   {
+    "titulo": "Deslumbrados: Investigaciones de la NASA muestran cómo la historia antigua del Sol dio forma a la Tierra",
+    "resumen": "Situado en el centro de nuestro sistema solar, el Sol ejerce su influencia sobre todos los planetas que lo orbitan. En dos estudios recientes financiados por la NASA, los científicos han revelado cómo algunos acontecimientos en el pasado remoto de la historia del Sol pudieron hab",
+    "url": "https://ciencia.nasa.gov/uncategorized/deslumbrados-investigaciones-de-la-nasa-muestran-como-la-historia-antigua-del-sol-dio-forma-a-la-tierra/",
+    "imagen": "https://assets.science.nasa.gov/content/dam/science/cds/svs/a020000/a020400/a020406/iMAP_Shot_1-2_30fps_1080_h264_wStars_v02.mp4",
+    "fuente": "NASA Ciencia",
+    "fecha": "2026-11-04T18:27:55.000Z",
+    "destacado": false,
+    "idioma": "es",
+    "espacio": true,
+    "puntos": 9
    }
   ],
   "en": [
