@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-25T07:33:53.007Z",
+ "actualizado": "2026-11-25T13:33:53.632Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -644,8 +644,8 @@
   },
   {
    "nombre": "Ariane 62 | Metop-SG B1",
-   "fecha": "2026-12-17T00:00:00Z",
-   "estado": "TBD",
+   "fecha": "2026-12-18T00:36:00Z",
+   "estado": "Go",
    "proveedor": "Arianespace",
    "cohete": "Ariane 62",
    "lugar": "Guiana Space Centre, French Guiana",
@@ -1072,7 +1072,7 @@
   {
    "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
    "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
-   "url": "http://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
+   "url": "https://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
    "imagen": null,
    "fuente": "Agencia SINC",
    "fecha": "2026-11-19T10:00:04.000Z",
@@ -1108,7 +1108,7 @@
   {
    "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
    "resumen": "El seguimiento durante años del evento AT 2025abao revela la física oculta de la evolución de envoltura común, una fase crítica para explicar la formación de sistemas binarios compactos y futuras fuentes de ondas gravitacionales. Tierra",
-   "url": "http://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
+   "url": "https://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
    "imagen": null,
    "fuente": "Agencia SINC",
    "fecha": "2026-11-18T16:00:04.000Z",
@@ -1123,7 +1123,7 @@
    {
     "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
     "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
-    "url": "http://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
+    "url": "https://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
     "imagen": null,
     "fuente": "Agencia SINC",
     "fecha": "2026-11-19T10:00:04.000Z",
@@ -1147,7 +1147,7 @@
    {
     "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
     "resumen": "El seguimiento durante años del evento AT 2025abao revela la física oculta de la evolución de envoltura común, una fase crítica para explicar la formación de sistemas binarios compactos y futuras fuentes de ondas gravitacionales. Tierra",
-    "url": "http://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
+    "url": "https://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
     "imagen": null,
     "fuente": "Agencia SINC",
     "fecha": "2026-11-18T16:00:04.000Z",
