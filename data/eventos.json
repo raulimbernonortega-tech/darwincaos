@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-24T19:10:00.834Z",
+ "actualizado": "2026-11-25T01:28:07.517Z",
  "videos": [
   {
    "id": "XRQ-Ki2n_sM",
@@ -500,19 +500,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Long March 2F/G | Shenzhou 24",
-   "fecha": "2026-11-25T00:18:00Z",
-   "estado": "Go",
-   "proveedor": "China Aerospace Science and Technology Corporation",
-   "cohete": "Long March 2F/G",
-   "lugar": "Jiuquan Satellite Launch Center, People's Republic of China",
-   "mision": "Shenzhou 24 will be the 24th flight of the Shenzhou program.\r\n\r\nThe first astronaut from Pakistan is expected to fly on this on a short duration mission, with another Chinese astronaut to undergo a year long expedition.",
-   "tipo": "Human Exploration",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/shenzhou_22_lau_image_thumbnail_20251129175823.jpeg",
-   "enlace": null,
-   "relevante": true
-  },
-  {
    "nombre": "Long March 2D | Unknown Payload",
    "fecha": "2026-11-26T09:35:00Z",
    "estado": "Go",
@@ -579,7 +566,7 @@
   },
   {
    "nombre": "Falcon 9 Block 5 | Cygnus CRS-2 NG-25",
-   "fecha": "2026-11-29T15:50:00Z",
+   "fecha": "2026-11-29T15:47:00Z",
    "estado": "Go",
    "proveedor": "SpaceX",
    "cohete": "Falcon 9 Block 5",
@@ -667,6 +654,19 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ariane_62_lifto_image_thumbnail_20240711132056.jpeg",
    "enlace": null,
    "relevante": true
+  },
+  {
+   "nombre": "Falcon 9 Block 5 | Amazon Leo (LF-04)",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "Amazon Leo, formerly known as Project Kuiper, is a mega constellation of satellites in Low Earth Orbit designed to offer broadband internet access managed by Kuiper Systems LLC, a subsidiary of Amazon. This constellation is planned to be composed of 3,276 satellites. The satellites are projected to be placed in 98 orbital planes in three orbital layers, one at 590 km, 610 km and 630 km altitude.",
+   "tipo": "Communications",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
   },
   {
    "nombre": "Falcon 9 Block 5 | CHORUS",
@@ -758,19 +758,6 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305192320.png",
    "enlace": null,
    "relevante": false
-  },
-  {
-   "nombre": "LVM-3 | Gaganyaan-1",
-   "fecha": "2026-12-31T00:00:00Z",
-   "estado": "TBD",
-   "proveedor": "Indian Space Research Organization",
-   "cohete": "Launch Vehicle Mark-3 (GSLV Mk III)",
-   "lugar": "Satish Dhawan Space Centre, India",
-   "mision": "First uncrewed orbital test flight of the Gaganyaan capsule.",
-   "tipo": "Test Flight",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193746.jpeg",
-   "enlace": null,
-   "relevante": true
   },
   {
    "nombre": "Vega-C | IRIDE 1",
@@ -1018,6 +1005,19 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
+  },
+  {
+   "nombre": "Falcon 9 Block 5 | VICTUS SURGO",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "A new Tactically Responsive Space (TacRS) mission by the United States Space Force Space Systems Command to deliver responsive space delivery. The mission consists of an Impulse Space Mira orbital transfer vehicle that will operate in Geosynchronous Transfer Orbit (GTO), which would be transferred from Low Earth Orbit (LEO) on an Impulse Space Helios kick stage. A Helios rideshare payload will also be delivered to GEO.",
+   "tipo": "Government/Top Secret",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
   }
  ],
  "noticias": [
@@ -1183,6 +1183,18 @@
   ],
   "en": [
    {
+    "titulo": "BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch",
+    "resumen": "At 18:24 UTC on Saturday, Nov. 21, the European Space Agency (ESA) and the Japanese…\nThe post BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch appeared first on NASASpaceFlight.com.",
+    "url": "https://www.nasaspaceflight.com/2026/11/bepicolombo-moi/",
+    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/HXkRNVOXsAAjwYz-scaled.jpeg",
+    "fuente": "NASASpaceflight",
+    "fecha": "2026-11-24T20:38:54Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 6,
+    "mini": "data/miniaturas/c64ddf7d569dda.jpg"
+   },
+   {
     "titulo": "Tiangong Space Station to welcome first international visitor",
     "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
     "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/",
@@ -1193,18 +1205,6 @@
     "idioma": "en",
     "puntos": 10,
     "mini": "data/miniaturas/22ec70cd45bb11.jpg"
-   },
-   {
-    "titulo": "BepiColombo Enters Orbit Around Mercury Despite “Software Glitch”",
-    "resumen": "The European Space Agency’s BepiColombo mission has successfully entered orbit around Mercury despite a software glitch that resulted in a shorter-than-planned thruster burn. According to the agency’s 23 November update, the BepiColombo spacecraft reoriented itself at 17:51 CET o",
-    "url": "https://europeanspaceflight.com/bepicolombo-enters-orbit-around-mercury-despite-software-glitch/",
-    "imagen": "https://europeanspaceflight.com/wp-content/uploads/2026/11/BepiColombo-Enters-Orbit-Around-Mercury-Despite-Software-Glitch.webp",
-    "fuente": "European Spaceflight",
-    "fecha": "2026-11-24T08:50:01Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 5,
-    "mini": "data/miniaturas/74bc823d7203b6.jpg"
    },
    {
     "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
