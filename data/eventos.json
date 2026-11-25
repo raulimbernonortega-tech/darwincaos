@@ -1,6 +1,14 @@
 {
- "actualizado": "2026-11-25T13:33:53.632Z",
+ "actualizado": "2026-11-25T18:32:19.395Z",
  "videos": [
+  {
+   "id": "3aN8sGeDNMw",
+   "titulo": "Webb Halla una Estrella de Agujero Negro (¿Es una Cuasi-Estrella?)",
+   "fecha": "2026-11-25T18:07:27+00:00",
+   "corto": false,
+   "url": "https://www.youtube.com/watch?v=3aN8sGeDNMw",
+   "miniatura": "https://i4.ytimg.com/vi/3aN8sGeDNMw/hqdefault.jpg"
+  },
   {
    "id": "XRQ-Ki2n_sM",
    "titulo": "Starship: La Hazaña Explicada en 10 Minutos (Así la Atrapa SpaceX)",
@@ -630,6 +638,19 @@
    "relevante": false
   },
   {
+   "nombre": "Falcon 9 Block 5 | CHORUS",
+   "fecha": "2026-12-04T12:55:00Z",
+   "estado": "Go",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon 9 Block 5",
+   "lugar": "Cape Canaveral SFS, FL, USA",
+   "mision": "CHORUS is MDA's next generation Earth observation constellation, consisting of 2 radar satellites (C-band SAR and X-band SAR), in a 53.5 degree 600 km altitude LEO, with the X-band trailing the C-band by 60 minutes. A collaborative multi-sensor constellation, CHORUS will bring together diverse and unique imagery and data sources and provide a new level of near real-time insight and innovative Earth observation services. Operating in a unique mid-inclination orbit, CHORUS will be able to image day or night, regardless of weather conditions, with daily access of up to 95% of the coverage area. From an industry-leading 700km-wide imaging swath down to sub-metre high resolution, CHORUS will provide the most extensive and unrivalled Earth observation radar imaging capacity available on the market in a single mission.\r\n\r\nAlso on board this mission are 2 satellites from ICEYE and PECCY.",
+   "tipo": "Earth Science",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
+   "enlace": null,
+   "relevante": false
+  },
+  {
    "nombre": "Long March 12 | SatNet LEO Group TBD?",
    "fecha": "2026-12-10T07:00:00Z",
    "estado": "TBC",
@@ -664,19 +685,6 @@
    "lugar": "Cape Canaveral SFS, FL, USA",
    "mision": "Amazon Leo, formerly known as Project Kuiper, is a mega constellation of satellites in Low Earth Orbit designed to offer broadband internet access managed by Kuiper Systems LLC, a subsidiary of Amazon. This constellation is planned to be composed of 3,276 satellites. The satellites are projected to be placed in 98 orbital planes in three orbital layers, one at 590 km, 610 km and 630 km altitude.",
    "tipo": "Communications",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
-   "nombre": "Falcon 9 Block 5 | CHORUS",
-   "fecha": "2026-12-31T00:00:00Z",
-   "estado": "TBD",
-   "proveedor": "SpaceX",
-   "cohete": "Falcon 9 Block 5",
-   "lugar": "Cape Canaveral SFS, FL, USA",
-   "mision": "CHORUS is MDA's next generation Earth observation constellation, consisting of 2 radar satellites (C-band SAR and X-band SAR), in a 53.5 degree 600 km altitude LEO, with the X-band trailing the C-band by 60 minutes. A collaborative multi-sensor constellation, CHORUS will bring together diverse and unique imagery and data sources and provide a new level of near real-time insight and innovative Earth observation services. Operating in a unique mid-inclination orbit, CHORUS will be able to image day or night, regardless of weather conditions, with daily access of up to 95% of the coverage area. From an industry-leading 700km-wide imaging swath down to sub-metre high resolution, CHORUS will provide the most extensive and unrivalled Earth observation radar imaging capacity available on the market in a single mission.",
-   "tipo": "Earth Science",
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
@@ -1022,8 +1030,32 @@
  ],
  "noticias": [
   {
+   "titulo": "Europa Clipper de la NASA pasará cerca de la Tierra en su camino hacia una luna helada de Júpiter",
+   "resumen": "Read this story in English here. La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la cort",
+   "url": "https://ciencia.nasa.gov/sistema-solar/europa-clipper-nasa-asistencia-gravitatoria-tierra/",
+   "imagen": "https://www.youtube.com/embed/0si_IMH7JmU",
+   "fuente": "NASA Ciencia",
+   "fecha": "2026-11-25T16:06:25.000Z",
+   "destacado": false,
+   "idioma": "es",
+   "espacio": true,
+   "puntos": 12
+  },
+  {
+   "titulo": "NASA’s Hubble Views Ocean of Stars in Groundwork for Roman",
+   "resumen": "These Hubble observations are part of a survey that will help researchers better interpret upcoming Nancy Grace Roman Space Telescope observations as they seek to characterize the stars and search for exoplanets in this busy region of our galaxy.",
+   "url": "https://science.nasa.gov/missions/hubble/nasas-hubble-views-ocean-of-stars-in-groundwork-for-roman/",
+   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/galaxies/milky-way/Hubble_GalacticBulge_HD70_1_FINAL.jpg",
+   "fuente": "NASA",
+   "fecha": "2026-11-25T14:56:54Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 6,
+   "mini": "data/miniaturas/41b29496791c4a.jpg"
+  },
+  {
    "titulo": "Tiangong Space Station to welcome first international visitor",
-   "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
+   "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\r\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
    "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/",
    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/Chang-Zheng-2FG-Y24-carrying-Shenzhou-24-spacecraft-arrives-at-the-launch-site-on-November-17-CMSA.webp",
    "fuente": "NASASpaceflight",
@@ -1092,34 +1124,22 @@
    "idioma": "es",
    "espacio": true,
    "puntos": 8
-  },
-  {
-   "titulo": "What Is the Moon Base?",
-   "resumen": "This article is for students. NASA is returning astronauts to the Moon – and this time they will spend more time on the lunar surface. The Moon Base is humanity’s first lunar outpost. It will be a place where astronauts live, work, and explore. ___________________________________",
-   "url": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-moon-base/",
-   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/moon-base-artists-concept.jpg",
-   "fuente": "NASA",
-   "fecha": "2026-11-18T17:36:03Z",
-   "destacado": false,
-   "idioma": "en",
-   "puntos": 7,
-   "mini": "data/miniaturas/2944bee1f3eb53.jpg"
-  },
-  {
-   "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
-   "resumen": "El seguimiento durante años del evento AT 2025abao revela la física oculta de la evolución de envoltura común, una fase crítica para explicar la formación de sistemas binarios compactos y futuras fuentes de ondas gravitacionales. Tierra",
-   "url": "https://www.agenciasinc.es/Noticias/observan-por-primera-vez-como-una-estrella-gigante-engulle-a-su-companera-en-andromeda",
-   "imagen": null,
-   "fuente": "Agencia SINC",
-   "fecha": "2026-11-18T16:00:04.000Z",
-   "destacado": false,
-   "idioma": "es",
-   "espacio": false,
-   "puntos": 7
   }
  ],
  "noticiasPorIdioma": {
   "es": [
+   {
+    "titulo": "Europa Clipper de la NASA pasará cerca de la Tierra en su camino hacia una luna helada de Júpiter",
+    "resumen": "Read this story in English here. La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la cort",
+    "url": "https://ciencia.nasa.gov/sistema-solar/europa-clipper-nasa-asistencia-gravitatoria-tierra/",
+    "imagen": "https://www.youtube.com/embed/0si_IMH7JmU",
+    "fuente": "NASA Ciencia",
+    "fecha": "2026-11-25T16:06:25.000Z",
+    "destacado": false,
+    "idioma": "es",
+    "espacio": true,
+    "puntos": 12
+   },
    {
     "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
     "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
@@ -1167,24 +1187,24 @@
     "idioma": "es",
     "espacio": true,
     "puntos": 13
-   },
-   {
-    "titulo": "Deslumbrados: Investigaciones de la NASA muestran cómo la historia antigua del Sol dio forma a la Tierra",
-    "resumen": "Situado en el centro de nuestro sistema solar, el Sol ejerce su influencia sobre todos los planetas que lo orbitan. En dos estudios recientes financiados por la NASA, los científicos han revelado cómo algunos acontecimientos en el pasado remoto de la historia del Sol pudieron hab",
-    "url": "https://ciencia.nasa.gov/uncategorized/deslumbrados-investigaciones-de-la-nasa-muestran-como-la-historia-antigua-del-sol-dio-forma-a-la-tierra/",
-    "imagen": "https://assets.science.nasa.gov/content/dam/science/cds/svs/a020000/a020400/a020406/iMAP_Shot_1-2_30fps_1080_h264_wStars_v02.mp4",
-    "fuente": "NASA Ciencia",
-    "fecha": "2026-11-04T18:27:55.000Z",
-    "destacado": false,
-    "idioma": "es",
-    "espacio": true,
-    "puntos": 9
    }
   ],
   "en": [
    {
+    "titulo": "NASA’s Hubble Views Ocean of Stars in Groundwork for Roman",
+    "resumen": "These Hubble observations are part of a survey that will help researchers better interpret upcoming Nancy Grace Roman Space Telescope observations as they seek to characterize the stars and search for exoplanets in this busy region of our galaxy.",
+    "url": "https://science.nasa.gov/missions/hubble/nasas-hubble-views-ocean-of-stars-in-groundwork-for-roman/",
+    "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/hubble/galaxies/milky-way/Hubble_GalacticBulge_HD70_1_FINAL.jpg",
+    "fuente": "NASA",
+    "fecha": "2026-11-25T14:56:54Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 6,
+    "mini": "data/miniaturas/41b29496791c4a.jpg"
+   },
+   {
     "titulo": "BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch",
-    "resumen": "At 18:24 UTC on Saturday, Nov. 21, the European Space Agency (ESA) and the Japanese…\nThe post BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch appeared first on NASASpaceFlight.com.",
+    "resumen": "At 18:24 UTC on Saturday, Nov. 21, the European Space Agency (ESA) and the Japanese…\r\nThe post BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch appeared first on NASASpaceFlight.com.",
     "url": "https://www.nasaspaceflight.com/2026/11/bepicolombo-moi/",
     "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/HXkRNVOXsAAjwYz-scaled.jpeg",
     "fuente": "NASASpaceflight",
@@ -1196,7 +1216,7 @@
    },
    {
     "titulo": "Tiangong Space Station to welcome first international visitor",
-    "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
+    "resumen": "China is preparing to launch the Shenzhou-24 crewed spacecraft to the Tiangong (“heavenly palace”) space…\r\nThe post Tiangong Space Station to welcome first international visitor appeared first on NASASpaceFlight.com.",
     "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/",
     "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/Chang-Zheng-2FG-Y24-carrying-Shenzhou-24-spacecraft-arrives-at-the-launch-site-on-November-17-CMSA.webp",
     "fuente": "NASASpaceflight",
@@ -1265,18 +1285,6 @@
     "idioma": "en",
     "puntos": 7,
     "mini": "data/miniaturas/61a8b02d812d0f.jpg"
-   },
-   {
-    "titulo": "What Is the Moon Base?",
-    "resumen": "This article is for students. NASA is returning astronauts to the Moon – and this time they will spend more time on the lunar surface. The Moon Base is humanity’s first lunar outpost. It will be a place where astronauts live, work, and explore. ___________________________________",
-    "url": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-moon-base/",
-    "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/moon-base-artists-concept.jpg",
-    "fuente": "NASA",
-    "fecha": "2026-11-18T17:36:03Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 7,
-    "mini": "data/miniaturas/2944bee1f3eb53.jpg"
    }
   ]
  },
