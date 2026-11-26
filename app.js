@@ -764,6 +764,36 @@ function planetMaterial(map) {
       }`,
   });
 }
+// Luna realista: relieve real (altimetría LOLA de la NASA) que proyecta sombras junto al terminador,
+// reflectancia lunar (Lommel-Seeliger: el disco no se oscurece hacia el borde, como la Luna real)
+// y «luz cenicienta» (la Tierra ilumina débilmente la parte oscura, más cuanto más fina es la fase).
+function moonMaterial(map) {
+  const bump = loadTex('img/planets/luna_relieve.jpg', false); // datos de altura, no color
+  return new THREE.ShaderMaterial({
+    uniforms: { map: { value: map }, bump: { value: bump }, uLight: { value: new THREE.Vector3(1, 0, 0) }, uTexel: { value: new THREE.Vector2(1 / 2048, 1 / 1024) }, uRelief: { value: 3.2 }, uEarth: { value: 0.03 } },
+    vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vE; varying vec3 vNo; varying vec3 vW;
+      void main(){ vUv = uv; vec3 n = normalize(normal);
+        vec3 e = normalize(cross(vec3(0.0, 1.0, 0.0), n) + vec3(1e-6, 0.0, 0.0)); vec3 no = cross(n, e);
+        mat3 m = mat3(modelMatrix); vN = normalize(m * n); vE = normalize(m * e); vNo = normalize(m * no);
+        vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform sampler2D map; uniform sampler2D bump; uniform vec3 uLight; uniform vec2 uTexel; uniform float uRelief; uniform float uEarth;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vE; varying vec3 vNo; varying vec3 vW;
+      void main(){
+        vec3 t = texture2D(map, vUv).rgb;
+        float hx = texture2D(bump, vUv + vec2(uTexel.x, 0.0)).r - texture2D(bump, vUv - vec2(uTexel.x, 0.0)).r;
+        float hy = texture2D(bump, vUv + vec2(0.0, uTexel.y)).r - texture2D(bump, vUv - vec2(0.0, uTexel.y)).r;
+        vec3 n0 = normalize(vN);
+        vec3 n = normalize(n0 + uRelief * (hx * vE - hy * vNo));
+        vec3 v = normalize(cameraPosition - vW);
+        float mu0 = max(dot(n, uLight), 0.0), mu = max(dot(n0, v), 0.05);
+        float ls = 2.0 * mu0 / (mu0 + mu);             // Lommel-Seeliger
+        float day = smoothstep(-0.02, 0.06, dot(n0, uLight)); // terminador nítido pero sin dientes de sierra
+        vec3 col = t * (ls * 0.95 * day) + t * vec3(0.55, 0.65, 0.85) * uEarth * (1.0 - day);
+        gl_FragColor = vec4(col, 1.0);
+        #include <colorspace_fragment>
+      }`,
+  });
+}
 function buildBodies() {
   BODIES.forEach(b => {
     const holder = new THREE.Group();            // posición + orientación
@@ -773,7 +803,7 @@ function buildBodies() {
     scaled.add(frame);
     const radius = R.body * Math.tan(b.deg * D2R);
     const map = loadTex(`img/planets/${b.tex}.jpg`);
-    const mat = b.id === 'sun' ? new THREE.MeshBasicMaterial({ map }) : planetMaterial(map);
+    const mat = b.id === 'sun' ? new THREE.MeshBasicMaterial({ map }) : b.id === 'moon' ? moonMaterial(map) : planetMaterial(map);
     const sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 32), mat);
     sphere.rotation.y = -Math.PI / 2; // longitud 0 hacia el observador
     frame.add(sphere);
@@ -812,6 +842,7 @@ function updateBodies(date, force = false) {
     const sinB = orientToObserver(b.holder, dir, b.pole[0], b.pole[1]);
     b.frame.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, Math.sqrt(1 - sinB * sinB), sinB));
     if (b.id === 'sun') sunLight.position.copy(dir).multiplyScalar(100);
+    if (b.id === 'moon') { const f = A.Illumination('Moon', date).phase_fraction; b.sphere.material.uniforms.uEarth.value = 0.012 + 0.07 * Math.pow(1 - f, 2); }
   });
 }
 
@@ -2274,6 +2305,10 @@ function frame(now) {
   // Tamaño aparente de los astros: exagerado con poco zoom, real con mucho zoom
   for (const b of BODIES) {
     if (b.id !== 'sun') b.sphere.material.uniforms.uLight.value.copy(b.lightEq).transformDirection(skyGroup.matrix);
+    if (b.id === 'moon' && S.fov < 5 && !b.hiRes) { // al acercarte de verdad, el mapa de 4K de la NASA (se descarga solo entonces)
+      b.hiRes = true;
+      texLoader.load('img/planets/luna_4k.jpg', tex => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); const u = b.sphere.material.uniforms; const old = u.map.value; u.map.value = tex; old?.dispose?.(); });
+    }
     const k = Math.max(1, Math.pow(S.fov / b.ref, 0.55)); // al ampliar, el disco crece en pantalla hasta su tamaño real
     b.scaled.scale.setScalar(k);
     const discPx = (b.radius * k / R.body) / Math.tan(S.fov * D2R / 2) * innerHeight / 2;
