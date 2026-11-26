@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-25T19:03:43.852Z",
+ "actualizado": "2026-11-26T01:27:50.691Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -1102,6 +1102,18 @@
    "mini": "data/miniaturas/527ae1519e78c7.jpg"
   },
   {
+   "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
+   "resumen": "NASA’s Voyager 1 probe, humanity’s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1 billion miles (25.9 billion kilometers). The spacecraft ach",
+   "url": "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/",
+   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/voyager-1-light-day-horizontal.png",
+   "fuente": "NASA",
+   "fecha": "2026-11-19T14:31:15Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 7,
+   "mini": "data/miniaturas/61a8b02d812d0f.jpg"
+  },
+  {
    "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
    "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
    "url": "https://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
@@ -1111,18 +1123,6 @@
    "destacado": false,
    "idioma": "es",
    "espacio": false,
-   "puntos": 8
-  },
-  {
-   "titulo": "Voyager 1: Un día luz",
-   "resumen": "Descarga, imprime y comparte el póster conmemorativo del récord de distancia de Voyager 1. La NASA espera una señal de confirmación de Voyager 1 después de que la sonda alcanzara una distancia de un día luz de la Tierra el 18 de noviembre. The post Voyager 1: Un día luz appeared ",
-   "url": "https://ciencia.nasa.gov/multimedia/voyager-1-un-dia-luz/",
-   "imagen": null,
-   "fuente": "NASA Ciencia",
-   "fecha": "2026-11-18T20:42:39.000Z",
-   "destacado": false,
-   "idioma": "es",
-   "espacio": true,
    "puntos": 8
   }
  ],
