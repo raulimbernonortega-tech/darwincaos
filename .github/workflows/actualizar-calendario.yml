@@ -26,9 +26,24 @@ jobs:
         run: npm install --no-save --no-package-lock sharp@0.33.5
       - name: Descargar vídeos, lanzamientos y eventos
         run: node scripts/actualizar-calendario.mjs
+      - name: Descargar órbitas de satélites (CelesTrak)
+        run: node scripts/actualizar-satelites.mjs
       - name: Guardar cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/eventos.json data/miniaturas data/videos-info.json
+          git add -A data/eventos.json data/miniaturas data/videos-info.json data/satelites.json
           git diff --cached --quiet || (git commit -m "Calendario: actualización automática" && git push)
+      # Los >10.000 Starlink (1,7 MB) cambian del todo en cada pasada: se guardan en la rama «datos»,
+      # que se sobrescribe cada vez (sin historial), para que el repositorio no crezca sin fin.
+      - name: Publicar Starlink en la rama «datos»
+        if: hashFiles('data/starlink.tle') != ''
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          d=$(mktemp -d); cp data/starlink.tle "$d/"; cd "$d"
+          git init -q -b datos
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add starlink.tle && git commit -qm "Starlink: órbitas actuales (CelesTrak)"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" datos

@@ -3,13 +3,14 @@
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
 import { createObjectView } from './objeto.js?v=1.6.1';
+import { createSatellites } from './satelites.js?v=1.7';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.6.1';
+const APP_VERSION = '1.7';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -57,7 +58,7 @@ const I18N = {
     shotFormats: { square: '◻️ Cuadrado', story: '▯ Vertical', wide: '▭ Horizontal' }, shotDefault: 'El cielo de esta noche', shotText: 'Míralo en el Planetario DarwinCaos:', shotSaved: 'Imagen guardada ✔', calTitle: '📅 Calendario', tabTonight: '🌙 Esta noche', tabEvents: '📅 Eventos', cleanMode: 'Pantalla limpia (ocultar menús)', showMenus: 'Mostrar menús', readMore: 'Leer más ▾', readLess: 'Leer menos ▴',
     locating: 'Buscando tu ubicación…', approx: 'aprox.', gpsDenied: 'Permiso de ubicación denegado.', usedApprox: 'Usamos tu ubicación aproximada.',
     searchCityHint: 'Escribe tu ciudad en el buscador.', turnTo: 'Gira hacia',
-    L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
+    L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', sats: 'Satélites destacados', starlink: 'Starlink (más de 10.000)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
       ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo',
       skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)', realDay: 'Día realista (oculta las estrellas con luz solar)' },
@@ -97,7 +98,7 @@ const I18N = {
     shotFormats: { square: '◻️ Square', story: '▯ Vertical', wide: '▭ Landscape' }, shotDefault: 'Tonight’s sky', shotText: 'See it in the DarwinCaos Planetarium:', shotSaved: 'Image saved ✔', calTitle: '📅 Calendar', tabTonight: '🌙 Tonight', tabEvents: '📅 Events', cleanMode: 'Clean screen (hide menus)', showMenus: 'Show menus', readMore: 'Read more ▾', readLess: 'Read less ▴',
     locating: 'Finding your location…', approx: 'approx.', gpsDenied: 'Location permission denied.', usedApprox: 'Using your approximate location.',
     searchCityHint: 'Type your city in the search box.', turnTo: 'Turn to',
-    L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', lines: 'Constellation lines', art: 'Mythological artwork',
+    L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', sats: 'Featured satellites', starlink: 'Starlink (10,000+)', lines: 'Constellation lines', art: 'Mythological artwork',
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
       ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight',
       skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)', realDay: 'Realistic daytime (hide stars in sunlight)' },
@@ -191,7 +192,7 @@ const urlPlace = params.has('lat') && params.has('lon')
 const S = {
   lang: params.get('lang') || saved.lang || ((navigator.language || 'es').startsWith('es') ? 'es' : 'en'),
   place: urlPlace || saved.place || PRESET_CITIES[0],
-  layers: Object.assign({ planets: true, iss: true, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, realDay: false }, saved.layers),
+  layers: Object.assign({ planets: true, iss: true, sats: true, starlink: false, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, realDay: false }, saved.layers),
   envMode: saved.envMode || 'auto', // auto | city | town | country
   red: !!saved.red,
   tleCache: saved.tle || null,
@@ -972,6 +973,29 @@ function updateISS(date) {
   ISS.glow.material.color.set(issNow.sunlit ? 0xffffff : 0x64748b);
 }
 
+// ───────────── Satélites destacados (módulo satelites.js) ─────────────
+const sunWorldDir = () => BODIES[0].holder.getWorldPosition(new THREE.Vector3()).normalize();
+const SATS = createSatellites({ THREE, SAT, A, scene, radius: R.iss - 10, altAzVec, screenSprite, glowTex, makeLabel, place: () => S.place, sunDir: sunWorldDir, sunAltAt, lang: () => S.lang });
+// Modelo 3D oficial de la NASA para la ISS (sustituye al dibujado en cuanto llega)
+Promise.all([import('./vendor/addons/GLTFLoader.js'), import('./vendor/addons/libs/meshopt_decoder.module.js')]).then(([{ GLTFLoader }, { MeshoptDecoder }]) => new GLTFLoader()
+  .setMeshoptDecoder(MeshoptDecoder)
+  .load('img/satelites/iss.glb', gltf => {
+    const obj = gltf.scene, b = new THREE.Box3().setFromObject(obj), size = b.getSize(new THREE.Vector3());
+    obj.position.sub(b.getCenter(new THREE.Vector3()));
+    obj.traverse(o => { if (o.isMesh && o.material?.map) { o.material.emissiveMap = o.material.map; o.material.emissive = new THREE.Color(0.22, 0.22, 0.22); } });
+    const holder = new THREE.Group(); holder.add(obj); holder.scale.setScalar(1 / Math.max(size.x, size.y, size.z));
+    ISS.scaled.remove(ISS.model); ISS.model = holder; ISS.scaled.add(holder);
+  }, undefined, () => { /* nos quedamos con el modelo dibujado */ }));
+const satEntry = s => ({ id: 'sat:' + s.id, kind: 'sat', ref: s, layer: s.tipo === 'starlink' ? 'starlink' : 'sats',
+  names: [s.info.es, s.info.en, s.nombre].filter(Boolean), name: () => SATS.nameOf(s), sub: () => `🛰️ ${s.info.agencia || ''}`,
+  world: () => (s.now ? altAzVec(s.now.az, s.now.alt, R.iss - 10) : null) });
+function satEntries() {
+  for (const s of SATS.list) {
+    if (CATALOG.some(e => e.ref === s)) continue;
+    CATALOG.push(satEntry(s));
+  }
+}
+
 // ───────────── Estrellas fugaces de lluvias reales ─────────────
 function showerStatus(date) {
   const res = [];
@@ -1161,6 +1185,26 @@ function infoStats(entry) {
     if (issNow) stats.push([t.height, `${fmtNum(issNow.height)} km`], [t.speed, `${fmtNum(issNow.speed)} km/h`], [t.dist, `${fmtNum(issNow.range)} km`], ['☀️', issNow.sunlit ? t.sunlit : t.shadow]);
     const next = issPasses().find(p => p.visible);
     stats.push([t.nextPass, next ? `${fmtTime(next.start)} · ${fmtNum(next.maxAlt)}° ${azName(next.maxAz)}` : t.noPass]);
+  } else if (entry.kind === 'sat') {
+    const s = entry.ref, n = s.now, en = S.lang === 'en', date = simDate();
+    const vis = SATS.visibility(n, date);
+    const visTxt = { below: en ? 'Below the horizon' : 'Bajo el horizonte', shadow: en ? 'In Earth\'s shadow' : 'En la sombra de la Tierra', day: en ? 'Daylight: not visible' : 'De día: no se ve',
+      eye: en ? '👁️ Visible to the naked eye' : '👁️ Se ve a simple vista', binoculars: en ? '🔭 With binoculars' : '🔭 Con prismáticos', telescope: en ? '🔭 Telescope only' : '🔭 Solo con telescopio' }[vis];
+    if (n) {
+      stats.push([en ? 'Now' : 'Ahora', visTxt]);
+      if (n.mag != null && n.alt > 0 && vis !== 'day') stats.push([t.mag, `≈ ${fmtNum(n.mag, 1)}`]);
+      stats.push([en ? 'Orbit height' : 'Altura de vuelo', `${fmtNum(n.height)} km`], [t.speed, `${fmtNum(n.speed)} km/h`], [en ? 'One orbit' : 'Una vuelta', n.period > 1200 ? (en ? '1 day (geostationary)' : '1 día (geoestacionario)') : `${fmtNum(n.period)} min`]);
+    }
+    if (s.lanzamiento) stats.push([en ? 'Launched' : 'Lanzamiento', new Date(s.lanzamiento + 'T12:00:00Z').toLocaleDateString(S.lang, { day: 'numeric', month: 'short', year: 'numeric' })]);
+    else if (s.anio) stats.push([en ? 'Launched' : 'Lanzamiento', en ? `${s.anio} (launch #${s.lanzNo} of the year)` : `${s.anio} (lanzamiento nº ${s.lanzNo} del año)`]);
+    if (s.tipo === 'starlink') stats.push([en ? 'Constellation' : 'Constelación', en ? `${fmtNum(SATS.starlinkCount())} Starlink in orbit` : `${fmtNum(SATS.starlinkCount())} Starlink en órbita`]);
+    if (s.info.orbita === 'geo') stats.push([en ? 'In the sky' : 'En el cielo', en ? 'Always at the same spot' : 'Siempre en el mismo punto']);
+    else if (s.path?.start && !s.path.now) stats.push([en ? 'Next pass' : 'Próximo paso', `${fmtTime(s.path.start)} · ${fmtNum(s.path.maxAlt)}°`]);
+    else if (s.path?.now) stats.push([en ? 'Sets' : 'Se pone', fmtTime(s.path.end)]);
+    const nv = SATS.nextVisiblePass(s, date, 36);
+    if (s.info.orbita !== 'geo') stats.push([en ? 'Next naked-eye pass' : 'Próximo paso visible', nv ? `${fmtTime(nv.start)} · ${fmtNum(nv.maxAlt)}° ${azName(nv.maxAz)}` : (en ? 'None in 36 h' : 'Ninguno en 36 h')]);
+    stats.push([en ? '3D model' : 'Modelo 3D', s.info.modelo ? `NASA${s.info.modeloNota ? ` (${s.info.modeloNota})` : ''}` : (en ? 'Approximate shape' : 'Forma aproximada')]);
+    fact = s.info[en ? 'en_txt' : 'es_txt'];
   } else if (entry.kind === 'dso') {
     const o = entry.ref;
     fact = o.fact[S.lang === 'en' ? 1 : 0];
@@ -1175,7 +1219,9 @@ function infoStats(entry) {
   return { stats, fact };
 }
 function openInfo(entry) {
+  SATS.hidePath();
   S.selected = entry;
+  if (entry.kind === 'sat') { entry.ref.now = SATS.lookAt(entry.ref, simDate()); entry.ref.path = SATS.showPath(entry.ref, simDate()); } // posición ya y su recorrido por el cielo
   closeModals();
   $('infoName').textContent = entry.name();
   $('infoType').textContent = entry.sub();
@@ -1249,7 +1295,7 @@ function renderInfoText(entry) {
   };
   more.dataset.open = '';
 }
-function closeInfo() { S.selected = null; S.tracking = null; $('infoCard').classList.remove('open'); stopFinding(); updateViewOffset(); }
+function closeInfo() { SATS.hidePath(); SATS.clearExtra(); S.selected = null; S.tracking = null; $('infoCard').classList.remove('open'); stopFinding(); updateViewOffset(); }
 function startFinding(entry) {
   S.finding = entry; S.found = false;
   $('infoCard').classList.remove('open'); // la ficha se recoge en una pastilla para dejar ver el cielo
@@ -1277,7 +1323,7 @@ function pointTo(entry, find = false) {
   if (find || (S.sensor && sensorReady)) startFinding(entry);
   if (S.sensor && sensorReady) return; // con el móvil, la flecha del centro guía hasta el objeto
   S.targetAz = aa.az; S.targetAlt = THREE.MathUtils.clamp(aa.alt, -85, 85);
-  S.tracking = entry.kind === 'iss' ? entry : null; // la ISS se mueve ~1°/s: la seguimos
+  S.tracking = entry.kind === 'iss' || entry.kind === 'sat' ? entry : null; // la ISS y los satélites se mueven ~1°/s: los seguimos
 }
 function shareUrl(entry) {
   const u = new URL(location.href.split('?')[0]);
@@ -1319,6 +1365,7 @@ function pick(x, y) {
   }
   // Doble toque sobre la Luna → modo Objeto
   // (se compara con el sitio del primer toque: al abrirse la ficha el cielo se desplaza y la Luna ya no está bajo el dedo)
+  if ((!best || best.kind === 'con') && S.layers.starlink) { const s = SATS.pickStarlink(x, y, camera); if (s) best = satEntry(s); } // un Starlink suelto (antes que la constelación de fondo)
   lastPick = { id: best?.id || null, t: performance.now(), x, y };
   if (best) openInfo(best); else closeInfo();
 }
@@ -1574,6 +1621,7 @@ $('uiBtn').onclick = () => document.body.classList.remove('clean');
 function applyRed() { document.body.classList.toggle('red', S.red); $('dockRed').classList.toggle('active', S.red); }
 $('dockLang').onclick = () => { S.lang = S.lang === 'es' ? 'en' : 'es'; applyLanguage(); persist(); };
 function applyLanguage() {
+  SATS?.buildLabels();
   const t = T();
   document.documentElement.lang = S.lang;
   $('dockLang').textContent = S.lang.toUpperCase();
@@ -2284,6 +2332,7 @@ function frame(now) {
   updateSkyMatrix(date);
   updateBodies(date);
   if (S.layers.iss) updateISS(date); else ISS.group.visible = false;
+  SATS.update(date, S.fov, S.layers.sats, S.selected?.kind === 'sat' ? S.selected.ref.id : null, S.layers.starlink);
 
   // Cámara
   if (S.sensor && sensorReady) camera.quaternion.slerp(sensorQ, 1 - Math.exp(-dt * (usingQuatSensor ? 22 : 14))); // suavizado independiente de los fps
@@ -2745,6 +2794,7 @@ async function init() {
   loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); feedReady(); });
   // Adelantamos el cálculo de eventos en segundo plano para que el calendario abra al instante
   setTimeout(() => (window.requestIdleCallback || (f => f()))(() => getSkyEvents().catch(() => { })), 6000);
+  SATS.load().then(() => { satEntries(); if (fromUrl === undefined && params.get('obj')?.startsWith('sat:')) { const e = CATALOG.find(c => c.id === params.get('obj')); if (e) openInfo(e); } });
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita
@@ -2754,4 +2804,4 @@ async function init() {
 init();
 
 // Exponer para depuración
-window.__planetario = { setSensor: (...a) => setSensor(...a), sensorState: () => ({ sensorReady, usingQuatSensor, sensorBound, compassOffset }), S, CATALOG: () => CATALOG, BODIES, setOffset, setFov, openInfo, pick, camera, skyGroup, ISS, issAt, A };
+window.__planetario = { SATS, scene, setSensor: (...a) => setSensor(...a), sensorState: () => ({ sensorReady, usingQuatSensor, sensorBound, compassOffset }), S, CATALOG: () => CATALOG, BODIES, setOffset, setFov, openInfo, pick, camera, skyGroup, ISS, issAt, A };
