@@ -1296,9 +1296,9 @@
    "url": "https://www.youtube.com/watch?v=CUFfrBolg38"
   },
   "moon": {
-   "id": "6Krvh2sH7yE",
-   "titulo": "¿Qué Esconde Este Agujero De La Luna? (Todos Quieren Ir)",
-   "url": "https://www.youtube.com/watch?v=6Krvh2sH7yE"
+   "id": "fBxQpxT6Mk0",
+   "titulo": "La LUNA 🌙e está rompiendo y NO podemos hacer NADA",
+   "url": "https://www.youtube.com/shorts/fBxQpxT6Mk0"
   },
   "mercury": {
    "id": "4I85ucuy_OA",
@@ -1306,14 +1306,14 @@
    "url": "https://www.youtube.com/watch?v=4I85ucuy_OA"
   },
   "mars": {
-   "id": "cHJgvqE7ZVg",
-   "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
-   "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg"
+   "id": "R36JBJPbJT8",
+   "titulo": "Marte Tuvo Océanos y los Perdió (La Tierra Podría Ser la Siguiente)",
+   "url": "https://www.youtube.com/watch?v=R36JBJPbJT8"
   },
   "jupiter": {
-   "id": "cHJgvqE7ZVg",
-   "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
-   "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg"
+   "id": "sflGF8zuXNs",
+   "titulo": "Júpiter NO Es Un Planeta (Toda La VERDAD)",
+   "url": "https://www.youtube.com/watch?v=sflGF8zuXNs"
   },
   "saturn": {
    "id": "OlS6aP6FC54",
@@ -1339,15 +1339,8 @@
     "url": "https://www.youtube.com/watch?v=CUFfrBolg38",
     "miniatura": "https://i.ytimg.com/vi/CUFfrBolg38/mqdefault.jpg",
     "fecha": "2026-09-25T16:38:17Z",
-    "corto": false
-   },
-   {
-    "id": "dyrws09ukjQ",
-    "titulo": "Lanzan SMILE: el Satélite que Grabará cómo el Sol Ataca a la Tierra",
-    "url": "https://www.youtube.com/shorts/dyrws09ukjQ",
-    "miniatura": "https://i.ytimg.com/vi/dyrws09ukjQ/mqdefault.jpg",
-    "fecha": "2026-05-20T05:05:00Z",
-    "corto": true
+    "corto": false,
+    "puntos": 7
    },
    {
     "id": "0S00Uj7CfK8",
@@ -1355,33 +1348,37 @@
     "url": "https://www.youtube.com/shorts/0S00Uj7CfK8",
     "miniatura": "https://i.ytimg.com/vi/0S00Uj7CfK8/mqdefault.jpg",
     "fecha": "2026-04-17T16:12:23Z",
-    "corto": true
+    "corto": true,
+    "puntos": 7
+   },
+   {
+    "id": "dyrws09ukjQ",
+    "titulo": "Lanzan SMILE: el Satélite que Grabará cómo el Sol Ataca a la Tierra",
+    "url": "https://www.youtube.com/shorts/dyrws09ukjQ",
+    "miniatura": "https://i.ytimg.com/vi/dyrws09ukjQ/mqdefault.jpg",
+    "fecha": "2026-05-20T05:05:00Z",
+    "corto": true,
+    "puntos": 5
    }
   ],
   "moon": [
-   {
-    "id": "6Krvh2sH7yE",
-    "titulo": "¿Qué Esconde Este Agujero De La Luna? (Todos Quieren Ir)",
-    "url": "https://www.youtube.com/watch?v=6Krvh2sH7yE",
-    "miniatura": "https://i3.ytimg.com/vi/6Krvh2sH7yE/hqdefault.jpg",
-    "fecha": "2026-11-01T16:36:23+00:00",
-    "corto": false
-   },
-   {
-    "id": "V0TQalbRHDU",
-    "titulo": "Japón va a robarle un trozo a FOBOS 🚀 (la luna de Marte)",
-    "url": "https://www.youtube.com/shorts/V0TQalbRHDU",
-    "miniatura": "https://i.ytimg.com/vi/V0TQalbRHDU/mqdefault.jpg",
-    "fecha": "2026-10-27T19:02:54Z",
-    "corto": true
-   },
    {
     "id": "fBxQpxT6Mk0",
     "titulo": "La LUNA 🌙e está rompiendo y NO podemos hacer NADA",
     "url": "https://www.youtube.com/shorts/fBxQpxT6Mk0",
     "miniatura": "https://i.ytimg.com/vi/fBxQpxT6Mk0/mqdefault.jpg",
     "fecha": "2026-10-22T09:06:43Z",
-    "corto": true
+    "corto": true,
+    "puntos": 7
+   },
+   {
+    "id": "6Krvh2sH7yE",
+    "titulo": "¿Qué Esconde Este Agujero De La Luna? (Todos Quieren Ir)",
+    "url": "https://www.youtube.com/watch?v=6Krvh2sH7yE",
+    "miniatura": "https://i3.ytimg.com/vi/6Krvh2sH7yE/hqdefault.jpg",
+    "fecha": "2026-11-01T16:36:23+00:00",
+    "corto": false,
+    "puntos": 5
    },
    {
     "id": "sJCbgUmH5c4",
@@ -1389,7 +1386,8 @@
     "url": "https://www.youtube.com/shorts/sJCbgUmH5c4",
     "miniatura": "https://i.ytimg.com/vi/sJCbgUmH5c4/mqdefault.jpg",
     "fecha": "2026-04-30T14:29:10Z",
-    "corto": true
+    "corto": true,
+    "puntos": 5
    },
    {
     "id": "Jqr7JX56mYY",
@@ -1397,7 +1395,26 @@
     "url": "https://www.youtube.com/shorts/Jqr7JX56mYY",
     "miniatura": "https://i.ytimg.com/vi/Jqr7JX56mYY/mqdefault.jpg",
     "fecha": "2026-04-16T13:28:51Z",
-    "corto": true
+    "corto": true,
+    "puntos": 5
+   },
+   {
+    "id": "fUztNeFrsQU",
+    "titulo": "El MOMENTO CLAVE del rescate de Artemis II en el océano",
+    "url": "https://www.youtube.com/shorts/fUztNeFrsQU",
+    "miniatura": "https://i.ytimg.com/vi/fUztNeFrsQU/mqdefault.jpg",
+    "fecha": "2026-05-10T07:43:41Z",
+    "corto": true,
+    "puntos": 2
+   },
+   {
+    "id": "4_PPlku08PI",
+    "titulo": "Grabó esto con su iPhone. Artemis II 🌍",
+    "url": "https://www.youtube.com/shorts/4_PPlku08PI",
+    "miniatura": "https://i.ytimg.com/vi/4_PPlku08PI/mqdefault.jpg",
+    "fecha": "2026-04-21T05:48:48Z",
+    "corto": true,
+    "puntos": 2
    }
   ],
   "mercury": [
@@ -1407,17 +1424,19 @@
     "url": "https://www.youtube.com/watch?v=4I85ucuy_OA",
     "miniatura": "https://i.ytimg.com/vi/4I85ucuy_OA/mqdefault.jpg",
     "fecha": "2026-10-09T16:41:24Z",
-    "corto": false
+    "corto": false,
+    "puntos": 7
    }
   ],
   "mars": [
    {
-    "id": "cHJgvqE7ZVg",
-    "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
-    "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg",
-    "miniatura": "https://i4.ytimg.com/vi/cHJgvqE7ZVg/hqdefault.jpg",
-    "fecha": "2026-11-15T11:00:32+00:00",
-    "corto": true
+    "id": "R36JBJPbJT8",
+    "titulo": "Marte Tuvo Océanos y los Perdió (La Tierra Podría Ser la Siguiente)",
+    "url": "https://www.youtube.com/watch?v=R36JBJPbJT8",
+    "miniatura": "https://i.ytimg.com/vi/R36JBJPbJT8/mqdefault.jpg",
+    "fecha": "2026-10-23T17:32:46Z",
+    "corto": false,
+    "puntos": 7
    },
    {
     "id": "QkKiCcyHHD8",
@@ -1425,7 +1444,8 @@
     "url": "https://www.youtube.com/shorts/QkKiCcyHHD8",
     "miniatura": "https://i2.ytimg.com/vi/QkKiCcyHHD8/hqdefault.jpg",
     "fecha": "2026-11-14T18:00:27+00:00",
-    "corto": true
+    "corto": true,
+    "puntos": 7
    },
    {
     "id": "5ayOeXsYnMg",
@@ -1433,7 +1453,8 @@
     "url": "https://www.youtube.com/watch?v=5ayOeXsYnMg",
     "miniatura": "https://i2.ytimg.com/vi/5ayOeXsYnMg/hqdefault.jpg",
     "fecha": "2026-11-11T18:26:30+00:00",
-    "corto": false
+    "corto": false,
+    "puntos": 5
    },
    {
     "id": "V0TQalbRHDU",
@@ -1441,15 +1462,17 @@
     "url": "https://www.youtube.com/shorts/V0TQalbRHDU",
     "miniatura": "https://i.ytimg.com/vi/V0TQalbRHDU/mqdefault.jpg",
     "fecha": "2026-10-27T19:02:54Z",
-    "corto": true
+    "corto": true,
+    "puntos": 5
    },
    {
-    "id": "R36JBJPbJT8",
-    "titulo": "Marte Tuvo Océanos y los Perdió (La Tierra Podría Ser la Siguiente)",
-    "url": "https://www.youtube.com/watch?v=R36JBJPbJT8",
-    "miniatura": "https://i.ytimg.com/vi/R36JBJPbJT8/mqdefault.jpg",
-    "fecha": "2026-10-23T17:32:46Z",
-    "corto": false
+    "id": "tsU3uYYqkwQ",
+    "titulo": "Así aterrizarán los helicópteros de la NASA en el planeta ROJO",
+    "url": "https://www.youtube.com/shorts/tsU3uYYqkwQ",
+    "miniatura": "https://i.ytimg.com/vi/tsU3uYYqkwQ/mqdefault.jpg",
+    "fecha": "2026-10-25T16:43:03Z",
+    "corto": true,
+    "puntos": 5
    },
    {
     "id": "rLgAuccHv1A",
@@ -1457,25 +1480,28 @@
     "url": "https://www.youtube.com/shorts/rLgAuccHv1A",
     "miniatura": "https://i.ytimg.com/vi/rLgAuccHv1A/mqdefault.jpg",
     "fecha": "2026-05-11T14:48:07Z",
-    "corto": true
+    "corto": true,
+    "puntos": 5
    }
   ],
   "jupiter": [
-   {
-    "id": "cHJgvqE7ZVg",
-    "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
-    "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg",
-    "miniatura": "https://i4.ytimg.com/vi/cHJgvqE7ZVg/hqdefault.jpg",
-    "fecha": "2026-11-15T11:00:32+00:00",
-    "corto": true
-   },
    {
     "id": "sflGF8zuXNs",
     "titulo": "Júpiter NO Es Un Planeta (Toda La VERDAD)",
     "url": "https://www.youtube.com/watch?v=sflGF8zuXNs",
     "miniatura": "https://i4.ytimg.com/vi/sflGF8zuXNs/hqdefault.jpg",
     "fecha": "2026-10-30T19:03:42+00:00",
-    "corto": false
+    "corto": false,
+    "puntos": 7
+   },
+   {
+    "id": "cHJgvqE7ZVg",
+    "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
+    "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg",
+    "miniatura": "https://i4.ytimg.com/vi/cHJgvqE7ZVg/hqdefault.jpg",
+    "fecha": "2026-11-15T11:00:32+00:00",
+    "corto": true,
+    "puntos": 3
    }
   ],
   "saturn": [
@@ -1485,7 +1511,17 @@
     "url": "https://www.youtube.com/watch?v=OlS6aP6FC54",
     "miniatura": "https://i.ytimg.com/vi/OlS6aP6FC54/mqdefault.jpg",
     "fecha": "2026-08-26T17:19:08Z",
-    "corto": false
+    "corto": false,
+    "puntos": 7
+   },
+   {
+    "id": "sRZdvOxmXSk",
+    "titulo": "La NASA lo confirma: en TITÁN podrías VOLAR con tus propios brazos",
+    "url": "https://www.youtube.com/shorts/sRZdvOxmXSk",
+    "miniatura": "https://i.ytimg.com/vi/sRZdvOxmXSk/mqdefault.jpg",
+    "fecha": "2026-05-07T14:41:16Z",
+    "corto": true,
+    "puntos": 5
    }
   ],
   "iss": [
@@ -1495,7 +1531,8 @@
     "url": "https://www.youtube.com/shorts/0QfaRHP6TMI",
     "miniatura": "https://i1.ytimg.com/vi/0QfaRHP6TMI/hqdefault.jpg",
     "fecha": "2026-11-12T12:53:41+00:00",
-    "corto": true
+    "corto": true,
+    "puntos": 5
    },
    {
     "id": "RTC9Sy5-AGY",
@@ -1503,7 +1540,8 @@
     "url": "https://www.youtube.com/shorts/RTC9Sy5-AGY",
     "miniatura": "https://i.ytimg.com/vi/RTC9Sy5-AGY/mqdefault.jpg",
     "fecha": "2026-04-29T17:39:57Z",
-    "corto": true
+    "corto": true,
+    "puntos": 5
    }
   ],
   "c:Lyr": [
@@ -1513,8 +1551,99 @@
     "url": "https://www.youtube.com/shorts/Ty0mx3ZLd6o",
     "miniatura": "https://i.ytimg.com/vi/Ty0mx3ZLd6o/mqdefault.jpg",
     "fecha": "2026-04-20T16:19:13Z",
-    "corto": true
+    "corto": true,
+    "puntos": 7
    }
   ]
+ },
+ "videosTemas": {
+  "starship": {
+   "id": "XRQ-Ki2n_sM",
+   "titulo": "Starship: La Hazaña Explicada en 10 Minutos (Así la Atrapa SpaceX)",
+   "url": "https://www.youtube.com/watch?v=XRQ-Ki2n_sM",
+   "miniatura": "https://i1.ytimg.com/vi/XRQ-Ki2n_sM/hqdefault.jpg",
+   "fecha": "2026-11-20T08:47:06+00:00",
+   "corto": false
+  },
+  "artemis": {
+   "id": "rWfEfxXwTqM",
+   "titulo": "¿Es Artemis II un fraude? Analizamos las pruebas",
+   "url": "https://www.youtube.com/shorts/rWfEfxXwTqM",
+   "miniatura": "https://i.ytimg.com/vi/rWfEfxXwTqM/mqdefault.jpg",
+   "fecha": "2026-04-19T13:05:18Z",
+   "corto": true
+  },
+  "new-glenn": {
+   "id": "bMbQutBcetk",
+   "titulo": "Bezos lanza un cohete que vuelve solo 🚀",
+   "url": "https://www.youtube.com/shorts/bMbQutBcetk",
+   "miniatura": "https://i.ytimg.com/vi/bMbQutBcetk/mqdefault.jpg",
+   "fecha": "2026-04-22T14:24:42Z",
+   "corto": true
+  },
+  "smile": {
+   "id": "dyrws09ukjQ",
+   "titulo": "Lanzan SMILE: el Satélite que Grabará cómo el Sol Ataca a la Tierra",
+   "url": "https://www.youtube.com/shorts/dyrws09ukjQ",
+   "miniatura": "https://i.ytimg.com/vi/dyrws09ukjQ/mqdefault.jpg",
+   "fecha": "2026-05-20T05:05:00Z",
+   "corto": true
+  },
+  "bepicolombo": {
+   "id": "4I85ucuy_OA",
+   "titulo": "Mercurio NO Perdona (La Sonda BepiColombo Solo Tiene UNA Oportunidad)",
+   "url": "https://www.youtube.com/watch?v=4I85ucuy_OA",
+   "miniatura": "https://i.ytimg.com/vi/4I85ucuy_OA/mqdefault.jpg",
+   "fecha": "2026-10-09T16:41:24Z",
+   "corto": false
+  },
+  "roman": {
+   "id": "7JCss9DTygw",
+   "titulo": "El 99% del Universo Nunca ha sido \"Visto\" (Sin Roman, Seguiríamos Ciegos)",
+   "url": "https://www.youtube.com/watch?v=7JCss9DTygw",
+   "miniatura": "https://i.ytimg.com/vi/7JCss9DTygw/mqdefault.jpg",
+   "fecha": "2026-09-11T16:52:21Z",
+   "corto": false
+  },
+  "webb": {
+   "id": "3aN8sGeDNMw",
+   "titulo": "Webb Halla una Estrella de Agujero Negro (¿Es una Cuasi-Estrella?)",
+   "url": "https://www.youtube.com/watch?v=3aN8sGeDNMw",
+   "miniatura": "https://i4.ytimg.com/vi/3aN8sGeDNMw/hqdefault.jpg",
+   "fecha": "2026-11-25T18:07:27+00:00",
+   "corto": false
+  },
+  "eclipse-solar": {
+   "id": "0S00Uj7CfK8",
+   "titulo": "El eclipse solar más largo de la historia 🌑",
+   "url": "https://www.youtube.com/shorts/0S00Uj7CfK8",
+   "miniatura": "https://i.ytimg.com/vi/0S00Uj7CfK8/mqdefault.jpg",
+   "fecha": "2026-04-17T16:12:23Z",
+   "corto": true
+  },
+  "conjuncion": {
+   "id": "cHJgvqE7ZVg",
+   "titulo": "¿Dos estrellas juntas que no parpadean? Son PLANETAS (Marte y Júpiter)",
+   "url": "https://www.youtube.com/shorts/cHJgvqE7ZVg",
+   "miniatura": "https://i4.ytimg.com/vi/cHJgvqE7ZVg/hqdefault.jpg",
+   "fecha": "2026-11-15T11:00:32+00:00",
+   "corto": true
+  },
+  "liridas": {
+   "id": "Ty0mx3ZLd6o",
+   "titulo": "Líridas 2026: la lluvia de meteoros que lleva 2.700 años ocurriendo",
+   "url": "https://www.youtube.com/shorts/Ty0mx3ZLd6o",
+   "miniatura": "https://i.ytimg.com/vi/Ty0mx3ZLd6o/mqdefault.jpg",
+   "fecha": "2026-04-20T16:19:13Z",
+   "corto": true
+  },
+  "paso-iss": {
+   "id": "0QfaRHP6TMI",
+   "titulo": "Cómo VER la ESTACIÓN ESPACIAL este DOMINGO 15 (España y Chile)",
+   "url": "https://www.youtube.com/shorts/0QfaRHP6TMI",
+   "miniatura": "https://i1.ytimg.com/vi/0QfaRHP6TMI/hqdefault.jpg",
+   "fecha": "2026-11-12T12:53:41+00:00",
+   "corto": true
+  }
  }
 }

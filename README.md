@@ -70,6 +70,14 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.6 (entrega A) — 26 de noviembre de 2026
+Que la parte gratuita lleve visitas al canal:
+- **Vídeos relacionados precisos**: cada vídeo se puntúa según el astro sea el tema principal del título, aparezca entre paréntesis o solo en la descripción; «la luna de Marte» ya no sale en la Luna. Se pueden asignar o quitar vídeos a mano en `data/videos-asignados.json`.
+- **Aviso de vídeo largo nuevo** al abrir la app (los 7 días siguientes al estreno; se cierra con ✕ y no vuelve a salir).
+- **Eventos enlazados a vídeos**: lanzamientos (Starship, Artemis…) y fenómenos (eclipses, lluvias de estrellas, conjunciones, oposiciones) muestran «▶ Ver vídeo» si hay un vídeo del canal sobre el tema.
+- **Noticias alineadas**: las noticias sin imagen muestran el icono en un recuadro del mismo tamaño que las miniaturas.
+- Resúmenes de NASA Ciencia sin coletillas («Read this story in English here…»).
+
 ### Versión 1.5.5 — 24 de noviembre de 2026
 - **El cielo ya no se deforma después de buscar en iPhone.** Al abrir y cerrar el teclado, iOS cambiaba el tamaño de la página sin avisar siempre y el cielo quedaba estirado hasta recargar. Ahora la app comprueba sola el tamaño de la pantalla, recoloca la página al cerrar el teclado y evita el zoom automático del iPhone.
 

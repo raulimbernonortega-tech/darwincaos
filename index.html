@@ -73,7 +73,19 @@
     #uiBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 58px); right: 12px; z-index: 13; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; color: #e0f2fe; display: none; align-items: center; justify-content: center; padding: 0; }
     body.clean #uiBtn { display: flex; }
     body.clean .top, body.clean .dock, body.clean .bottom, body.clean #showerBanner, body.clean #homeBtn,
-    body.clean .modal, body.clean #toast, body.clean #belowTag { display: none !important; }
+    body.clean .modal, body.clean #toast, body.clean #belowTag, body.clean #newVideo { display: none !important; }
+    .ev .ico.thumb { width: 96px; height: 54px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: linear-gradient(135deg, #10213f, #0b1730); border: 1px solid rgba(56,189,248,.18); }
+    #infoVideos .ev .ico.thumb { width: 80px; height: 45px; }
+    .vchip { margin-top: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(248,113,113,.45); background: rgba(220,38,38,.16); color: #fecaca; font-size: 11.5px; font-weight: 700; }
+    #newVideo { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 62px); z-index: 14; width: min(540px, calc(100vw - 24px)); display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 10px; animation: nvIn .45s ease; }
+    #newVideo[hidden] { display: none !important; }
+    #newVideo a { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
+    #newVideo img { width: 96px; height: 54px; object-fit: cover; border-radius: 8px; flex: none; }
+    #newVideo .nvText { display: flex; flex-direction: column; min-width: 0; }
+    #newVideo b { font-size: 11px; color: #fca5a5; letter-spacing: .03em; text-transform: uppercase; }
+    #nvTitle { font-size: 13px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #nvClose { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(148,163,184,.15); color: #e2e8f0; font-size: 15px; }
+    @keyframes nvIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
     body.clean #focusBanner { top: calc(max(10px, env(safe-area-inset-top)) + 14px); } /* el nombre de la constelación se mantiene */
     /* Calendario */
     #modalCal { width: min(520px, calc(100vw - 80px)); }
@@ -225,7 +237,7 @@
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.5.5" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.6" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -437,7 +449,7 @@
     <div class="modal-head"><div class="modal-title">🪐 Planetario DarwinCaos</div><button class="close" type="button">✕</button></div>
     <div class="scroll">
       <p class="note" data-i18n="aboutText">Posiciones calculadas en tiempo real para tu ubicación. La ISS usa sus elementos orbitales actuales.</p>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.5.5</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 1.6</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -486,11 +498,15 @@
     </div>
   </div>
 
+  <div id="newVideo" class="pill" hidden>
+    <a id="nvLink" href="#" target="_blank" rel="noopener"><img id="nvImg" alt="" width="96" height="54" /><span class="nvText"><b id="nvHead">🎬 Nuevo en DarwinCaos</b><span id="nvTitle"></span></span></a>
+    <button id="nvClose" type="button" aria-label="Cerrar">✕</button>
+  </div>
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.5.5"></script>
-  <script src="vendor/satellite.min.js?v=1.5.5"></script>
-  <script src="vendor/geomag.min.js?v=1.5.5"></script>
-  <script type="module" src="app.js?v=1.5.5"></script>
+  <script src="vendor/astronomy.browser.min.js?v=1.6"></script>
+  <script src="vendor/satellite.min.js?v=1.6"></script>
+  <script src="vendor/geomag.min.js?v=1.6"></script>
+  <script type="module" src="app.js?v=1.6"></script>
 </body>
 </html>

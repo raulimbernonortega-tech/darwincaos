@@ -8,7 +8,7 @@ const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.5.5';
+const APP_VERSION = '1.6';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1152,6 +1152,7 @@ function openInfo(entry) {
   renderInfoVideos(entry);
   $('infoVideo').href = videoUrl(entry);
   $('infoCard').classList.add('open');
+  hideNewVideo();
   $('infoCard').scrollTop = 0; // siempre desde arriba (nombre visible)
   updateViewOffset();
 }
@@ -1830,15 +1831,28 @@ function goToEvent(id, time) {
 }
 
 const ytSmall = u => (u || '').replace(/\/(hq|sd|maxres)default\.jpg/, '/mqdefault.jpg'); // 320×180 en vez de 480×360
-function evRow({ ico, when, what, more, onClick, href, img, hl }) {
+// Vídeo del canal para un evento: por tema («perseidas», «starship»…) o por astro («obj:mars»)
+function topicVideo(topic) {
+  if (!topic || !FEED) return null;
+  if (topic.startsWith('obj:')) return relatedOf({ id: topic.slice(4) })[0] || null;
+  return FEED.videosTemas?.[topic] || null;
+}
+function evRow({ ico, when, what, more, onClick, href, img, hl, box: thumbBox, video }) {
   const el = document.createElement(href ? 'a' : onClick ? 'button' : 'div');
   el.className = 'ev' + (hl ? ' hl' : '');
   if (href) { el.href = href; el.target = '_blank'; el.rel = 'noopener'; }
   if (onClick) { el.type = 'button'; el.onclick = onClick; }
-  if (img) { const i = document.createElement('img'); i.alt = ''; i.decoding = 'async'; i.width = 192; i.height = 108; i.src = ytSmall(img); i.onerror = () => i.replaceWith(Object.assign(document.createElement('span'), { className: 'ico', textContent: ico || '▶' })); el.append(i); }
-  else { const i = document.createElement('span'); i.className = 'ico'; i.textContent = ico; el.append(i); }
+  const icoEl = () => Object.assign(document.createElement('span'), { className: 'ico' + (thumbBox || img ? ' thumb' : ''), textContent: ico || '▶' });
+  if (img) { const i = document.createElement('img'); i.alt = ''; i.decoding = 'async'; i.width = 192; i.height = 108; i.src = ytSmall(img); i.onerror = () => i.replaceWith(icoEl()); el.append(i); }
+  else el.append(icoEl()); // sin imagen: el icono ocupa el mismo recuadro que una miniatura (box)
   const box = document.createElement('div');
   for (const [cls, txt] of [['when', when], ['what', what], ['more', more]]) if (txt) { const d = document.createElement('div'); d.className = cls; d.textContent = txt; box.append(d); }
+  if (video) { // «▶ Ver vídeo» del canal, sin abrir el evento
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'vchip';
+    b.textContent = `▶ ${S.lang === 'en' ? 'Watch video' : 'Ver vídeo'}`; b.title = video.titulo;
+    b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); window.open(video.url, '_blank', 'noopener'); };
+    box.append(b);
+  }
   el.append(box);
   return el;
 }
@@ -1949,7 +1963,7 @@ function renderTonight(box) {
 // ── Eventos ──
 // El cálculo es pesado (≈1 s en móvil): se hace por trozos, cediendo el control al navegador
 // para que la ventana nunca se congele, se guarda en caché (memoria + localStorage) y se adelanta en segundo plano.
-const EV_STORE = 'dc_eventos_cache_v2', EV_DAYS = 61; // dos meses vista
+const EV_STORE = 'dc_eventos_cache_v3', EV_DAYS = 61; // dos meses vista
 let eventsCache = { key: '', items: null }, eventsJob = null;
 function eventsKey() { const d = new Date(simDate()); d.setHours(0, 0, 0, 0); return `${S.place.lat.toFixed(2)},${S.place.lon.toFixed(2)},${d.toDateString()},${S.lang}`; }
 function eventsReady() { return eventsCache.key === eventsKey() ? eventsCache.items : null; }
@@ -1981,14 +1995,14 @@ async function computeSkyEvents(job) {
   const breathe = async () => { if (performance.now() - slice > 8) { await new Promise(r => setTimeout(r, 0)); slice = performance.now(); } if (eventsJob !== job) throw new Error('cancelado'); };
   const start = new Date(simDate()); start.setHours(0, 0, 0, 0);
   const c = CT(), end = new Date(+start + EV_DAYS * 864e5), far = end, items = [];
-  const push = (date, ico, what, more, action, hl) => { if (date >= start && date <= far) items.push({ date, cat: 'sky', ico, what, more, action, hl }); };
+  const push = (date, ico, what, more, action, hl, topic) => { if (date >= start && date <= far) items.push({ date, cat: 'sky', ico, what, more, action, hl, topic }); };
   const pname = id => bodyName(BODIES.find(b => b.id === id));
   try { // Fases de la Luna y superlunas
     let q = A.SearchMoonQuarter(start);
     while (q.time.date < end) {
       let what = c.phases[q.quarter], hl = false;
       if (q.quarter === 2) { const v = A.GeoMoon(q.time), km = Math.hypot(v.x, v.y, v.z) * 149597870.7; if (km < 360000) { what = `${c.supermoon} · ${what}`; hl = true; } }
-      push(q.time.date, ['🌑', '🌓', '🌕', '🌗'][q.quarter], what, '', { id: 'moon', time: q.time.date }, hl);
+      push(q.time.date, ['🌑', '🌓', '🌕', '🌗'][q.quarter], what, '', { id: 'moon', time: q.time.date }, hl, hl ? 'superluna' : null);
       q = A.NextMoonQuarter(q);
     }
   } catch { }
@@ -1997,7 +2011,7 @@ async function computeSkyEvents(job) {
     let e = A.SearchLunarEclipse(start);
     while (e.peak.date < far) {
       const alt = altAzAt('Moon', e.peak.date).altitude;
-      push(e.peak.date, '🌘', `${c.eclipseL} ${c.kinds[e.kind] || e.kind}`, alt > 0 ? c.visibleHere : c.notVisibleHere, { id: 'moon', time: e.peak.date }, alt > 0);
+      push(e.peak.date, '🌘', `${c.eclipseL} ${c.kinds[e.kind] || e.kind}`, alt > 0 ? c.visibleHere : c.notVisibleHere, { id: 'moon', time: e.peak.date }, alt > 0, 'eclipse-lunar');
       e = A.NextLunarEclipse(e.peak);
     }
   } catch { }
@@ -2005,14 +2019,14 @@ async function computeSkyEvents(job) {
   try { // Eclipses solares visibles desde aquí (hasta 400 días)
     let e = A.SearchLocalSolarEclipse(start, observer);
     while (e.peak.time.date < far) {
-      push(e.peak.time.date, '🌞', `${c.eclipseS} ${c.kinds[e.kind] || e.kind}`, `${c.visibleHere} · ${fmtNum(e.obscuration * 100)} % ${c.covered}`, { id: 'sun', time: e.peak.time.date }, true);
+      push(e.peak.time.date, '🌞', `${c.eclipseS} ${c.kinds[e.kind] || e.kind}`, `${c.visibleHere} · ${fmtNum(e.obscuration * 100)} % ${c.covered}`, { id: 'sun', time: e.peak.time.date }, true, 'eclipse-solar');
       e = A.NextLocalSolarEclipse(e.peak.time, observer);
     }
   } catch { }
   for (const id of ['mars', 'jupiter', 'saturn', 'uranus', 'neptune']) { // Oposiciones (hasta 400 días)
     const b = BODIES.find(x => x.id === id);
     const tt = tryTime(() => A.SearchRelativeLongitude(b.body, 0, start));
-    if (tt) push(tt, '🪐', `${c.opposition} ${pname(id)}`, c.oppMore, { id, time: new Date(+tt) }, id !== 'neptune' && id !== 'uranus');
+    if (tt) push(tt, '🪐', `${c.opposition} ${pname(id)}`, c.oppMore, { id, time: new Date(+tt) }, id !== 'neptune' && id !== 'uranus', 'obj:' + id);
   }
   for (const id of ['mercury', 'venus']) { // Máximas elongaciones
     let t0 = start;
@@ -2046,13 +2060,13 @@ async function computeSkyEvents(job) {
         if (elong < 15) return; // demasiado cerca del Sol para verse
         const focus = p.moon ? p.b.id : p.a.id;
         const what = p.moon ? `${c.moonNear} ${p.b.name}` : `${c.conj} ${p.a.name} ${c.and} ${p.b.name}`;
-        push(when, p.moon ? '🌙' : '🪐', what, `${c.sep} ${fmtNum(h[1][1], 1)}°`, { id: focus, time: when }, !p.moon && h[1][1] < 1);
+        push(when, p.moon ? '🌙' : '🪐', what, `${c.sep} ${fmtNum(h[1][1], 1)}°`, { id: focus, time: when }, !p.moon && h[1][1] < 1, p.moon ? null : 'conjuncion');
       }
     });
   }
   for (const sh of SHOWERS) for (const y of [start.getFullYear(), start.getFullYear() + 1]) { // Lluvias de meteoros
     const peak = new Date(Date.UTC(y, sh.peak[0] - 1, sh.peak[1], 22));
-    if (peak >= start && peak <= end) push(peak, '☄️', `${c.peakOf} ${S.lang === 'en' ? sh.en : sh.es}`, `~${sh.zhr} ${c.perHour}`, { time: peak }, sh.zhr >= 100);
+    if (peak >= start && peak <= end) push(peak, '☄️', `${c.peakOf} ${S.lang === 'en' ? sh.en : sh.es}`, `~${sh.zhr} ${c.perHour}`, { time: peak }, sh.zhr >= 100, fold(sh.es).replace(/\s+/g, '-'));
   }
   const south = S.place.lat < 0; // Estaciones según el hemisferio
   for (const y of [start.getFullYear(), start.getFullYear() + 1]) {
@@ -2068,7 +2082,7 @@ async function computeSkyEvents(job) {
 function feedEvents() {
   if (!FEED) return [];
   const now = simDate(), items = [];
-  for (const l of FEED.lanzamientos || []) { if (l.relevante === false) continue; /* solo los relevantes */ const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
+  for (const l of FEED.lanzamientos || []) { if (l.relevante === false) continue; /* solo los relevantes */ const d = new Date(l.fecha); if (d > new Date(+now - 864e5) && d < new Date(+now + 45 * 864e5)) items.push({ date: d, cat: 'launch', ico: '🚀', topic: l.tema || null, what: l.nombre, more: [l.proveedor, l.lugar].filter(Boolean).join(' · '), href: l.enlace || null }); }
   return items;
 }
 // La pestaña Eventos se construye UNA vez (con todo) y se guarda; los filtros solo muestran u ocultan
@@ -2112,8 +2126,8 @@ function buildEvents(sky) {
   const auto = FEED?.noticiasPorIdioma?.[S.lang] || (FEED?.noticias || []).filter(n => !n.idioma || n.idioma === S.lang);
   if (mine.length || auto.length) {
     const g = grp('news'); g.append(section(c.latestNews));
-    mine.forEach(m => g.append(evRow({ ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
-    auto.forEach(n => g.append(evRow({ img: n.mini || null, /* solo miniaturas ligeras: las originales pesan MB y bloqueaban el iPhone */ ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
+    mine.forEach(m => g.append(evRow({ box: true, ico: '📌', when: `${fmtDay(new Date(m.fecha))} · DarwinCaos`, what: m.titulo, more: m.descripcion || '', href: m.enlace || null, hl: true })));
+    auto.forEach(n => g.append(evRow({ box: true, img: n.mini || null, /* solo miniaturas ligeras: las originales pesan MB y bloqueaban el iPhone */ ico: '📰', when: `${fmtDay(new Date(n.fecha))} · ${n.fuente}${n.idioma === 'en' ? ' · EN' : ''}`, what: n.titulo, more: (n.resumen || '').slice(0, 140) + ((n.resumen || '').length > 140 ? '…' : ''), href: n.url })));
   }
   // Cielo y lanzamientos, por meses
   if (!sky) { const p = document.createElement('p'); p.className = 'note calc'; p.textContent = c.calculating; wrap.append(p); }
@@ -2123,7 +2137,7 @@ function buildEvents(sky) {
     const m = e.date.toLocaleDateString(S.lang, { month: 'long', year: 'numeric', ...tzOpt() });
     if (m !== month) { month = m; g = grp(null); g.append(section('📅 ' + m)); }
     const onClick = e.action ? () => goToEvent(e.action.id, e.action.time) : null;
-    const row = evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl });
+    const row = evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl, video: topicVideo(e.topic) });
     row.dataset.cat = e.cat; g.append(row);
   });
   const empty = document.createElement('p'); empty.className = 'note evempty'; empty.textContent = FEED ? c.empty : c.noFeed; wrap.append(empty);
@@ -2565,6 +2579,34 @@ document.addEventListener('focusout', e => {
   setTimeout(() => { if (scrollX || scrollY) scrollTo(0, 0); fitRenderer(true); }, 250);
 });
 
+// ───────────── Aviso de vídeo largo nuevo ─────────────
+// Tras la bienvenida, si hay un vídeo LARGO publicado en los últimos 7 días que no has cerrado ni abierto.
+// Se oculta solo a los 25 s; si no lo tocas, vuelve a salir (como mucho 3 veces por vídeo).
+const NV_KEY = 'dc_nuevo_video';
+let nvSplash = false, nvFeed = false, nvTimer = 0, nvDone = false;
+const nvSeen = () => { try { return JSON.parse(localStorage.getItem(NV_KEY) || '{}'); } catch { return {}; } };
+const nvMark = (id, v) => { try { const m = nvSeen(); m[id] = v; localStorage.setItem(NV_KEY, JSON.stringify(m)); } catch { } };
+function hideNewVideo() { $('newVideo').hidden = true; clearTimeout(nvTimer); }
+function showNewVideo() {
+  if (nvDone || !nvSplash || !nvFeed || !FEED?.videos) return;
+  nvDone = true; // una vez por apertura
+  const v = FEED.videos.filter(x => !x.corto && Date.now() - Date.parse(x.fecha) < 7 * 864e5).sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha))[0];
+  if (!v) return;
+  const seen = nvSeen()[v.id];
+  if (seen === 'x' || (+seen || 0) >= 3) return;
+  nvMark(v.id, (+seen || 0) + 1);
+  $('nvHead').textContent = S.lang === 'en' ? '🎬 New on DarwinCaos' : '🎬 Nuevo en DarwinCaos';
+  $('nvTitle').textContent = v.titulo;
+  const img = $('nvImg'); img.hidden = false; img.onerror = () => { img.hidden = true; }; img.src = ytSmall(v.miniatura);
+  $('nvLink').href = v.url;
+  $('nvLink').onclick = () => { nvMark(v.id, 'x'); hideNewVideo(); };
+  $('nvClose').onclick = () => { nvMark(v.id, 'x'); hideNewVideo(); };
+  $('newVideo').hidden = false;
+  nvTimer = setTimeout(hideNewVideo, 25000);
+}
+function splashGone() { nvSplash = true; setTimeout(showNewVideo, 2500); }
+function feedReady() { nvFeed = true; setTimeout(showNewVideo, 2500); }
+
 // ───────────── Arranque ─────────────
 async function init() {
   applyLanguage();
@@ -2603,16 +2645,17 @@ async function init() {
     if (byUser && iosPermission && matchMedia('(pointer: coarse)').matches) setSensor(true, true); // iPhone: el toque concede el permiso
     else autoStartSensor();
   };
-  if (!window.__splash) startSensors(false);
+  if (!window.__splash) { startSensors(false); splashGone(); }
   window.__splash?.ready(firstVisit, byUser => {
     startSensors(byUser);
+    splashGone();
     if (byUser && firstVisit && !saved.place && !urlPlace) requestLocation(true); // primera visita: «Empezar» pide también la ubicación
     if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1400);
     try { const st = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); st.welcomed = true; localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch { }
   });
   persist();
   updateDeclination();
-  loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); });
+  loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); feedReady(); });
   // Adelantamos el cálculo de eventos en segundo plano para que el calendario abra al instante
   setTimeout(() => (window.requestIdleCallback || (f => f()))(() => getSkyEvents().catch(() => { })), 6000);
   loadISS().then(() => {

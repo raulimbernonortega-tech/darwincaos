@@ -1,0 +1,7 @@
+{
+  "_ayuda": "Ajustes manuales de los vídeos relacionados. El robot los aplica en su siguiente pasada (cada 6 horas o al guardar este archivo). 'asignar': vídeos que deben salir (los primeros) en la ficha de un astro. 'quitar': vídeos que NO deben salir en un astro. 'temas': el vídeo que se enlaza a un tipo de evento del calendario. El identificador de un vídeo es lo que va tras 'v=' o tras '/shorts/' en su enlace. Astros: sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto, iss, m31, m42, m45, sgra, cygx1, s:Betelgeuse, c:Ori... Temas: starship, artemis, new-glenn, smile, bepicolombo, europa-clipper, tiangong, roman, webb, hubble, eclipse-solar, eclipse-lunar, superluna, conjuncion, liridas, perseidas, geminidas, leonidas, cuadrantidas, orionidas, eta-acuaridas, paso-iss.",
+  "_ejemplo": { "asignar": { "jupiter": ["cHJgvqE7ZVg"] }, "quitar": { "mars": ["XXXXXXXXXXX"] }, "temas": { "conjuncion": "cHJgvqE7ZVg" } },
+  "asignar": {},
+  "quitar": {},
+  "temas": {}
+}

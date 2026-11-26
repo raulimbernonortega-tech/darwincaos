@@ -19,6 +19,8 @@ const ES_SOURCES = [
   { nombre: 'Agencia SINC', home: 'https://www.agenciasinc.es/', feeds: [], espacio: false },
 ];
 const MANUAL = 'data/eventos-manuales.json';
+const ASSIGN = 'data/videos-asignados.json'; // asignaciones manuales de vídeos a astros y temas
+const INFO = 'data/videos-info.json'; // descripciones de los vídeos (solo para el robot)
 
 // Palabras clave para enlazar cada astro de la app con el último vídeo del canal que habla de él
 const KEYWORDS = {
@@ -41,7 +43,8 @@ export function parseYouTubeRss(xml) {
     const id = tag(e, 'yt:videoId');
     const corto = /youtube\.com\/shorts\//.test(e);
     return { id, titulo: tag(e, 'title'), fecha: tag(e, 'published'), corto, url: corto ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`,
-      miniatura: (e.match(/<media:thumbnail url="([^"]+)"/) || [])[1] || `https://i.ytimg.com/vi/${id}/mqdefault.jpg` };
+      miniatura: (e.match(/<media:thumbnail url="([^"]+)"/) || [])[1] || `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+      descripcion: tag(e, 'media:description').slice(0, 600) };
   }).filter(v => v.id);
 }
 
@@ -122,7 +125,7 @@ const sameStory = (a, b) => { const A = words(a), B = words(b); let k = 0; for (
 const ENTITIES = ['voyager', 'artemis', 'webb', 'jwst', 'hubble', 'juno', 'juice', 'europa clipper', 'perseverance', 'curiosity', 'ingenuity', 'starship',
   'new glenn', 'orion', 'shenzhou', 'tianzhou', 'tianwen', "chang'e", 'tiangong', 'bepicolombo', 'psyche', 'osiris', 'hera', 'parker', 'solar orbiter', 'euclid',
   'gaia', 'plato', 'chandra', 'spherex', 'roman', 'andromeda', 'betelgeuse', 'iss', 'dragon', 'crew-', 'soyuz', 'ariane', 'vega', 'kepler', 'tess', 'cassini', 'new horizons'];
-const fold = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const fold = t => (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 const entitiesOf = t => ENTITIES.filter(e => wholeWord(fold(t), e) || (e.endsWith('-') && fold(t).includes(e)));
 const numbersOf = t => new Set((t.match(/\d+/g) || []).filter(n => !/^20\d\d$/.test(n)));
 export function sameStoryAnyLang(a, b) {
@@ -160,7 +163,8 @@ export function mapSnapi(json) {
 export function parseRssItems(xml, fuente, espacio = false) {
   return [...xml.matchAll(/<item[\s>]([\s\S]*?)<\/item>/g)].map(([, it]) => {
     const enc = (it.match(/<enclosure[^>]+url="([^"]+)"/) || [])[1] || (it.match(/<media:content[^>]+url="([^"]+)"/) || [])[1] || null;
-    const desc = tag(it, 'description').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const desc = tag(it, 'description').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      .replace(/^Read this story in English here\.?\s*/i, '').replace(/\s*The post .{0,200}? appeared first on [^.]+\.?\s*$/i, '').trim(); // coletillas de WordPress/NASA
     const cats = [...it.matchAll(/<category[^>]*>([\s\S]*?)<\/category>/g)].map(m => decode(m[1]).trim()).join(' ');
     return { titulo: tag(it, 'title'), resumen: (desc + ' ' + cats).slice(0, 280), url: tag(it, 'link'), imagen: enc,
       fuente, fecha: new Date(tag(it, 'pubDate') || tag(it, 'dc:date') || Date.now()).toISOString(), destacado: false, idioma: 'es', espacio };
@@ -197,24 +201,87 @@ export async function findFeeds(home) {
   return [...found].map(([url, xml]) => ({ url, xml }));
 }
 
-export function relatedVideos(videos, max = 6) {
+// ── Vídeos del canal ↔ astros y temas ──
+// Se puntúa cada vídeo: el astro en el título principal vale más que mencionado entre paréntesis
+// o de pasada; la descripción suma poco. «la luna de Marte» es de Marte, no de la Luna.
+// data/videos-asignados.json permite forzar («asignar») o quitar («quitar») vídeos a mano.
+const PLANETS_RX = '(mercurio|venus|marte|jupiter|saturno|urano|neptuno|pluton)';
+export const OBJECTS = {
+  sun: { kw: ['el sol', 'del sol', 'al sol', 'manchas solares', 'tormenta solar', 'eclipse solar', 'eclipse de sol', 'viento solar'] },
+  moon: { kw: ['luna', 'lunar'], weak: ['artemis'], not: [new RegExp(`lunas? de ${PLANETS_RX}`, 'g'), /lunas? de (otro|otros) planetas?/g] },
+  mercury: { kw: ['mercurio', 'bepicolombo'] },
+  venus: { kw: ['venus'] },
+  mars: { kw: ['marte', 'planeta rojo', 'fobos', 'deimos', 'mark watney', 'the martian'] },
+  jupiter: { kw: ['jupiter'], weak: ['europa clipper', ' io ', 'ganimedes', 'calisto'] },
+  saturn: { kw: ['saturno', 'titan', 'encelado'] },
+  uranus: { kw: ['urano'] }, neptune: { kw: ['neptuno'] }, pluto: { kw: ['pluton'] },
+  iss: { kw: ['estacion espacial', ' iss '], not: [/estacion espacial (china|tiangong)/g, /tiangong/g] },
+  m31: { kw: ['andromeda'], not: [/constelacion de andromeda/g] }, m42: { kw: ['nebulosa de orion'] }, m45: { kw: ['pleyades'] },
+  sgra: { kw: ['sagitario a', 'agujero negro de la via lactea', 'centro de la galaxia', 'centro de la via lactea'] }, cygx1: { kw: ['cygnus x-1'] },
+  's:Betelgeuse': { kw: ['betelgeuse'] }, 's:Sirius': { kw: ['sirio'] }, 's:Polaris': { kw: ['estrella polar'] }, 's:Vega': { kw: ['vega'] }, 's:Antares': { kw: ['antares'] },
+  'c:Ori': { kw: ['constelacion de orion', 'cinturon de orion'] }, 'c:UMa': { kw: ['osa mayor', 'el carro'] }, 'c:Cas': { kw: ['casiopea'] }, 'c:Sco': { kw: ['escorpio', 'escorpion'] },
+  'c:Gem': { kw: ['geminis', 'geminidas'] }, 'c:Per': { kw: ['perseo', 'perseidas'] }, 'c:Leo': { kw: ['leonidas', 'constelacion de leo'] }, 'c:Lyr': { kw: ['liridas'] },
+  'c:Cyg': { kw: ['constelacion del cisne'] }, 'c:Tau': { kw: ['tauro', 'taurides'] }, 'c:And': { kw: ['constelacion de andromeda'] },
+};
+// Temas para enlazar eventos del calendario (lanzamientos y fenómenos del cielo) con vídeos
+export const TOPICS = {
+  starship: ['starship'], artemis: ['artemis'], 'new-glenn': ['new glenn', 'blue origin', 'bezos'], smile: ['smile'], bepicolombo: ['bepicolombo'],
+  'europa-clipper': ['europa clipper'], tiangong: ['tiangong', 'shenzhou', 'estacion espacial china'], roman: ['roman'], webb: ['webb'], hubble: ['hubble'],
+  'eclipse-solar': ['eclipse solar', 'eclipse de sol'], 'eclipse-lunar': ['eclipse lunar', 'eclipse de luna'], superluna: ['superluna'],
+  conjuncion: ['dos estrellas juntas', 'desfile de planetas', 'conjuncion', 'planetas a la vez', 'alineacion de planetas'],
+  liridas: ['liridas'], perseidas: ['perseidas'], geminidas: ['geminidas'], leonidas: ['leonidas'], cuadrantidas: ['cuadrantidas'], orionidas: ['orionidas'], 'eta-acuaridas': ['acuaridas'],
+  'paso-iss': ['ver la estacion espacial', 'ver la iss'],
+};
+const has = (text, w) => text.includes(w);
+function scoreFor(v, def, info) {
+  const strip = t => (def.not || []).reduce((acc, rx) => acc.replace(rx, ' '), t);
+  const title = strip(' ' + fold(v.titulo).replace(/[¿?¡!"“”«»:]/g, ' ') + ' ');
+  const raw = fold(v.titulo);
+  const cut = raw.search(/[(\[]/);
+  const main = strip(' ' + (cut > 0 ? raw.slice(0, cut) : raw).replace(/[¿?¡!"“”«»:]/g, ' ') + ' ');
+  const first = main.trim().split(/\s+/).slice(0, 4).join(' ');
+  let sc = 0;
+  for (const w of def.kw) {
+    if (has(main, w)) sc = Math.max(sc, 5 + (first.includes(w.trim()) ? 2 : 0));
+    else if (has(title, w)) sc = Math.max(sc, 3);
+  }
+  for (const w of def.weak || []) if (has(title, w)) sc = Math.max(sc, 2);
+  if (!sc && info?.descripcion) { const d = strip(' ' + fold(info.descripcion) + ' '); if (def.kw.some(w => has(d, w))) sc = 1; }
+  return sc;
+}
+const pub = v => ({ id: v.id, titulo: v.titulo, url: v.url, miniatura: v.miniatura, fecha: v.fecha, corto: !!v.corto });
+export function relatedVideos(videos, manual = {}, info = {}, max = 6) {
   const out = {};
-  const sorted = [...videos].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha));
-  for (const [obj, words] of Object.entries(KEYWORDS)) {
-    const list = sorted.filter(v => words.some(w => (' ' + v.titulo.toLowerCase()).includes(w))).slice(0, max)
-      .map(v => ({ id: v.id, titulo: v.titulo, url: v.url, miniatura: v.miniatura, fecha: v.fecha, corto: !!v.corto }));
+  for (const [obj, def] of Object.entries(OBJECTS)) {
+    const forced = new Set(manual.asignar?.[obj] || []), removed = new Set(manual.quitar?.[obj] || []);
+    const list = videos.filter(v => !removed.has(v.id))
+      .map(v => ({ v, sc: forced.has(v.id) ? 100 : scoreFor(v, def, info[v.id]) }))
+      .filter(x => x.sc >= 2)
+      .sort((a, b) => b.sc - a.sc || (a.v.corto - b.v.corto) || Date.parse(b.v.fecha) - Date.parse(a.v.fecha))
+      .slice(0, max).map(x => ({ ...pub(x.v), puntos: x.sc }));
     if (list.length) out[obj] = list;
   }
   return out;
 }
-export function videosByObject(videos) {
+export function videosByObject(rel) { // compatibilidad: el mejor vídeo de cada astro
+  return Object.fromEntries(Object.entries(rel).map(([k, l]) => [k, { id: l[0].id, titulo: l[0].titulo, url: l[0].url }]));
+}
+export function topicVideos(videos, manual = {}) { // el mejor vídeo de cada tema (prioriza largos y recientes)
   const out = {};
-  const sorted = [...videos].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha));
-  for (const [obj, words] of Object.entries(KEYWORDS)) {
-    const v = sorted.find(v => words.some(w => (' ' + v.titulo.toLowerCase()).includes(w)));
-    if (v) out[obj] = { id: v.id, titulo: v.titulo, url: v.url };
+  for (const [topic, kws] of Object.entries(TOPICS)) {
+    const forced = manual.temas?.[topic];
+    const v = (forced && videos.find(x => x.id === forced)) || videos
+      .map(v => ({ v, sc: scoreFor(v, { kw: kws }) }))
+      .filter(x => x.sc >= 3)
+      .sort((a, b) => b.sc - a.sc || (a.v.corto - b.v.corto) || Date.parse(b.v.fecha) - Date.parse(a.v.fecha))[0]?.v;
+    if (v) out[topic] = pub(v);
   }
   return out;
+}
+const LAUNCH_TOPICS = ['starship', 'artemis', 'new-glenn', 'smile', 'bepicolombo', 'europa-clipper', 'tiangong', 'roman'];
+export function launchTopic(l, temas) { // tema de un lanzamiento si hay vídeo para él
+  const t = fold([l.nombre, l.proveedor].filter(Boolean).join(' ')); // el nombre del lanzamiento, sin la descripción larga (evita falsos positivos)
+  return LAUNCH_TOPICS.find(k => temas[k] && TOPICS[k].some(w => new RegExp(`(^|[^a-z0-9])${w.trim().replace(/[-]/g, '\\-')}($|[^a-z0-9])`).test(t))) || null;
 }
 
 // Miniaturas ligeras de las noticias (≈10 KB). Las imágenes originales pesan varios MB y en iPhone,
@@ -257,14 +324,22 @@ async function get(url, type = 'text') {
 
 async function main() {
   const prev = JSON.parse(await readFile(OUT, 'utf8').catch(() => '{}'));
-  const out = { actualizado: new Date().toISOString(), videos: prev.videos || [], lanzamientos: prev.lanzamientos || [], noticias: prev.noticias || [], noticiasPorIdioma: prev.noticiasPorIdioma || {}, manuales: [], videosPorObjeto: prev.videosPorObjeto || {}, videosRelacionados: prev.videosRelacionados || {} };
+  const out = { actualizado: new Date().toISOString(), videos: prev.videos || [], lanzamientos: prev.lanzamientos || [], noticias: prev.noticias || [], noticiasPorIdioma: prev.noticiasPorIdioma || {}, manuales: [], videosPorObjeto: prev.videosPorObjeto || {}, videosRelacionados: prev.videosRelacionados || {}, videosTemas: prev.videosTemas || {} };
 
   try {
     const nuevos = parseYouTubeRss(await get(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`));
     const all = new Map([...out.videos, ...nuevos].map(v => [v.id, v]));
     out.videos = [...all.values()].sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha)).slice(0, 2000); // todo el catálogo del canal
-    out.videosPorObjeto = videosByObject(out.videos);
-    out.videosRelacionados = relatedVideos(out.videos);
+    const asignados = JSON.parse(await readFile(ASSIGN, 'utf8').catch(() => '{}'));
+    const info = JSON.parse(await readFile(INFO, 'utf8').catch(() => '{}'));
+    for (const v of nuevos) if (v.descripcion) info[v.id] = { descripcion: v.descripcion };
+    for (const v of out.videos) delete v.descripcion; // la descripción solo la usa el robot (no engorda el archivo de la app)
+    await writeFile(INFO, JSON.stringify(info, null, 1) + '\n');
+    out.videosRelacionados = relatedVideos(out.videos, asignados, info);
+    out.videosPorObjeto = videosByObject(out.videosRelacionados);
+    out.videosTemas = topicVideos(out.videos, asignados);
+    for (const [k, l] of Object.entries(out.videosRelacionados)) console.log(`  ${k}: ${l.map(v => `[${v.puntos}] ${v.titulo}`).join(' · ')}`);
+    console.log(`  temas: ${Object.entries(out.videosTemas).map(([k, v]) => `${k} → ${v.titulo}`).join(' · ')}`);
     console.log(`Vídeos: ${nuevos.length} en el RSS, ${out.videos.length} guardados`);
   } catch (e) { console.warn('YouTube: se conservan los datos anteriores →', e.message); }
 
@@ -308,6 +383,7 @@ async function main() {
     out.noticias.forEach(n => console.log(`  [${n.puntos}] ${n.fuente}: ${n.titulo}`));
   }
 
+  for (const l of out.lanzamientos) { const k = launchTopic(l, out.videosTemas); if (k) l.tema = k; else delete l.tema; }
   try {
     const m = JSON.parse(await readFile(MANUAL, 'utf8'));
     out.manuales = (m.eventos || []).filter(e => e.fecha && e.titulo);
