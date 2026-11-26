@@ -2,13 +2,14 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
+import { createObjectView } from './objeto.js?v=1.6.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.6';
+const APP_VERSION = '1.6.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1182,6 +1183,7 @@ function openInfo(entry) {
   renderInfoText(entry);
   renderInfoVideos(entry);
   $('infoVideo').href = videoUrl(entry);
+  $('infoObject').hidden = !OBJECT_IDS.has(entry.id);
   $('infoCard').classList.add('open');
   hideNewVideo();
   $('infoCard').scrollTop = 0; // siempre desde arriba (nombre visible)
@@ -1315,8 +1317,23 @@ function pick(x, y) {
     if (e.kind === 'con') d += 40; // los objetos concretos tienen prioridad
     if (d < bestD) { bestD = d; best = e; }
   }
+  // Doble toque sobre la Luna → modo Objeto
+  // (se compara con el sitio del primer toque: al abrirse la ficha el cielo se desplaza y la Luna ya no está bajo el dedo)
+  lastPick = { id: best?.id || null, t: performance.now(), x, y };
   if (best) openInfo(best); else closeInfo();
 }
+let lastPick = { id: null, t: 0 };
+// El segundo toque puede caer sobre la ficha que abrió el primero: se escucha en toda la pantalla
+addEventListener('pointerup', e => {
+  if (!OBJECT_IDS.has(lastPick.id) || OBJ?.active) return;
+  const dt = performance.now() - lastPick.t;
+  if (dt < 40 || dt > 450 || Math.hypot(e.clientX - lastPick.x, e.clientY - lastPick.y) > 45) return;
+  const entry = CATALOG.find(c => c.id === lastPick.id);
+  lastPick = { id: null, t: 0 };
+  e.stopPropagation(); e.preventDefault();
+  ptrs.clear(); gesture = null; // el cielo no llega a ver este toque
+  enterObject(entry);
+}, true);
 
 // ───────────── Cámara: arrastre, zoom y sensores ─────────────
 const ptrs = new Map();
@@ -2259,6 +2276,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   if (debugEl) updateDebug(now);
   if (!document.hidden) adaptQuality(now);
+  if (OBJ?.active) { OBJ.render(Math.min(0.1, (now - last) / 1000)); last = now; return; } // modo Objeto: solo el modelo 3D
   if (calOpenEl.classList.contains('open') && (++calSkip % 30)) return; // con el calendario abierto (tapa el cielo) casi no pintamos: el iPhone queda libre para la lista
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
@@ -2305,10 +2323,6 @@ function frame(now) {
   // Tamaño aparente de los astros: exagerado con poco zoom, real con mucho zoom
   for (const b of BODIES) {
     if (b.id !== 'sun') b.sphere.material.uniforms.uLight.value.copy(b.lightEq).transformDirection(skyGroup.matrix);
-    if (b.id === 'moon' && S.fov < 5 && !b.hiRes) { // al acercarte de verdad, el mapa de 4K de la NASA (se descarga solo entonces)
-      b.hiRes = true;
-      texLoader.load('img/planets/luna_4k.jpg', tex => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); const u = b.sphere.material.uniforms; const old = u.map.value; u.map.value = tex; old?.dispose?.(); });
-    }
     const k = Math.max(1, Math.pow(S.fov / b.ref, 0.55)); // al ampliar, el disco crece en pantalla hasta su tamaño real
     b.scaled.scale.setScalar(k);
     const discPx = (b.radius * k / R.body) / Math.tan(S.fov * D2R / 2) * innerHeight / 2;
@@ -2613,6 +2627,44 @@ document.addEventListener('focusout', e => {
   if (!e.target.matches?.('input, textarea')) return;
   setTimeout(() => { if (scrollX || scrollY) scrollTo(0, 0); fitRenderer(true); }, 250);
 });
+
+// ───────────── Modo Objeto (prototipo: la Luna) ─────────────
+const OBJECT_IDS = new Set(['moon']);
+let OBJ = null, objPrev = null;
+function getObj() {
+  OBJ ||= createObjectView({
+    THREE, renderer, lang: () => S.lang,
+    makeMaterial: () => moonMaterial(loadTex('img/planets/luna.jpg')),
+    hiResMap: cb => texLoader.load('img/planets/luna_4k.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }),
+    onExit: () => { if (objPrev) { setFov(objPrev.fov); S.viewAz = objPrev.az; S.viewAlt = objPrev.alt; S.tracking = null; S.targetAz = null; } },
+  });
+  return OBJ;
+}
+// Luz real (fase de hoy) vista desde la Tierra, en ejes de la vista: x derecha, y norte celeste, z hacia nosotros
+function moonPhaseView() {
+  const b = BODIES.find(x => x.id === 'moon'), f = b.dir.clone().normalize(), L = b.lightEq.clone().normalize();
+  const right = new THREE.Vector3().crossVectors(f, new THREE.Vector3(0, 1, 0)).normalize();
+  const up = new THREE.Vector3().crossVectors(right, f).normalize();
+  return new THREE.Vector3(L.dot(right), L.dot(up), -L.dot(f)).normalize();
+}
+function enterObject(entry) {
+  const o = getObj();
+  objPrev = { fov: S.fov, az: S.viewAz, alt: S.viewAlt };
+  closeInfo(); hideNewVideo();
+  if (S.sensor) setSensor(false);
+  o.startMusic(); // dentro del toque: iPhone solo deja sonar si empieza aquí
+  // Vuelo: el cielo se acerca a la Luna y entonces se abre el modelo
+  const aa = entryAltAz(entry);
+  if (aa) { S.tracking = entry; S.targetAz = null; }
+  const f0 = S.fov, t0 = performance.now(), D = 750;
+  const step = () => {
+    const k = Math.min(1, (performance.now() - t0) / D), e = k * k * (3 - 2 * k);
+    setFov(f0 * Math.pow(1.2 / f0, e));
+    if (k < 1) requestAnimationFrame(step); else o.enter({ phaseDir: moonPhaseView(), name: `🌕 ${entry.name()}` });
+  };
+  requestAnimationFrame(step);
+}
+$('infoObject').onclick = () => S.selected && enterObject(S.selected);
 
 // ───────────── Aviso de vídeo largo nuevo ─────────────
 // Tras la bienvenida, si hay un vídeo LARGO publicado en los últimos 7 días que no has cerrado ni abierto.
