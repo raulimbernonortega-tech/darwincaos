@@ -70,6 +70,13 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.6.1 — 26 de noviembre de 2026 (prototipo «Modo Objeto»: la Luna)
+- **Modo Objeto**: doble toque sobre la Luna (o botón «🌕 Objeto» en su ficha) y la Luna se abre como modelo 3D a pantalla completa. Se gira con un dedo (también la cara oculta) y se acerca con dos.
+- **Nombres sobre la superficie** (46 lugares: mares, cráteres y alunizajes del Apolo, Chang'e, Chandrayaan-3, SLIM…), que aparecen al acercarse; al tocarlos, la Luna gira hasta ellos y se abre su mini ficha. Coordenadas del catálogo oficial de nombres de la IAU.
+- **Luz**: iluminada entera al entrar, o la fase real de hoy con sombras en los cráteres.
+- **Música ambiental** generada en el propio navegador (sin derechos de autor), con botón para silenciarla.
+- **Luna más realista también en el cielo**: mapa en color de la NASA (LRO), relieve real (altimetría LOLA) y luz cenicienta en la parte oscura.
+
 ### Versión 1.6 (entrega A) — 26 de noviembre de 2026
 Que la parte gratuita lleve visitas al canal:
 - **Vídeos relacionados precisos**: cada vídeo se puntúa según el astro sea el tema principal del título, aparezca entre paréntesis o solo en la descripción; «la luna de Marte» ya no sale en la Luna. Se pueden asignar o quitar vídeos a mano en `data/videos-asignados.json`.
