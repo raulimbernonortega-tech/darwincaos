@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-26T13:31:56.002Z",
+ "actualizado": "2026-11-26T19:10:09.235Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -1114,16 +1114,16 @@
    "mini": "data/miniaturas/527ae1519e78c7.jpg"
   },
   {
-   "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
-   "resumen": "NASA’s Voyager 1 probe, humanity’s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1 billion miles (25.9 billion kilometers). The spacecraft ach",
-   "url": "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/",
-   "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/voyager-1-light-day-horizontal.png",
+   "titulo": "APOD: 2026 November 21 – Voyager’s Neptune",
+   "resumen": "APOD Science APOD APOD: 2026 November 21 –… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a b",
+   "url": "https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/",
+   "imagen": "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/november/Neptune-South-Pole-Voyager-2_2327x1670.jpg",
    "fuente": "NASA",
-   "fecha": "2026-11-19T14:31:15Z",
+   "fecha": "2026-11-21T05:05:00Z",
    "destacado": false,
    "idioma": "en",
-   "puntos": 7,
-   "mini": "data/miniaturas/61a8b02d812d0f.jpg"
+   "puntos": 6,
+   "mini": "data/miniaturas/bf4fbd021bb9ab.jpg"
   }
  ],
  "noticiasPorIdioma": {
@@ -1227,6 +1227,18 @@
     "mini": "data/miniaturas/22ec70cd45bb11.jpg"
    },
    {
+    "titulo": "Progress MS-36 set to launch to ISS from Baikonur",
+    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\r\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
+    "url": "https://www.nasaspaceflight.com/2026/11/progress-ms-36/",
+    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/04/IMG_9490.png",
+    "fuente": "NASASpaceflight",
+    "fecha": "2026-11-23T21:32:11Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 5,
+    "mini": "data/miniaturas/61a5c07252b2f5.jpg"
+   },
+   {
     "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
     "resumen": "NASA is seeking industry partners to develop and test the first nuclear reactor designed to provide electricity on the Moon, a major step toward establishing a sustained human presence on the lunar surface.  Lunar Reactor-1 (LR-1) will be a small fission power system that will ge",
     "url": "https://www.nasa.gov/directorates/rtmd/nasa-seeks-partners-to-design-first-nuclear-reactor-for-the-moon/",
@@ -1273,18 +1285,6 @@
     "idioma": "en",
     "puntos": 6,
     "mini": "data/miniaturas/bf4fbd021bb9ab.jpg"
-   },
-   {
-    "titulo": "NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth",
-    "resumen": "NASA’s Voyager 1 probe, humanity’s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1 billion miles (25.9 billion kilometers). The spacecraft ach",
-    "url": "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/",
-    "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/voyager-1-light-day-horizontal.png",
-    "fuente": "NASA",
-    "fecha": "2026-11-19T14:31:15Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 7,
-    "mini": "data/miniaturas/61a8b02d812d0f.jpg"
    }
   ]
  },
