@@ -139,6 +139,13 @@ export function createSatellites({ THREE, SAT, A, scene, radius, altAzVec, scree
     else done(buildApprox(s.info.aprox));
   }
 
+  // Modelo nuevo (copia propia) para el modo Objeto: el oficial de la NASA o la forma aproximada
+  function buildModel(inf) {
+    const tweak = obj => { obj.traverse(o => { if (o.isMesh && o.material?.isMeshStandardMaterial && o.material.map) { o.material.emissiveMap = o.material.map; o.material.emissive = new THREE.Color(0.18, 0.18, 0.18); } }); return normalize(obj); };
+    if (!inf.modelo) return Promise.resolve(normalize(buildApprox(inf.aprox)));
+    return new Promise(res => loader.load(`img/satelites/${inf.modelo}`, g => res(tweak(g.scene)), undefined, () => res(normalize(buildApprox('gps')))));
+  }
+
   // ── Posición, iluminación y brillo ──
   function lookAt(s, date) {
     const pv = SAT.propagate(s.satrec, date);
@@ -276,7 +283,7 @@ export function createSatellites({ THREE, SAT, A, scene, radius, altAzVec, scree
   }
 
   return {
-    load, update, showPath, hidePath, nextVisiblePass, visibility, lookAt, buildLabels, nameOf, pickStarlink, clearExtra, starlinkCount,
+    load, update, buildModel, showPath, hidePath, nextVisiblePass, visibility, lookAt, buildLabels, nameOf, pickStarlink, clearExtra, starlinkCount,
     get list() { return sats; }, get status() { return status; },
   };
 }

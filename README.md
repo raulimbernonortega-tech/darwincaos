@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.7.1 — satélites en el modo Objeto
+- Seguir un satélite por el cielo con zoom era casi imposible (se mueven ~1° por segundo). Ahora, desde su ficha (**🛰️ Ver en 3D**) o con **doble toque**, su modelo 3D se abre a pantalla completa en el modo Objeto: quieto, se gira con un dedo, se acerca con dos y lleva su ficha (agencia, lanzamiento, para qué sirve) y la música ambiental. También la ISS.
+
 ### Versión 1.7 — satélites en 3D
 - **Capa «Satélites destacados»**: Tiangong, Hubble, Landsat 9, Aqua, Suomi NPP, Sentinel-6, Chandra, TDRS-13, GOES-19, Meteosat-12, GPS III, Galileo y BlueWalker 3, en su posición real calculada con su órbita (CelesTrak, actualizada cada 6 horas por el robot).
 - **Modelo 3D al acercarse**: los modelos oficiales de la NASA (dominio público) donde existen; forma aproximada fiel a la real donde no hay modelo público. La ISS usa ahora el modelo oficial de la NASA.
