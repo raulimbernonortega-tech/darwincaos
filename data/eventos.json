@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-26T07:32:28.184Z",
+ "actualizado": "2026-11-26T12:02:01.590Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -508,19 +508,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Long March 2D | Unknown Payload",
-   "fecha": "2026-11-26T09:35:00Z",
-   "estado": "Go",
-   "proveedor": "China Aerospace Science and Technology Corporation",
-   "cohete": "Long March 2D",
-   "lugar": "Xichang Satellite Launch Center, People's Republic of China",
-   "mision": "Details TBD.",
-   "tipo": "Unknown",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193719.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
    "nombre": "Electron | Night Owls Never Sleep (StriX Launch 14)",
    "fecha": "2026-11-27T00:05:00Z",
    "estado": "Go",
@@ -1026,12 +1013,25 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193628.jpeg",
    "enlace": null,
    "relevante": false
+  },
+  {
+   "nombre": "Falcon Heavy | USSF-75",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "SpaceX",
+   "cohete": "Falcon Heavy",
+   "lugar": "Kennedy Space Center, FL, USA",
+   "mision": "Classified payload for the United States Space Force",
+   "tipo": "Government/Top Secret",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193632.jpeg",
+   "enlace": null,
+   "relevante": false
   }
  ],
  "noticias": [
   {
    "titulo": "Europa Clipper de la NASA pasará cerca de la Tierra en su camino hacia una luna helada de Júpiter",
-   "resumen": "Read this story in English here. La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la cort",
+   "resumen": "La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la corteza de hielo de la luna […] Siste",
    "url": "https://ciencia.nasa.gov/sistema-solar/europa-clipper-nasa-asistencia-gravitatoria-tierra/",
    "imagen": "https://www.youtube.com/embed/0si_IMH7JmU",
    "fuente": "NASA Ciencia",
@@ -1052,6 +1052,18 @@
    "idioma": "en",
    "puntos": 6,
    "mini": "data/miniaturas/41b29496791c4a.jpg"
+  },
+  {
+   "titulo": "BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch",
+   "resumen": "At 18:24 UTC on Saturday, Nov. 21, the European Space Agency (ESA) and the Japanese…\r\nThe post BepiColombo successfully enters orbit of Mercury, suffers orbit-altering software glitch appeared first on NASASpaceFlight.com.",
+   "url": "https://www.nasaspaceflight.com/2026/11/bepicolombo-moi/",
+   "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/11/HXkRNVOXsAAjwYz-scaled.jpeg",
+   "fuente": "NASASpaceflight",
+   "fecha": "2026-11-24T20:38:54Z",
+   "destacado": false,
+   "idioma": "en",
+   "puntos": 6,
+   "mini": "data/miniaturas/c64ddf7d569dda.jpg"
   },
   {
    "titulo": "Tiangong Space Station to welcome first international visitor",
@@ -1112,25 +1124,13 @@
    "idioma": "en",
    "puntos": 7,
    "mini": "data/miniaturas/61a8b02d812d0f.jpg"
-  },
-  {
-   "titulo": "Las patatas cultivadas en suelo lunar simulado alcanzan el mismo rendimiento que en la Tierra",
-   "resumen": "Un estudio demuestra que añadir un 30 % de humus de lombriz al regolito permite completar el ciclo de vida del tubérculo con plena seguridad alimentaria, un paso clave para las futuras misiones del programa Artemis a nuestro satélite. Tecnología",
-   "url": "https://www.agenciasinc.es/Noticias/las-patatas-cultivadas-en-suelo-lunar-simulado-alcanzan-el-mismo-rendimiento-que-en-la-tierra",
-   "imagen": null,
-   "fuente": "Agencia SINC",
-   "fecha": "2026-11-19T10:00:04.000Z",
-   "destacado": false,
-   "idioma": "es",
-   "espacio": false,
-   "puntos": 8
   }
  ],
  "noticiasPorIdioma": {
   "es": [
    {
     "titulo": "Europa Clipper de la NASA pasará cerca de la Tierra en su camino hacia una luna helada de Júpiter",
-    "resumen": "Read this story in English here. La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la cort",
+    "resumen": "La nave espacial de la misión Europa Clipper de la NASA pasará pronto cerca de la Tierra antes de emprender un viaje directo de varios años de duración hacia Júpiter, donde este orbitador investigará si el océano que se encuentra debajo de la corteza de hielo de la luna […] Siste",
     "url": "https://ciencia.nasa.gov/sistema-solar/europa-clipper-nasa-asistencia-gravitatoria-tierra/",
     "imagen": "https://www.youtube.com/embed/0si_IMH7JmU",
     "fuente": "NASA Ciencia",
@@ -1154,7 +1154,7 @@
    },
    {
     "titulo": "Voyager 1: Un día luz",
-    "resumen": "Descarga, imprime y comparte el póster conmemorativo del récord de distancia de Voyager 1. La NASA espera una señal de confirmación de Voyager 1 después de que la sonda alcanzara una distancia de un día luz de la Tierra el 18 de noviembre. The post Voyager 1: Un día luz appeared ",
+    "resumen": "Descarga, imprime y comparte el póster conmemorativo del récord de distancia de Voyager 1. La NASA espera una señal de confirmación de Voyager 1 después de que la sonda alcanzara una distancia de un día luz de la Tierra el 18 de noviembre. Sistema solar Universo",
     "url": "https://ciencia.nasa.gov/multimedia/voyager-1-un-dia-luz/",
     "imagen": null,
     "fuente": "NASA Ciencia",
@@ -1162,7 +1162,7 @@
     "destacado": false,
     "idioma": "es",
     "espacio": true,
-    "puntos": 8
+    "puntos": 10
    },
    {
     "titulo": "Observan por primera vez cómo una estrella gigante engulle a su compañera en Andrómeda",
@@ -1178,7 +1178,7 @@
    },
    {
     "titulo": "Calendario de Ciencia de la NASA 2027",
-    "resumen": "Muy pronto estará aquí el nuevo Calendario de Ciencia de la NASA. The post Calendario de Ciencia de la NASA 2027 appeared first on NASA Ciencia . Multimedia ArtemisII Asteroides Ciencias terrestres Luna Marte Sistema solar Universo Webb",
+    "resumen": "Muy pronto estará aquí el nuevo Calendario de Ciencia de la NASA. Multimedia ArtemisII Asteroides Ciencias terrestres Luna Marte Sistema solar Universo Webb",
     "url": "https://ciencia.nasa.gov/multimedia/calendario-de-ciencia-de-la-nasa-2027/",
     "imagen": null,
     "fuente": "NASA Ciencia",
@@ -1186,7 +1186,7 @@
     "destacado": false,
     "idioma": "es",
     "espacio": true,
-    "puntos": 13
+    "puntos": 12
    }
   ],
   "en": [
