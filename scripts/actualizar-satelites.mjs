@@ -11,19 +11,17 @@ export const SATS = [
   { id: 'tiangong', q: { CATNR: 48274 } },
   { id: 'hubble', q: { CATNR: 20580 } },
   { id: 'landsat9', q: { CATNR: 49260 } },
-  { id: 'terra', q: { CATNR: 25994 } },
   { id: 'aqua', q: { CATNR: 27424 } },
   { id: 'suomi', q: { CATNR: 37849 } },
   { id: 'sentinel6', q: { CATNR: 46984 } },
-  { id: 'icesat2', q: { CATNR: 43613 } },
   { id: 'chandra', q: { CATNR: 25867 } },
   { id: 'tdrs13', q: { NAME: 'TDRS 13' } },
   { id: 'goes19', q: { NAME: 'GOES 19' } },
   { id: 'meteosat12', q: { NAME: 'MTG-I1' } },
-  { id: 'gps3', q: { NAME: 'GPS BIII-1' } },
+  { id: 'gps3', grupo: 'gps-ops', filtro: /BIII-1\b/ },
   { id: 'galileo', q: { CATNR: 37846 } },
   { id: 'bluewalker3', q: { CATNR: 53807 } },
-  { id: 'bluebird', q: { NAME: 'BLUEBIRD' } },
+  { id: 'bluebird', grupo: 'active', filtro: /BLUEBIRD/, varios: true },
 ];
 const UA = { 'User-Agent': 'planetario-darwincaos/1.0 (GitHub Actions; actualizacion cada 6 h)' };
 async function get(url) {
@@ -42,12 +40,14 @@ const qs = q => Object.entries(q).map(([k, v]) => `${k}=${encodeURIComponent(v)}
 async function main() {
   const prev = JSON.parse(await readFile(OUT, 'utf8').catch(() => '{}'));
   const prevById = Object.fromEntries((prev.sats || []).map(s => [s.id, s]));
-  const sats = [];
+  const sats = [], groups = {};
   for (const s of SATS) {
     try {
-      const tles = parseTle(await get(`https://celestrak.org/NORAD/elements/gp.php?${qs(s.q)}&FORMAT=TLE`));
+      // Por número/nombre, o dentro de un grupo de CelesTrak filtrando por nombre (cada grupo se descarga una vez)
+      const tles = s.grupo ? (groups[s.grupo] ||= parseTle(await get(`https://celestrak.org/NORAD/elements/gp.php?GROUP=${s.grupo}&FORMAT=TLE`))).filter(t => s.filtro.test(t.nombre))
+        : parseTle(await get(`https://celestrak.org/NORAD/elements/gp.php?${qs(s.q)}&FORMAT=TLE`));
       if (!tles.length) throw new Error('sin resultados');
-      const list = s.q.NAME === 'BLUEBIRD' ? tles : [tles[0]]; // los BlueBird son varios
+      const list = s.varios ? tles.slice(0, 8) : [tles[0]]; // los BlueBird son varios
       for (const [k, t] of list.entries()) {
         let cat = {};
         try { cat = JSON.parse(await get(`https://celestrak.org/satcat/records.php?CATNR=${t.norad}&FORMAT=JSON`))[0] || {}; } catch { }
