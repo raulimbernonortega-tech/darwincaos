@@ -70,6 +70,12 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.7 — satélites en 3D
+- **Capa «Satélites destacados»**: Tiangong, Hubble, Landsat 9, Aqua, Suomi NPP, Sentinel-6, Chandra, TDRS-13, GOES-19, Meteosat-12, GPS III, Galileo y BlueWalker 3, en su posición real calculada con su órbita (CelesTrak, actualizada cada 6 horas por el robot).
+- **Modelo 3D al acercarse**: los modelos oficiales de la NASA (dominio público) donde existen; forma aproximada fiel a la real donde no hay modelo público. La ISS usa ahora el modelo oficial de la NASA.
+- **Ficha de cada satélite**: si se ve ahora (a simple vista, con prismáticos o solo con telescopio), brillo estimado, altura, velocidad, tiempo por vuelta, fecha de lanzamiento, para qué sirve y su próximo paso visible. Al tocarlo se dibuja **su recorrido por el cielo**.
+- **Capa Starlink** (desactivada por defecto): más de 10.000 satélites calculados en segundo plano; se toca uno y se abre su ficha con su modelo aproximado. Sus órbitas se guardan en la rama «datos», que se sobrescribe para no engordar el repositorio.
+
 ### Versión 1.6.1 — 26 de noviembre de 2026 (prototipo «Modo Objeto»: la Luna)
 - **Modo Objeto**: doble toque sobre la Luna (o botón «🌕 Objeto» en su ficha) y la Luna se abre como modelo 3D a pantalla completa. Se gira con un dedo (también la cara oculta) y se acerca con dos.
 - **Nombres sobre la superficie** (46 lugares: mares, cráteres y alunizajes del Apolo, Chang'e, Chandrayaan-3, SLIM…), que aparecen al acercarse; al tocarlos, la Luna gira hasta ellos y se abre su mini ficha. Coordenadas del catálogo oficial de nombres de la IAU.

@@ -21,7 +21,6 @@ export const SATS = [
   { id: 'gps3', grupo: 'gps-ops', filtro: /BIII-1\b/ },
   { id: 'galileo', q: { CATNR: 37846 } },
   { id: 'bluewalker3', q: { CATNR: 53807 } },
-  { id: 'bluebird', grupo: 'active', filtro: /BLUEBIRD/, varios: true },
 ];
 const UA = { 'User-Agent': 'planetario-darwincaos/1.0 (GitHub Actions; actualizacion cada 6 h)' };
 async function get(url) {
