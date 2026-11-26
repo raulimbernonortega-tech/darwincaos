@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.6.1';
-import { createSatellites } from './satelites.js?v=1.7';
+import { createObjectView } from './objeto.js?v=1.7.1';
+import { createSatellites } from './satelites.js?v=1.7.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.7.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1229,7 +1229,8 @@ function openInfo(entry) {
   renderInfoText(entry);
   renderInfoVideos(entry);
   $('infoVideo').href = videoUrl(entry);
-  $('infoObject').hidden = !OBJECT_IDS.has(entry.id);
+  $('infoObject').hidden = !canObject(entry);
+  $('infoObject').textContent = entry.id === 'moon' ? '🌕 Objeto' : (S.lang === 'en' ? '🛰️ View in 3D' : '🛰️ Ver en 3D');
   $('infoCard').classList.add('open');
   hideNewVideo();
   $('infoCard').scrollTop = 0; // siempre desde arriba (nombre visible)
@@ -1366,16 +1367,16 @@ function pick(x, y) {
   // Doble toque sobre la Luna → modo Objeto
   // (se compara con el sitio del primer toque: al abrirse la ficha el cielo se desplaza y la Luna ya no está bajo el dedo)
   if ((!best || best.kind === 'con') && S.layers.starlink) { const s = SATS.pickStarlink(x, y, camera); if (s) best = satEntry(s); } // un Starlink suelto (antes que la constelación de fondo)
-  lastPick = { id: best?.id || null, t: performance.now(), x, y };
+  lastPick = { id: best?.id || null, entry: best, t: performance.now(), x, y };
   if (best) openInfo(best); else closeInfo();
 }
 let lastPick = { id: null, t: 0 };
 // El segundo toque puede caer sobre la ficha que abrió el primero: se escucha en toda la pantalla
 addEventListener('pointerup', e => {
-  if (!OBJECT_IDS.has(lastPick.id) || OBJ?.active) return;
+  if (!canObject(lastPick.entry) || OBJ?.active) return;
   const dt = performance.now() - lastPick.t;
   if (dt < 40 || dt > 450 || Math.hypot(e.clientX - lastPick.x, e.clientY - lastPick.y) > 45) return;
-  const entry = CATALOG.find(c => c.id === lastPick.id);
+  const entry = lastPick.entry;
   lastPick = { id: null, t: 0 };
   e.stopPropagation(); e.preventDefault();
   ptrs.clear(); gesture = null; // el cielo no llega a ver este toque
@@ -2679,6 +2680,7 @@ document.addEventListener('focusout', e => {
 
 // ───────────── Modo Objeto (prototipo: la Luna) ─────────────
 const OBJECT_IDS = new Set(['moon']);
+const canObject = e => !!e && (OBJECT_IDS.has(e.id) || e.kind === 'sat' || e.kind === 'iss');
 let OBJ = null, objPrev = null;
 function getObj() {
   OBJ ||= createObjectView({
@@ -2699,9 +2701,15 @@ function moonPhaseView() {
 function enterObject(entry) {
   const o = getObj();
   objPrev = { fov: S.fov, az: S.viewAz, alt: S.viewAlt };
+  const card = entry.kind === 'moon' || entry.id === 'moon' ? null : objCardFor(entry);
   closeInfo(); hideNewVideo();
   if (S.sensor) setSensor(false);
   o.startMusic(); // dentro del toque: iPhone solo deja sonar si empieza aquí
+  if (entry.id !== 'moon') { // satélites e ISS: su modelo 3D, quieto y a pantalla completa (seguirlos por el cielo con zoom es casi imposible)
+    const inf = entry.kind === 'iss' ? { modelo: 'iss.glb' } : entry.ref.info;
+    SATS.buildModel(inf).then(m => o.enter({ model: m, name: `🛰️ ${entry.name()}`, card }));
+    return;
+  }
   // Vuelo: el cielo se acerca a la Luna y entonces se abre el modelo
   const aa = entryAltAz(entry);
   if (aa) { S.tracking = entry; S.targetAz = null; }
@@ -2714,6 +2722,15 @@ function enterObject(entry) {
   requestAnimationFrame(step);
 }
 $('infoObject').onclick = () => S.selected && enterObject(S.selected);
+// Ficha corta que acompaña al modelo 3D en el modo Objeto
+function objCardFor(entry) {
+  const en = S.lang === 'en', { fact } = infoStats(entry);
+  if (entry.kind === 'iss') return { title: 'ISS', meta: en ? 'NASA · Roscosmos · ESA · JAXA · CSA — NASA 3D model' : 'NASA · Roscosmos · ESA · JAXA · CSA — modelo 3D de la NASA', text: fact };
+  const s = entry.ref, inf = s.info;
+  const when = s.lanzamiento ? new Date(s.lanzamiento + 'T12:00:00Z').toLocaleDateString(S.lang, { day: 'numeric', month: 'short', year: 'numeric' }) : s.anio ? String(s.anio) : '';
+  const model = inf.modelo ? (en ? 'NASA 3D model' : 'modelo 3D de la NASA') : (en ? 'approximate shape' : 'forma aproximada');
+  return { title: entry.name(), meta: [inf.agencia, when && (en ? `launched ${when}` : `lanzado el ${when}`), model].filter(Boolean).join(' · '), text: fact };
+}
 
 // ───────────── Aviso de vídeo largo nuevo ─────────────
 // Tras la bienvenida, si hay un vídeo LARGO publicado en los últimos 7 días que no has cerrado ni abierto.

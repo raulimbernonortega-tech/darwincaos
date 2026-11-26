@@ -86,6 +86,10 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   }
   const pivot = new THREE.Group(); // lo que gira el usuario
   scene.add(pivot);
+  // Luces para los modelos 3D (satélites); la Luna usa su propio sombreado y no les afecta
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.8); keyLight.position.set(-3, 2, 5);
+  scene.add(keyLight, new THREE.HemisphereLight(0xdbe7ff, 0x334466, 1.4));
+  let mode = 'moon', model = null;
   const mat = makeMaterial();
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), mat);
   mesh.rotation.y = -Math.PI / 2; // longitud 0 (centro de la cara visible) hacia la cámara
@@ -140,7 +144,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     return 1 / Math.sin(Math.min(v, h) / 2 * 0.86);
   };
   const rotateBy = (dx, dy) => {
-    const s = 2.4 * (dist - 1) / (dist * Math.min(innerWidth, innerHeight)); // un arrastre de pantalla ≈ media vuelta de lejos, mucho menos de cerca
+    const s = mode === 'model' ? 3.2 / Math.min(innerWidth, innerHeight) : 2.4 * (dist - 1) / (dist * Math.min(innerWidth, innerHeight)); // Luna: más lento cuanto más cerca
     const qy = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * s);
     const qx = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * s);
     pivot.quaternion.premultiply(qy).premultiply(qx);
@@ -156,7 +160,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   touch.addEventListener('pointerup', end); touch.addEventListener('pointercancel', end);
   touch.addEventListener('wheel', e => { e.preventDefault(); targetDist = clampDist(targetDist * Math.exp(e.deltaY * 0.0012)); }, { passive: false });
   const pinchDist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
-  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(1.16, d)); // más cerca el mapa de 4K ya se ve borroso
+  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(mode === 'model' ? 0.45 : 1.16, d)); // Luna: más cerca el mapa de 4K ya se ve borroso
 
   // ── Luz: iluminada entera (por defecto) o fase de hoy ──
   let fullLight = true, phaseLight = new THREE.Vector3(1, 0, 0);
@@ -179,24 +183,36 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   };
 
   let active = false;
-  function enter({ phaseDir, name }) {
+  // opts.model: un modelo 3D ya normalizado (dimensión mayor = 1) → modo «modelo» (satélites); si no, la Luna
+  function enter({ phaseDir, name, model: m, card }) {
     active = true;
+    mode = m ? 'model' : 'moon';
+    mesh.visible = mode === 'moon';
+    labelBox.hidden = mode !== 'moon';
+    $('objLight').hidden = mode !== 'moon';
+    if (m) { model = m; model.scale.multiplyScalar(1.9); pivot.add(model); }
     phaseLight.copy(phaseDir || phaseLight);
     camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
     pivot.quaternion.identity(); targetDist = fitDist(); dist = targetDist * 1.7; vel = { x: 0, y: 0 }; flight = null;
+    if (mode === 'model') pivot.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0)); // vista de tres cuartos
     setLight(true); paintMusic();
     $('objTitle').textContent = name;
     $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two · tap a name' : 'Gira con un dedo · acerca con dos · toca un nombre';
-    if (places.length) buildLabels();
+    if (mode === 'moon' && places.length) buildLabels();
     $('objCard').hidden = true;
+    if (mode === 'model') {
+      $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two' : 'Gira con un dedo · acerca con dos';
+      if (card) { $('objCardTitle').textContent = card.title; $('objCardMeta').textContent = card.meta || ''; $('objCardText').textContent = card.text || ''; $('objCard').hidden = false; }
+    }
     $('objView').hidden = false;
     document.body.classList.add('objmode');
-    if (!hiRes) { hiRes = true; const low = mat.uniforms.map.value; hiResMap(tex => { if (!active) { tex.dispose(); hiRes = false; return; } mat.uniforms.map.value = tex; mat.userData.low = low; }); }
+    if (mode === 'moon' && !hiRes) { hiRes = true; const low = mat.uniforms.map.value; hiResMap(tex => { if (!active) { tex.dispose(); hiRes = false; return; } mat.uniforms.map.value = tex; mat.userData.low = low; }); }
     if (musicOn) music.start(); // estamos dentro de un toque del usuario: iOS deja sonar
   }
   function exit() {
     active = false;
     music.stop();
+    if (model) { pivot.remove(model); model.traverse(o => { o.geometry?.dispose(); [].concat(o.material || []).forEach(mt => { mt.map?.dispose(); mt.dispose(); }); }); model = null; }
     if (hiRes && mat.userData.low) { const hi = mat.uniforms.map.value; mat.uniforms.map.value = mat.userData.low; hi.dispose(); hiRes = false; } // libera la memoria del mapa 4K
     $('objView').hidden = true;
     document.body.classList.remove('objmode');
@@ -226,7 +242,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     // Etiquetas: solo en la cara que mira a la cámara y según lo cerca que estés
     const r = (dist - 1) / (fitDist() - 1), lvl = r < 0.4 ? 3 : r < 0.75 ? 2 : 1;
     const W = innerWidth, H = innerHeight;
-    for (const p of places) {
+    for (const p of mode === 'moon' ? places : []) {
       if (!p.el) continue;
       tmp.copy(p.v).applyEuler(mesh.rotation).applyQuaternion(pivot.quaternion);
       const facing = tmp.dot(camDir.set(0, 0, dist).sub(tmp).normalize());
