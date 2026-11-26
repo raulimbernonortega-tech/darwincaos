@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-26T13:43:59.271Z",
+ "actualizado": "2026-11-26T13:45:34.395Z",
  "fuente": "CelesTrak (celestrak.org)",
  "sats": [
   {
@@ -36,17 +36,6 @@
    "cospar": "2021-088A"
   },
   {
-   "id": "terra",
-   "tipo": "terra",
-   "nombre": "TERRA",
-   "norad": 25994,
-   "l1": "1 25994U 99068A   26330.31559294  .00000189  00000+0  47392-4 0  9999",
-   "l2": "2 25994  97.9247  13.2573 0003605  84.5954 339.3567 14.61205095433288",
-   "lanzamiento": "1999-12-18",
-   "propietario": "US",
-   "cospar": "1999-068A"
-  },
-  {
    "id": "aqua",
    "tipo": "aqua",
    "nombre": "AQUA",
@@ -78,17 +67,6 @@
    "lanzamiento": "2020-11-21",
    "propietario": "ESA",
    "cospar": "2020-086A"
-  },
-  {
-   "id": "icesat2",
-   "tipo": "icesat2",
-   "nombre": "ICESAT-2",
-   "norad": 43613,
-   "l1": "1 43613U 18070A   26330.28089342  .00001535  00000+0  55592-4 0  9996",
-   "l2": "2 43613  91.9928 334.6556 0002559 151.5051 208.6339 15.28273269457213",
-   "lanzamiento": "2018-09-15",
-   "propietario": "US",
-   "cospar": "2018-070A"
   },
   {
    "id": "chandra",
@@ -133,6 +111,17 @@
    "lanzamiento": "2022-12-13",
    "propietario": "EUME",
    "cospar": "2022-170C"
+  },
+  {
+   "id": "gps3",
+   "tipo": "gps3",
+   "nombre": "GPS BIII-1  (PRN 04)",
+   "norad": 43873,
+   "l1": "1 43873U 18109A   26329.55546346 -.00000002  00000+0  00000+0 0  9995",
+   "l2": "2 43873  55.7929  85.8250 0041680 197.6794 162.6912  2.00567006 58314",
+   "lanzamiento": "2018-12-23",
+   "propietario": "US",
+   "cospar": "2018-109A"
   },
   {
    "id": "galileo",
