@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.8';
-import { createSatellites } from './satelites.js?v=1.8';
+import { createObjectView } from './objeto.js?v=1.8.1';
+import { createSatellites } from './satelites.js?v=1.8.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.8.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -2810,7 +2810,7 @@ function paintInstall() {
 // ───────────── Modo Objeto (prototipo: la Luna) ─────────────
 const OBJECT_IDS = new Set(['moon', 'mars', 'sun']);
 const canObject = e => !!e && (OBJECT_IDS.has(e.id) || e.kind === 'sat' || e.kind === 'iss');
-let OBJ = null, objPrev = null, sunToday = false;
+let OBJ = null, objPrev = null;
 function getObj() {
   OBJ ||= createObjectView({
     THREE, renderer, lang: () => S.lang,
@@ -2818,7 +2818,7 @@ function getObj() {
     hiResMap: cb => texLoader.load('img/planets/luna_4k.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }),
     bodies: {
       mars: { material: () => planetMaterial(loadTex('img/planets/marte.jpg')), places: 'data/marte-lugares.json', face: [5, -70] }, // de cara: Valles Marineris y Tharsis
-      sun: { map: () => loadTex('img/planets/sol.jpg'), todayUrl: 'https://raw.githubusercontent.com/raulimbernonortega-tech/darwincaos/datos/sol-hoy.jpg', onToday: () => { sunToday = true; if (OBJ?.active && $('objTitle').textContent.startsWith('☀️')) $('objCardText').textContent = sunCard().text; } },
+      sun: { map: () => loadTex('img/planets/sol.jpg') },
     },
     onExit: () => { if (objPrev) { setFov(objPrev.fov); S.viewAz = objPrev.az; S.viewAlt = objPrev.alt; S.tracking = null; S.targetAz = null; } },
   });
@@ -2871,7 +2871,7 @@ function sunCard() {
   return { title: en ? 'The Sun' : 'El Sol', meta: en ? 'G-type star · 4,600 million years old' : 'Estrella de tipo G · 4.600 millones de años',
     text: (en ? '109 times wider than Earth: about 1.3 million Earths would fit inside. Its surface is at about 5,500 °C and its light takes 8 minutes 20 seconds to reach us.'
       : 'Es 109 veces más ancho que la Tierra: dentro cabrían 1,3 millones de Tierras. Su superficie está a unos 5.500 °C y su luz tarda 8 minutos y 20 segundos en llegarnos.')
-      + (sunToday ? (en ? ' The face towards Earth is today\'s real photo from NASA\'s SDO satellite: the dark spots are real sunspots.' : ' La cara que mira a la Tierra es la foto real de hoy del satélite SDO de la NASA: las manchas oscuras son manchas solares de verdad.') : '') };
+ };
 }
 // Ficha corta que acompaña al modelo 3D en el modo Objeto
 function objCardFor(entry) {
@@ -2962,7 +2962,7 @@ async function init() {
   loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); feedReady(); });
   // Adelantamos el cálculo de eventos en segundo plano para que el calendario abra al instante
   setTimeout(() => (window.requestIdleCallback || (f => f()))(() => getSkyEvents().catch(() => { })), 6000);
-  SATS.load().then(() => { satEntries(); if (fromUrl === undefined && params.get('obj')?.startsWith('sat:')) { const e = CATALOG.find(c => c.id === params.get('obj')); if (e) openInfo(e); } });
+  SATS.load().then(() => { satEntries(); if (fromUrl === undefined && params.get('obj')?.startsWith('sat:')) { const e = CATALOG.find(c => c.id === params.get('obj')); if (e) { openInfo(e); pointTo(e); } } }); // enlace del calendario: abre y apunta al satélite
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita

@@ -8,12 +8,13 @@
 class Ambient {
   constructor() { this.ctx = null; this.on = false; this.timers = []; }
   start() {
-    if (this.on) return;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
+    if (this.ctx?.state === 'closed') this.ctx = null;
     this.ctx ||= new AC();
     const ctx = this.ctx;
-    ctx.resume?.();
+    ctx.resume?.(); // iPhone: si el sonido quedó «interrumpido» (al salir de la app, una llamada…) lo reanudamos con este toque
+    if (this.on) return;
     this.on = true;
     const master = this.master = ctx.createGain();
     master.gain.setValueAtTime(0, ctx.currentTime);
@@ -68,32 +69,66 @@ class Ambient {
   }
 }
 
-// Sol: superficie con «oscurecimiento del limbo» (el borde se ve más oscuro y rojizo, como el Sol real),
-// un leve chisporroteo animado y, si llega, la imagen REAL de hoy del satélite SDO de la NASA en la cara que mira a la Tierra.
+// Sol vivo: superficie de plasma en movimiento (ruido animado sobre la textura), oscurecimiento del limbo
+// y una corona de llamaradas que se mueve alrededor del disco.
+const SUN_NOISE = `
+      float hash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+      float noise(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+        return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+                   mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z); }
+      float fbm(vec3 p){ float v = 0.0, a = 0.5; for (int k = 0; k < 5; k++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }`;
 function sunMaterial(THREE, map) {
   return new THREE.ShaderMaterial({
-    uniforms: { map: { value: map }, today: { value: null }, uToday: { value: 0 }, uTime: { value: 0 }, uR: { value: 0.469 } },
+    uniforms: { map: { value: map }, uTime: { value: 0 } },
     vertexShader: `varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
       void main(){ vUv = uv; vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-    fragmentShader: `uniform sampler2D map; uniform sampler2D today; uniform float uToday; uniform float uTime; uniform float uR;
-      varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
-      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    fragmentShader: `uniform sampler2D map; uniform float uTime; varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
+      ${SUN_NOISE}
       void main(){
+        float t = uTime * 0.06;
+        vec3 q = vP * 3.0;
+        float flow = fbm(q + vec3(t, -t * 0.7, t * 0.5) + fbm(q * 1.7 - t) * 1.2);   // plasma que fluye
+        float gran = fbm(vP * 22.0 + vec3(0.0, 0.0, uTime * 0.25));                     // granulación fina
         vec3 base = texture2D(map, vUv).rgb;
         float mu = clamp(dot(normalize(vN), normalize(cameraPosition - vW)), 0.0, 1.0);
-        float limb = 0.35 + 0.65 * pow(mu, 0.55);                      // oscurecimiento del limbo
-        float n = h(floor(vUv * vec2(900.0, 450.0)) + floor(uTime * 3.0)) * 0.06; // granulación que chisporrotea
-        vec3 col = base * (1.05 + n) * limb * vec3(1.0, 0.93 - 0.12 * (1.0 - mu), 0.78 - 0.25 * (1.0 - mu));
-        if (uToday > 0.5 && vP.x > 0.0) {                                // cara hacia la Tierra: foto de hoy
-          vec2 t = vec2(0.5 - vP.z * uR, 0.5 + vP.y * uR);
-          vec3 img = texture2D(today, t).rgb;
-          float edge = smoothstep(0.0, 0.25, vP.x);
-          col = mix(col, img * (0.55 + 0.45 * limb) * 1.08, edge);
-        }
-        gl_FragColor = vec4(col, 1.0);
+        float heat = 0.55 * flow + 0.25 * gran + 0.35 * dot(base, vec3(0.33));
+        vec3 hot = vec3(1.0, 0.97, 0.82), mid = vec3(1.0, 0.72, 0.22), cool = vec3(0.85, 0.28, 0.05);
+        vec3 col = mix(cool, mid, smoothstep(0.25, 0.55, heat));
+        col = mix(col, hot, smoothstep(0.55, 0.85, heat));
+        col *= 0.55 + 0.6 * pow(mu, 0.45);                       // borde más oscuro y rojizo
+        col += vec3(1.0, 0.6, 0.2) * pow(1.0 - mu, 3.0) * 0.35;  // brillo del borde
+        gl_FragColor = vec4(col * 1.15, 1.0);
         #include <colorspace_fragment>
       }`,
   });
+}
+// Corona: un plano que mira siempre a la cámara con llamaradas animadas alrededor del disco (radio 1)
+function coronaMesh(THREE) {
+  const size = 5.2;
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform float uTime; varying vec2 vP;
+      ${SUN_NOISE}
+      void main(){
+        float d = length(vP), a = atan(vP.y, vP.x);
+        if (d < 0.985) discard;
+        float t = uTime * 0.12;
+        vec3 c = vec3(cos(a), sin(a), 0.0);
+        float fl = fbm(c * 3.5 + vec3(0.0, 0.0, d * 2.2 - t * 2.0));            // llamaradas que suben y cambian
+        float rays = fbm(c * 9.0 + vec3(t * 0.6, 0.0, d * 0.8 - t));
+        float reach = 1.0 + 0.16 + 0.55 * pow(fl, 2.2) + 0.12 * rays;            // hasta dónde llega cada llamarada
+        float edge = 1.0 - smoothstep(1.0, reach, d);
+        float glow = exp(-(d - 1.0) * 3.2) * 0.55;                                 // halo suave
+        float rim = exp(-(d - 1.0) * 22.0) * 0.9;                                  // anillo brillante pegado al disco
+        float v = edge * (0.45 + 0.9 * fl) + glow + rim;
+        vec3 col = mix(vec3(1.0, 0.45, 0.08), vec3(1.0, 0.85, 0.45), clamp(rim + edge * 0.6, 0.0, 1.0));
+        gl_FragColor = vec4(col * v, clamp(v, 0.0, 1.0));
+      }`,
+  });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), m);
+  mesh.renderOrder = 2;
+  return mesh;
 }
 
 export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang, onExit, bodies = {} }) {
@@ -124,18 +159,11 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   const matFor = b => {
     if (mats[b]) return mats[b];
     mats[b] = b === 'sun' ? sunMaterial(THREE, bodies.sun.map()) : bodies[b].material();
-    if (b === 'sun' && bodies.sun.todayUrl) { // foto real del Sol de hoy (NASA SDO), si está disponible
-      const tl = new THREE.TextureLoader(); tl.setCrossOrigin('anonymous');
-      tl.load(bodies.sun.todayUrl, t => { t.colorSpace = THREE.SRGBColorSpace; mats.sun.uniforms.today.value = t; mats.sun.uniforms.uToday.value = 1; bodies.sun.onToday?.(); }, undefined, () => { });
-    }
     return mats[b];
   };
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), mat);
-  // Halo del Sol (corona)
-  const coronaTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), gr = g.createRadialGradient(128, 128, 60, 128, 128, 128);
-    gr.addColorStop(0, 'rgba(255,200,120,0.55)'); gr.addColorStop(0.45, 'rgba(255,160,60,0.18)'); gr.addColorStop(1, 'rgba(255,140,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c); })();
-  const corona = new THREE.Sprite(new THREE.SpriteMaterial({ map: coronaTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-  corona.scale.setScalar(4.2); corona.visible = false; scene.add(corona);
+  // Corona del Sol con llamaradas en movimiento
+  const corona = coronaMesh(THREE); corona.visible = false; scene.add(corona);
   mesh.rotation.y = -Math.PI / 2; // longitud 0 (centro de la cara visible) hacia la cámara
   pivot.add(mesh);
   let hiRes = false;
@@ -301,7 +329,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     // Luz en coordenadas del mundo (la Luna gira por debajo de ella)
     if (mat.uniforms.uLight) mat.uniforms.uLight.value.copy(fullLight || body !== 'moon' ? fullDir : phaseLight);
     if (mat.uniforms.uEarth) mat.uniforms.uEarth.value = fullLight ? 0 : 0.03;
-    if (mat.uniforms.uTime) { mat.uniforms.uTime.value = performance.now() / 1000; pivot.rotateY(dt * 0.006); } // el Sol gira muy despacio (la cara de hoy no se escapa)
+    if (body === 'sun') { const tt = performance.now() / 1000; mat.uniforms.uTime.value = tt; corona.material.uniforms.uTime.value = tt; corona.quaternion.copy(camera.quaternion); pivot.rotateY(dt * 0.01); } // el Sol vive y gira despacio
     renderer.render(scene, camera);
     // Etiquetas: solo en la cara que mira a la cámara y según lo cerca que estés
     const r = (dist - 1) / (fitDist() - 1), lvl = r < 0.4 ? 3 : r < 0.75 ? 2 : 1;
