@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#030712" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Planetarium" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Planetario DarwinCaos</title>
   <meta name="description" content="Planetario en tiempo real: planetas, Luna, ISS, 88 constelaciones y lluvias de meteoros desde tu ciudad." />
   <style>
@@ -79,6 +85,15 @@
     .vchip { margin-top: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(248,113,113,.45); background: rgba(220,38,38,.16); color: #fecaca; font-size: 11.5px; font-weight: 700; }
     #newVideo { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 62px); z-index: 14; width: min(540px, calc(100vw - 24px)); display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 10px; animation: nvIn .45s ease; }
     #newVideo[hidden] { display: none !important; }
+    .wxCard { background: rgba(15,25,46,.7); border: 1px solid rgba(56,189,248,.22); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .wxHead { font-size: 16px; font-weight: 800; }
+    .wxStrip { display: flex; gap: 2px; overflow-x: auto; padding-bottom: 2px; }
+    .wxH { flex: 1 0 20px; min-width: 20px; display: flex; flex-direction: column; align-items: center; border-radius: 6px; padding: 2px 0; font-size: 9.5px; line-height: 1.25; }
+    .wxH i { font-style: normal; height: 12px; font-size: 9px; } .wxH b { font-weight: 700; } .wxH small { color: var(--muted); height: 11px; }
+    .wxH.g { background: rgba(34,197,94,.28); } .wxH.m { background: rgba(234,179,8,.25); } .wxH.b { background: rgba(239,68,68,.22); }
+    .calchip { border-color: rgba(56,189,248,.45) !important; background: rgba(56,189,248,.12) !important; color: #bae6fd !important; margin-right: 6px; }
+    .installBox { display: flex; flex-direction: column; gap: 6px; }
+    #installHelp { background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); border-radius: 10px; padding: 8px 10px; }
     .btn.obj { background: linear-gradient(135deg, #312e81, #1e3a8a); border: 1px solid rgba(165,180,252,.5); color: #e0e7ff; font-weight: 700; }
     /* Modo Objeto */
     body.objmode > *:not(#objView):not(#sky) { visibility: hidden !important; }
@@ -260,7 +275,7 @@
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.7.1" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.8" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -472,7 +487,11 @@
     <div class="modal-head"><div class="modal-title">🪐 Planetario DarwinCaos</div><button class="close" type="button">✕</button></div>
     <div class="scroll">
       <p class="note" data-i18n="aboutText">Posiciones calculadas en tiempo real para tu ubicación. La ISS usa sus elementos orbitales actuales.</p>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.7.1</p>
+      <div id="installBox" class="installBox">
+        <button id="installBtn" class="btn" type="button">📲 Instalar como app</button>
+        <p id="installHelp" class="note" hidden></p>
+      </div>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 1.8</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -502,6 +521,7 @@
     <div id="infoVideos"></div>
     <div class="btn-row">
       <button id="infoObject" class="btn obj" type="button" hidden>🌕 Objeto</button>
+      <button id="infoCal" class="btn ghost" type="button" hidden>📅 Avisarme</button>
       <button id="infoPoint" class="btn ghost" type="button" data-i18n="pointTo">Apuntar</button>
       <button id="infoShare" class="btn ghost" type="button" data-i18n="share">Compartir</button>
       <button id="infoShot" class="btn ghost" type="button" title="Imagen para redes" aria-label="Imagen para redes">📸</button>
@@ -538,9 +558,9 @@
   </div>
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.7.1"></script>
-  <script src="vendor/satellite.min.js?v=1.7.1"></script>
-  <script src="vendor/geomag.min.js?v=1.7.1"></script>
-  <script type="module" src="app.js?v=1.7.1"></script>
+  <script src="vendor/astronomy.browser.min.js?v=1.8"></script>
+  <script src="vendor/satellite.min.js?v=1.8"></script>
+  <script src="vendor/geomag.min.js?v=1.8"></script>
+  <script type="module" src="app.js?v=1.8"></script>
 </body>
 </html>
