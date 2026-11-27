@@ -1,0 +1,171 @@
+{
+ "_fuente": "Coordenadas: Gazetteer of Planetary Nomenclature (IAU/USGS), descargado el 27-nov-2026; aterrizajes e impactos según NASA/Roscosmos.",
+ "lugares": [
+  {
+   "id": "maxwell",
+   "tipo": "monte",
+   "nivel": 1,
+   "lat": 65.2,
+   "lon": 3.3,
+   "es": "Maxwell Montes",
+   "en": "Maxwell Montes",
+   "txt_es": "La montaña más alta de Venus: unos 11 km sobre la superficie media. Es el único gran accidente de Venus con nombre masculino.",
+   "txt_en": "Venus' highest mountain: about 11 km above the mean surface. It is the only major feature on Venus with a male name.",
+   "km": 797
+  },
+  {
+   "id": "ishtar",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 70.4,
+   "lon": 27.5,
+   "es": "Ishtar Terra",
+   "en": "Ishtar Terra",
+   "txt_es": "Uno de los dos «continentes» de Venus, del tamaño de Australia.",
+   "txt_en": "One of Venus' two 'continents', the size of Australia.",
+   "km": 5610
+  },
+  {
+   "id": "aphrodite",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": -5.8,
+   "lon": 104.8,
+   "es": "Aphrodite Terra",
+   "en": "Aphrodite Terra",
+   "txt_es": "El mayor «continente» de Venus: 10.000 km a lo largo del ecuador.",
+   "txt_en": "Venus' largest 'continent': 10,000 km along the equator.",
+   "km": 10000
+  },
+  {
+   "id": "lakshmi",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": 68.6,
+   "lon": -20.7,
+   "es": "Lakshmi Planum",
+   "en": "Lakshmi Planum",
+   "txt_es": "Una alta meseta volcánica rodeada de montañas.",
+   "txt_en": "A high volcanic plateau ringed by mountains.",
+   "km": 2345
+  },
+  {
+   "id": "beta",
+   "tipo": "monte",
+   "nivel": 2,
+   "lat": 25.3,
+   "lon": -77.2,
+   "es": "Beta Regio",
+   "en": "Beta Regio",
+   "txt_es": "Región volcánica con Theia Mons, un enorme volcán en escudo.",
+   "txt_en": "A volcanic region with Theia Mons, a huge shield volcano.",
+   "km": 2869
+  },
+  {
+   "id": "atla",
+   "tipo": "monte",
+   "nivel": 2,
+   "lat": 9.2,
+   "lon": -159.9,
+   "es": "Atla Regio",
+   "en": "Atla Regio",
+   "txt_es": "Región volcánica donde están Maat Mons y Sapas Mons.",
+   "txt_en": "A volcanic region holding Maat Mons and Sapas Mons.",
+   "km": 3200
+  },
+  {
+   "id": "maat",
+   "tipo": "monte",
+   "nivel": 2,
+   "lat": 0.5,
+   "lon": -165.4,
+   "es": "Maat Mons",
+   "en": "Maat Mons",
+   "txt_es": "El volcán más alto de Venus (unos 8 km). En 2023 se descubrió que sigue activo.",
+   "txt_en": "Venus' tallest volcano (about 8 km). In 2023 it was found to still be active.",
+   "km": 395
+  },
+  {
+   "id": "alpha",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": -25.5,
+   "lon": 0.3,
+   "es": "Alpha Regio",
+   "en": "Alpha Regio",
+   "txt_es": "La primera región de Venus vista por radar desde la Tierra; define su meridiano cero.",
+   "txt_en": "The first region of Venus seen by radar from Earth; it defines the planet's prime meridian.",
+   "km": 1897
+  },
+  {
+   "id": "ovda",
+   "tipo": "llanura",
+   "nivel": 3,
+   "lat": -2.8,
+   "lon": 85.6,
+   "es": "Ovda Regio",
+   "en": "Ovda Regio",
+   "txt_es": "Tierras altas muy plegadas al oeste de Aphrodite.",
+   "txt_en": "Highly folded highlands west of Aphrodite.",
+   "km": 5280
+  },
+  {
+   "id": "lavinia",
+   "tipo": "llanura",
+   "nivel": 3,
+   "lat": -47.3,
+   "lon": -12.5,
+   "es": "Lavinia Planitia",
+   "en": "Lavinia Planitia",
+   "txt_es": "Gran llanura de lava del sur.",
+   "txt_en": "A large southern lava plain.",
+   "km": 2820
+  },
+  {
+   "id": "mead",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": 12.5,
+   "lon": 57.2,
+   "es": "Mead",
+   "en": "Mead",
+   "txt_es": "El mayor cráter de Venus: 270 km. La densa atmósfera frena los meteoritos pequeños, por eso hay pocos cráteres.",
+   "txt_en": "Venus' largest crater: 270 km. The thick atmosphere stops small meteorites, so there are few craters.",
+   "km": 270
+  },
+  {
+   "id": "cleopatra",
+   "tipo": "crater",
+   "nivel": 3,
+   "lat": 65.8,
+   "lon": 7.1,
+   "es": "Cleopatra",
+   "en": "Cleopatra",
+   "txt_es": "Cráter de impacto de 105 km en las laderas de Maxwell Montes.",
+   "txt_en": "A 105 km impact crater on the slopes of Maxwell Montes.",
+   "km": 105
+  },
+  {
+   "id": "venera7",
+   "tipo": "aterrizaje",
+   "nivel": 2,
+   "lat": -5.0,
+   "lon": -9.0,
+   "es": "Venera 7",
+   "en": "Venera 7",
+   "txt_es": "Diciembre de 1970: la primera nave que envió datos desde la superficie de otro planeta. Aguantó 23 minutos a 475 °C.",
+   "txt_en": "December 1970: the first spacecraft to send data from another planet's surface. It survived 23 minutes at 475 °C."
+  },
+  {
+   "id": "venera13",
+   "tipo": "aterrizaje",
+   "nivel": 2,
+   "lat": -7.55,
+   "lon": -56.31,
+   "es": "Venera 13",
+   "en": "Venera 13",
+   "txt_es": "Marzo de 1982: tomó las primeras fotos en color de la superficie de Venus y resistió 127 minutos.",
+   "txt_en": "March 1982: it took the first colour photos of Venus' surface and survived 127 minutes."
+  }
+ ]
+}

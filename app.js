@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.8.2';
-import { createSatellites } from './satelites.js?v=1.8.2';
+import { createObjectView } from './objeto.js?v=1.9';
+import { createSatellites } from './satelites.js?v=1.9';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.8.2';
+const APP_VERSION = '1.9';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1089,6 +1089,8 @@ function buildCatalog() {
     name: () => bodyName(b), sub: () => b.id === 'sun' ? T().ourStar : b.id === 'moon' ? T().satellite : b.dwarf ? T().dwarf : T().planet,
     world: () => b.holder.getWorldPosition(new THREE.Vector3()), layer: 'planets',
   }));
+  // La Tierra: no está en el cielo (estamos sobre ella), pero se puede buscar y ver en el modo Objeto
+  CATALOG.push({ id: 'earth', kind: 'earth', names: ['Tierra', 'Earth', 'Planeta Tierra'], name: () => (S.lang === 'en' ? 'Earth' : 'Tierra'), sub: () => (S.lang === 'en' ? 'Our planet' : 'Nuestro planeta'), world: () => null });
   CATALOG.push({ id: 'iss', kind: 'iss', names: ['ISS', 'Estación Espacial Internacional', 'International Space Station'], name: () => 'ISS', sub: () => T().station,
     world: () => (issNow ? altAzVec(issNow.az, issNow.alt, R.iss) : null), layer: 'iss' });
   DSO.forEach(o => CATALOG.push({ id: o.id, kind: 'dso', ref: o, names: [o.es, o.en, o.id], name: () => (S.lang === 'en' ? o.en : o.es),
@@ -1185,6 +1187,12 @@ function infoStats(entry) {
     if (issNow) stats.push([t.height, `${fmtNum(issNow.height)} km`], [t.speed, `${fmtNum(issNow.speed)} km/h`], [t.dist, `${fmtNum(issNow.range)} km`], ['☀️', issNow.sunlit ? t.sunlit : t.shadow]);
     const next = issPasses().find(p => p.visible);
     stats.push([t.nextPass, next ? `${fmtTime(next.start)} · ${fmtNum(next.maxAlt)}° ${azName(next.maxAz)}` : t.noPass]);
+  } else if (entry.kind === 'earth') {
+    const en = S.lang === 'en';
+    stats.push([en ? 'You are at' : 'Estás en', S.place.name.split(',')[0]], [en ? 'Latitude' : 'Latitud', `${fmtNum(Math.abs(S.place.lat), 2)}° ${S.place.lat >= 0 ? 'N' : 'S'}`], [en ? 'Longitude' : 'Longitud', `${fmtNum(Math.abs(S.place.lon), 2)}° ${S.place.lon >= 0 ? 'E' : (en ? 'W' : 'O')}`],
+      [en ? 'Diameter' : 'Diámetro', '12.742 km'], [en ? 'Day' : 'Día', '23 h 56 min'], [en ? 'Speed around the Sun' : 'Velocidad alrededor del Sol', '107.000 km/h']);
+    fact = en ? 'Our home: the only planet known to have life, with liquid water oceans covering 71 % of its surface. Open the 3D model to see where you are.'
+      : 'Nuestro hogar: el único planeta conocido con vida, con océanos de agua líquida que cubren el 71 % de su superficie. Abre el modelo 3D para ver dónde estás.';
   } else if (entry.kind === 'sat') {
     const s = entry.ref, n = s.now, en = S.lang === 'en', date = simDate();
     const vis = SATS.visibility(n, date);
@@ -1232,7 +1240,7 @@ function openInfo(entry) {
   $('infoObject').hidden = !canObject(entry);
   $('infoCal').hidden = !(entry.kind === 'iss' || (entry.kind === 'sat' && entry.ref.info.orbita !== 'geo'));
   $('infoCal').textContent = S.lang === 'en' ? '📅 Remind me' : '📅 Avisarme';
-  $('infoObject').textContent = { moon: '🌕', mars: '🔴', sun: '☀️' }[entry.id] ? `${{ moon: '🌕', mars: '🔴', sun: '☀️' }[entry.id]} ${S.lang === 'en' ? 'Object' : 'Objeto'}` : (S.lang === 'en' ? '🛰️ View in 3D' : '🛰️ Ver en 3D');
+  $('infoObject').textContent = OBJ_ICON[entry.id] ? `${OBJ_ICON[entry.id]} ${S.lang === 'en' ? 'Object' : 'Objeto'}` : (S.lang === 'en' ? '🛰️ View in 3D' : '🛰️ Ver en 3D');
   $('infoCard').classList.add('open');
   hideNewVideo();
   $('infoCard').scrollTop = 0; // siempre desde arriba (nombre visible)
@@ -2812,7 +2820,8 @@ function paintInstall() {
 }
 
 // ───────────── Modo Objeto (prototipo: la Luna) ─────────────
-const OBJECT_IDS = new Set(['moon', 'mars', 'sun']);
+const OBJECT_IDS = new Set(['moon', 'mars', 'sun', 'mercury', 'venus', 'earth', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
+const OBJ_ICON = { moon: '🌕', mars: '🔴', sun: '☀️', mercury: '🌑', venus: '🟡', earth: '🌍', jupiter: '🟠', saturn: '🪐', uranus: '🔵', neptune: '🔵', pluto: '⚪' };
 const canObject = e => !!e && (OBJECT_IDS.has(e.id) || e.kind === 'sat' || e.kind === 'iss');
 let OBJ = null, objPrev = null;
 function getObj() {
@@ -2821,7 +2830,19 @@ function getObj() {
     makeMaterial: () => moonMaterial(loadTex('img/planets/luna.jpg')),
     hiResMap: cb => texLoader.load('img/planets/luna_4k.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }),
     bodies: {
-      mars: { material: () => planetMaterial(loadTex('img/planets/marte.jpg')), places: 'data/marte-lugares.json', face: [5, -70] }, // de cara: Valles Marineris y Tharsis
+      mars: { material: () => planetMaterial(loadTex('img/planets/marte.jpg')), places: 'data/marte-lugares.json', face: [5, -70], tilt: [-25.2, 0] }, // de cara: Valles Marineris y Tharsis
+      mercury: { material: () => planetMaterial(loadTex('img/planets/2k/2k_mercury.jpg')), places: 'data/mercurio-lugares.json', face: [20, 120] },
+      venus: { material: () => planetMaterial(loadTex('img/planets/2k/2k_venus_atmosphere.jpg')), altMaterial: () => planetMaterial(loadTex('img/planets/2k/2k_venus_surface.jpg')),
+        places: 'data/venus-lugares.json', labelsWhenAlt: true, face: [20, 0], toggle: { es: ['🌋 Ver superficie', '☁️ Ver nubes'], en: ['🌋 Show surface', '☁️ Show clouds'] } },
+      earth: { material: () => planetMaterial(loadTex('img/planets/2k/2k_earth_daymap.jpg')), clouds: () => loadTex('img/planets/2k/2k_earth_clouds.jpg', false), places: 'data/tierra-lugares.json',
+        face: () => [S.place.lat, S.place.lon], toggle: { es: ['☁️ Quitar nubes', '☁️ Ver nubes'], en: ['☁️ Hide clouds', '☁️ Show clouds'] },
+        extraPlaces: () => [{ id: 'aqui', tipo: 'aqui', nivel: 1, lat: S.place.lat, lon: S.place.lon, es: `📍 ${S.place.name.split(',')[0]}`, en: `📍 ${S.place.name.split(',')[0]}`, txt_es: 'Estás aquí. Desde este punto calculamos todo el cielo que ves en el planetario.', txt_en: 'You are here. The whole sky in the planetarium is calculated from this spot.' }] },
+      jupiter: { material: () => planetMaterial(loadTex('img/planets/jupiter.jpg')), places: 'data/jupiter-lugares.json', face: [-15, -45], tilt: [-3.1, 0] },
+      saturn: { material: () => planetMaterial(loadTex('img/planets/2k/2k_saturn.jpg')), places: 'data/saturno-lugares.json', tilt: [-26.7, 24], extent: 2.3,
+        rings: { inner: 1.24, outer: 2.27, map: () => loadTex('img/planets/2k/2k_saturn_ring_alpha.png') } },
+      uranus: { material: () => planetMaterial(loadTex('img/planets/2k/2k_uranus.jpg')), tilt: [-97.8, 10] },
+      neptune: { material: () => planetMaterial(loadTex('img/planets/2k/2k_neptune.jpg')), tilt: [-28.3, 0] },
+      pluto: { material: () => planetMaterial(loadTex('img/planets/pluton.jpg')), tilt: [-57.5, 0] },
       sun: { map: () => loadTex('img/planets/sol.jpg') },
     },
     onExit: () => { if (objPrev) { setFov(objPrev.fov); S.viewAz = objPrev.az; S.viewAlt = objPrev.alt; S.tracking = null; S.targetAz = null; } },
@@ -2854,7 +2875,7 @@ function enterObject(entry) {
   const step = () => {
     const k = Math.min(1, (performance.now() - t0) / D), e = k * k * (3 - 2 * k);
     setFov(f0 * Math.pow(1.2 / f0, e));
-    if (k < 1) requestAnimationFrame(step); else o.enter({ body: entry.id, phaseDir: entry.id === 'moon' ? moonPhaseView() : null, name: `${{ moon: '🌕', mars: '🔴', sun: '☀️' }[entry.id]} ${entry.name()}`, card: entry.id === 'sun' ? sunCard() : null });
+    if (k < 1) requestAnimationFrame(step); else o.enter({ body: entry.id, phaseDir: entry.id === 'moon' ? moonPhaseView() : null, name: `${OBJ_ICON[entry.id]} ${entry.name()}`, card: entry.id === 'sun' ? sunCard() : entry.id === 'moon' ? null : planetCard(entry) });
   };
   requestAnimationFrame(step);
 }
@@ -2869,6 +2890,13 @@ $('infoCal').onclick = () => {
   addToCalendar({ title: `🛰️ ${name} ${en ? 'visible' : 'pasa sobre ti'}`, start: p.start, end: p.end || new Date(+p.start + 6 * 60e3), alarm: 10, link: deepLink(e.id, p.maxTime || p.maxT),
     desc: en ? `Highest at ${fmtHM(p.maxTime || p.maxT)} · ${fmtNum(p.maxAlt)}° towards ${az}` : `Punto más alto a las ${fmtHM(p.maxTime || p.maxT)} · ${fmtNum(p.maxAlt)}° hacia el ${az}` });
 };
+// Ficha de un planeta en el modo Objeto: sus datos clave y el primer párrafo de su descripción
+function planetCard(entry) {
+  if (entry.id === 'earth') return { title: entry.name(), meta: S.lang === 'en' ? 'Our planet · 4,540 million years old' : 'Nuestro planeta · 4.540 millones de años', text: infoStats(entry).fact };
+  const d = DESC[entry.id]?.[S.lang];
+  if (!d) return null;
+  return { title: entry.name(), meta: (d.datos || []).slice(0, 3).map(([k, v]) => `${k}: ${v}`).join(' · '), text: d.texto?.[0] || '' };
+}
 // Ficha del Sol en el modo Objeto (con la foto de hoy de la NASA, si ha llegado)
 function sunCard() {
   const en = S.lang === 'en';

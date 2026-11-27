@@ -1,0 +1,136 @@
+{
+ "_fuente": "Coordenadas: Gazetteer of Planetary Nomenclature (IAU/USGS), descargado el 27-nov-2026; aterrizajes e impactos según NASA/Roscosmos.",
+ "lugares": [
+  {
+   "id": "caloris",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 31.65,
+   "lon": 161.98,
+   "es": "Cuenca Caloris",
+   "en": "Caloris Basin",
+   "txt_es": "Una de las mayores cuencas de impacto del Sistema Solar: 1.500 km. Su nombre significa «caliente»: es de los puntos que más se calientan cuando Mercurio está más cerca del Sol.",
+   "txt_en": "One of the largest impact basins in the Solar System: 1,500 km. Its name means 'hot': it is one of the spots that heat up most when Mercury is closest to the Sun.",
+   "km": 1500
+  },
+  {
+   "id": "borealis",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": 67.3,
+   "lon": 32.6,
+   "es": "Borealis Planitia",
+   "en": "Borealis Planitia",
+   "txt_es": "Gran llanura volcánica del norte.",
+   "txt_en": "A large volcanic plain in the north.",
+   "km": 3450
+  },
+  {
+   "id": "rachmaninoff",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": 27.66,
+   "lon": 57.37,
+   "es": "Rachmaninoff",
+   "en": "Rachmaninoff",
+   "txt_es": "Cráter de 305 km con anillo interior. Los cráteres de Mercurio llevan nombres de artistas: músicos, pintores y escritores.",
+   "txt_en": "A 305 km ringed crater. Mercury's craters are named after artists: musicians, painters and writers.",
+   "km": 305
+  },
+  {
+   "id": "beethoven",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": -20.86,
+   "lon": -124.21,
+   "es": "Beethoven",
+   "en": "Beethoven",
+   "txt_es": "Una de las mayores cuencas de Mercurio: 630 km.",
+   "txt_en": "One of Mercury's largest basins: 630 km.",
+   "km": 630
+  },
+  {
+   "id": "rembrandt",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": -32.89,
+   "lon": 87.87,
+   "es": "Rembrandt",
+   "en": "Rembrandt",
+   "txt_es": "Cuenca de 716 km descubierta por la sonda MESSENGER.",
+   "txt_en": "A 716 km basin discovered by the MESSENGER probe.",
+   "km": 716
+  },
+  {
+   "id": "tolstoj",
+   "tipo": "crater",
+   "nivel": 3,
+   "lat": -16.23,
+   "lon": -164.64,
+   "es": "Tolstói",
+   "en": "Tolstoj",
+   "txt_es": "Antigua cuenca de 355 km.",
+   "txt_en": "An ancient 355 km basin.",
+   "km": 355
+  },
+  {
+   "id": "kuiper",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": -11.34,
+   "lon": -31.32,
+   "es": "Kuiper",
+   "en": "Kuiper",
+   "txt_es": "Cráter joven y muy brillante de 62 km, dedicado al astrónomo que formó parte del equipo de la Mariner 10.",
+   "txt_en": "A young, very bright 62 km crater named after an astronomer on the Mariner 10 team.",
+   "km": 62
+  },
+  {
+   "id": "hokusai",
+   "tipo": "crater",
+   "nivel": 2,
+   "lat": 57.84,
+   "lon": 16.65,
+   "es": "Hokusai",
+   "en": "Hokusai",
+   "txt_es": "Cráter de 114 km con rayos brillantes que cruzan buena parte del planeta.",
+   "txt_en": "A 114 km crater with bright rays crossing much of the planet.",
+   "km": 114
+  },
+  {
+   "id": "raditladi",
+   "tipo": "crater",
+   "nivel": 3,
+   "lat": 27.15,
+   "lon": 119.06,
+   "es": "Raditladi",
+   "en": "Raditladi",
+   "txt_es": "Cuenca de 258 km sorprendentemente joven: menos de 1.000 millones de años.",
+   "txt_en": "A surprisingly young 258 km basin: under 1 billion years old.",
+   "km": 258
+  },
+  {
+   "id": "chaomengfu",
+   "tipo": "polo",
+   "nivel": 2,
+   "lat": -88.42,
+   "lon": -156.36,
+   "es": "Chao Meng-Fu (hielo)",
+   "en": "Chao Meng-Fu (ice)",
+   "txt_es": "Cráter junto al polo sur cuyo fondo nunca ve el Sol: guarda hielo de agua, ¡en el planeta más cercano al Sol!",
+   "txt_en": "A crater near the south pole whose floor never sees the Sun: it holds water ice, on the planet closest to the Sun!",
+   "km": 141
+  },
+  {
+   "id": "messenger",
+   "tipo": "aterrizaje",
+   "nivel": 2,
+   "lat": 54.4,
+   "lon": -149.9,
+   "es": "Impacto de MESSENGER",
+   "en": "MESSENGER impact",
+   "txt_es": "Abril de 2015: tras 4 años en órbita, la sonda MESSENGER de la NASA terminó su misión chocando contra Mercurio.",
+   "txt_en": "April 2015: after 4 years in orbit, NASA's MESSENGER probe ended its mission by crashing into Mercury."
+  }
+ ]
+}

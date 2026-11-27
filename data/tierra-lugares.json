@@ -1,0 +1,148 @@
+{
+ "_fuente": "Lugares aproximados para orientarse (posiciones sobre la textura).",
+ "lugares": [
+  {
+   "id": "europa",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 50,
+   "lon": 15,
+   "es": "Europa",
+   "en": "Europe",
+   "txt_es": "Tu continente.",
+   "txt_en": "Your continent."
+  },
+  {
+   "id": "africa",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 5,
+   "lon": 20,
+   "es": "África",
+   "en": "Africa",
+   "txt_es": "La cuna de la humanidad.",
+   "txt_en": "The cradle of humanity."
+  },
+  {
+   "id": "asia",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 45,
+   "lon": 90,
+   "es": "Asia",
+   "en": "Asia",
+   "txt_es": "El continente más grande y poblado.",
+   "txt_en": "The largest and most populated continent."
+  },
+  {
+   "id": "namerica",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": 45,
+   "lon": -100,
+   "es": "América del Norte",
+   "en": "North America",
+   "txt_es": "",
+   "txt_en": ""
+  },
+  {
+   "id": "samerica",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": -15,
+   "lon": -60,
+   "es": "América del Sur",
+   "en": "South America",
+   "txt_es": "",
+   "txt_en": ""
+  },
+  {
+   "id": "australia",
+   "tipo": "llanura",
+   "nivel": 1,
+   "lat": -25,
+   "lon": 135,
+   "es": "Australia",
+   "en": "Australia",
+   "txt_es": "",
+   "txt_en": ""
+  },
+  {
+   "id": "antartida",
+   "tipo": "polo",
+   "nivel": 1,
+   "lat": -82,
+   "lon": 0,
+   "es": "Antártida",
+   "en": "Antarctica",
+   "txt_es": "El lugar más frío de la Tierra: se han medido −89 °C.",
+   "txt_en": "The coldest place on Earth: −89 °C has been recorded."
+  },
+  {
+   "id": "atlantico",
+   "tipo": "mar",
+   "nivel": 1,
+   "lat": 0,
+   "lon": -30,
+   "es": "Océano Atlántico",
+   "en": "Atlantic Ocean",
+   "txt_es": "",
+   "txt_en": ""
+  },
+  {
+   "id": "pacifico",
+   "tipo": "mar",
+   "nivel": 1,
+   "lat": 0,
+   "lon": -150,
+   "es": "Océano Pacífico",
+   "en": "Pacific Ocean",
+   "txt_es": "El océano más grande: cubre un tercio del planeta.",
+   "txt_en": "The largest ocean: it covers a third of the planet."
+  },
+  {
+   "id": "indico",
+   "tipo": "mar",
+   "nivel": 1,
+   "lat": -20,
+   "lon": 80,
+   "es": "Océano Índico",
+   "en": "Indian Ocean",
+   "txt_es": "",
+   "txt_en": ""
+  },
+  {
+   "id": "sahara",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": 23,
+   "lon": 13,
+   "es": "Sáhara",
+   "en": "Sahara",
+   "txt_es": "El mayor desierto cálido del mundo, se ve desde el espacio como una gran mancha clara.",
+   "txt_en": "The world's largest hot desert, visible from space as a huge pale patch."
+  },
+  {
+   "id": "amazonas",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": -4,
+   "lon": -62,
+   "es": "Amazonía",
+   "en": "Amazon",
+   "txt_es": "La mayor selva tropical del planeta.",
+   "txt_en": "The planet's largest rainforest."
+  },
+  {
+   "id": "himalaya",
+   "tipo": "monte",
+   "nivel": 2,
+   "lat": 29,
+   "lon": 84,
+   "es": "Himalaya",
+   "en": "Himalaya",
+   "txt_es": "Las montañas más altas: el Everest mide 8.849 m.",
+   "txt_en": "The highest mountains: Everest is 8,849 m."
+  }
+ ]
+}
