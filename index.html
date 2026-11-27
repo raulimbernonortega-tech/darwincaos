@@ -89,7 +89,9 @@
     .wxHead { font-size: 16px; font-weight: 800; }
     .wxStrip { display: flex; gap: 2px; overflow-x: auto; padding-bottom: 2px; }
     .wxH { flex: 1 0 20px; min-width: 20px; display: flex; flex-direction: column; align-items: center; border-radius: 6px; padding: 2px 0; font-size: 9.5px; line-height: 1.25; }
-    .wxH i { font-style: normal; height: 12px; font-size: 9px; } .wxH b { font-weight: 700; } .wxH small { color: var(--muted); height: 11px; }
+    .wxH i { font-style: normal; height: 13px; font-size: 10px; } .wxH b { font-size: 16px; line-height: 1.3; } .wxH small { color: #cbd5e1; font-size: 9.5px; }
+    .wxH { min-width: 30px; flex-basis: 30px; padding: 3px 0; } .wxH.r { background: rgba(59,130,246,.3); }
+    .wxLegend { font-size: 10.5px; opacity: .8; }
     .wxH.g { background: rgba(34,197,94,.28); } .wxH.m { background: rgba(234,179,8,.25); } .wxH.b { background: rgba(239,68,68,.22); }
     .calchip { border-color: rgba(56,189,248,.45) !important; background: rgba(56,189,248,.12) !important; color: #bae6fd !important; margin-right: 6px; }
     .installBox { display: flex; flex-direction: column; gap: 6px; }
@@ -275,7 +277,7 @@
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.8" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.8.1" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -491,7 +493,7 @@
         <button id="installBtn" class="btn" type="button">📲 Instalar como app</button>
         <p id="installHelp" class="note" hidden></p>
       </div>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.8</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 1.8.1</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -558,9 +560,9 @@
   </div>
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.8"></script>
-  <script src="vendor/satellite.min.js?v=1.8"></script>
-  <script src="vendor/geomag.min.js?v=1.8"></script>
-  <script type="module" src="app.js?v=1.8"></script>
+  <script src="vendor/astronomy.browser.min.js?v=1.8.1"></script>
+  <script src="vendor/satellite.min.js?v=1.8.1"></script>
+  <script src="vendor/geomag.min.js?v=1.8.1"></script>
+  <script type="module" src="app.js?v=1.8.1"></script>
 </body>
 </html>

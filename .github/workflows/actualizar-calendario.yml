@@ -28,8 +28,6 @@ jobs:
         run: node scripts/actualizar-calendario.mjs
       - name: Descargar órbitas de satélites (CelesTrak)
         run: node scripts/actualizar-satelites.mjs
-      - name: Foto del Sol de hoy (satélite SDO de la NASA)
-        run: curl -sfL --max-time 60 -o data/sol-hoy.jpg https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg || echo "SDO no disponible"
       - name: Guardar cambios
         run: |
           git config user.name "github-actions[bot]"
@@ -39,11 +37,11 @@ jobs:
       # Los >10.000 Starlink (1,7 MB) cambian del todo en cada pasada: se guardan en la rama «datos»,
       # que se sobrescribe cada vez (sin historial), para que el repositorio no crezca sin fin.
       - name: Publicar Starlink en la rama «datos»
-        if: hashFiles('data/starlink.tle') != '' || hashFiles('data/sol-hoy.jpg') != ''
+        if: hashFiles('data/starlink.tle') != ''
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          d=$(mktemp -d); cp data/starlink.tle data/sol-hoy.jpg "$d/" 2>/dev/null || true; cd "$d"
+          d=$(mktemp -d); cp data/starlink.tle "$d/"; cd "$d"
           git init -q -b datos
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

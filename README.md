@@ -70,6 +70,13 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.8.1
+- **Logo en alta resolución** en la app y en los iconos de instalación.
+- **¿Se verá esta noche?** más claro: un icono por hora (✨ despejado, ⛅ algunas nubes, ☁️ cubierto, 🌧️ lluvia), la hora debajo, 🌙 cuando la Luna está arriba y una leyenda.
+- **Calendario con enlace directo**: el evento guardado lleva un enlace que abre la app justo en lo guardado (la ISS, el satélite o el astro, a esa hora y desde ese lugar).
+- **Sol vivo** en el modo Objeto: superficie de plasma en movimiento y corona de llamaradas animada (se retira la foto de SDO).
+- La música del modo Objeto se reanuda siempre al entrar (también tras salir de la app o una llamada).
+
 ### Versión 1.8 — «Tu cielo de cada noche»
 - **Modo app**: se instala en la pantalla de inicio (Android: botón «Instalar»; iPhone: Compartir → «Añadir a pantalla de inicio», explicado en «Acerca de»), se abre a pantalla completa y funciona sin cobertura.
 - **¿Se verá esta noche?**: en «Esta noche», veredicto (🟢/🟡/🔴), mejor momento para observar y franja de nubosidad por horas con la Luna, a partir de la previsión de Open-Meteo.

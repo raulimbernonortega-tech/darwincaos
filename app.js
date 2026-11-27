@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.8';
-import { createSatellites } from './satelites.js?v=1.8';
+import { createObjectView } from './objeto.js?v=1.8.1';
+import { createSatellites } from './satelites.js?v=1.8.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.8.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -2022,12 +2022,23 @@ function computeTonight() {
 }
 // ───────────── Añadir al calendario (archivo .ics estándar: iPhone, Android y ordenador) ─────────────
 // El aviso lo da el calendario del propio móvil: alertas sin necesidad de servidor.
-function addToCalendar({ title, start, end, desc = '', alarm = 15 }) {
+// Enlace que abre la app justo en lo guardado: ese astro/satélite, a esa hora y desde ese lugar
+function deepLink(objId, time) {
+  const u = new URL(location.href.split('?')[0]);
+  u.searchParams.set('lat', S.place.lat.toFixed(4)); u.searchParams.set('lon', S.place.lon.toFixed(4)); u.searchParams.set('name', S.place.name);
+  if (S.place.tz) u.searchParams.set('tz', S.place.tz);
+  if (objId) u.searchParams.set('obj', objId);
+  if (time) u.searchParams.set('t', new Date(time).toISOString());
+  u.searchParams.set('lang', S.lang);
+  return u.toString();
+}
+function addToCalendar({ title, start, end, desc = '', alarm = 15, link }) {
+  link ||= deepLink(null, start);
   const ics = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const esc = t => String(t).replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n');
   const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//DarwinCaos//Planetarium//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
     `UID:${+start}-${Math.random().toString(36).slice(2)}@planetario-darwincaos`, `DTSTAMP:${ics(new Date())}`, `DTSTART:${ics(start)}`, `DTEND:${ics(end || new Date(+start + 30 * 60e3))}`,
-    `SUMMARY:${esc(title)}`, `DESCRIPTION:${esc(`${desc}${desc ? '\n\n' : ''}Planetarium by DarwinCaos · ${location.origin}${location.pathname}`)}`, `LOCATION:${esc(S.place.name)}`,
+    `SUMMARY:${esc(title)}`, `DESCRIPTION:${esc(`${desc}${desc ? '\n\n' : ''}${S.lang === 'en' ? 'See it in Planetarium by DarwinCaos' : 'Míralo en el Planetarium by DarwinCaos'}: ${link}`)}`, `URL:${link}`, `LOCATION:${esc(S.place.name)}`,
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc(title)}`, `TRIGGER:-PT${alarm}M`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   if (isIOS) { location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(body); return; } // Safari abre «Añadir al calendario»
   const url = URL.createObjectURL(new Blob([body], { type: 'text/calendar;charset=utf-8' }));
@@ -2083,16 +2094,20 @@ function renderWeather(card, n) {
     const sub = document.createElement('p'); sub.className = 'note';
     sub.textContent = (f.best ? (en ? `Best time: ${fmtHM(f.best.from)}–${fmtHM(new Date(+f.best.to + 3600e3))}` : `Mejor momento: ${fmtHM(f.best.from)}–${fmtHM(new Date(+f.best.to + 3600e3))}`) + (f.best.moon === 0 ? (en ? ' (no Moon)' : ' (sin Luna)') : '') + ' · ' : '')
       + (en ? `clouds ${fmtNum(f.avg)} % on average · ${moonTxt}.` : `nubes ${fmtNum(f.avg)} % de media · ${moonTxt}.`);
-    // Franja por horas: verde despejado, ámbar intervalos, rojo cubierto; 🌙 si la Luna está arriba
+    // Hora a hora con iconos que se entienden solos: ✨ despejado · ⛅ algunas nubes · ☁️ cubierto · 🌧️ lluvia; 🌙 = Luna en el cielo
+    const lab = document.createElement('div'); lab.className = 'mini'; lab.textContent = en ? 'Hour by hour tonight' : 'Hora a hora esta noche';
     const strip = document.createElement('div'); strip.className = 'wxStrip';
-    f.hours.forEach((x, i) => {
-      const c = document.createElement('div'); c.className = 'wxH ' + (x.cloud <= 30 && x.rain < 30 ? 'g' : x.cloud <= 65 ? 'm' : 'b');
-      c.title = `${fmtHM(x.d)} · ${x.cloud} %`;
-      c.innerHTML = `<i>${x.moonUp ? '🌙' : ''}</i><b>${x.cloud}</b><small>${i % 2 === 0 ? fmtHM(x.d).slice(0, 2) : ''}</small>`;
+    f.hours.forEach(x => {
+      const kind = x.rain >= 50 ? 'r' : x.cloud <= 30 ? 'g' : x.cloud <= 65 ? 'm' : 'b';
+      const c = document.createElement('div'); c.className = 'wxH ' + kind;
+      c.title = `${fmtHM(x.d)} · ${en ? 'clouds' : 'nubes'} ${x.cloud} %`;
+      c.innerHTML = `<i>${x.moonUp ? '🌙' : ''}</i><b>${{ g: '✨', m: '⛅', b: '☁️', r: '🌧️' }[kind]}</b><small>${fmtHM(x.d).slice(0, 2)}h</small>`;
       strip.append(c);
     });
-    const src = document.createElement('p'); src.className = 'note'; src.style.opacity = '.6'; src.textContent = en ? 'Cloud cover % per hour · forecast: Open-Meteo' : 'Nubosidad % por hora · previsión: Open-Meteo';
-    card.append(h, sub, strip, src);
+    const legend = document.createElement('p'); legend.className = 'note wxLegend';
+    legend.textContent = en ? '✨ clear · ⛅ some clouds · ☁️ overcast · 🌧️ rain · 🌙 Moon up (brightens the sky) — forecast: Open-Meteo'
+      : '✨ despejado · ⛅ algunas nubes · ☁️ cubierto · 🌧️ lluvia · 🌙 Luna en el cielo (aclara el cielo) — previsión: Open-Meteo';
+    card.append(h, sub, lab, strip, legend);
   }).catch(() => { card.replaceChildren(Object.assign(document.createElement('p'), { className: 'note', textContent: en ? 'Cloud forecast unavailable (no connection?).' : 'Previsión de nubes no disponible (¿sin conexión?).' })); });
 }
 
@@ -2125,7 +2140,7 @@ function renderTonight(box) {
   if (n.iss === null) { const p = document.createElement('p'); p.className = 'note'; p.textContent = ISS.status === 'loading' ? t.issLoading : t.issOffline; box.append(p); }
   else if (!n.iss.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = c.noIss; box.append(p); }
   else n.iss.forEach(p => box.append(evRow({ ico: '🛰️', what: `${fmtHM(p.start)} → ${fmtHM(p.end)}`, more: `${c.high} ${fmtNum(p.maxAlt)}° ${c.towards} ${azName(p.maxAz)}`, onClick: () => goToEvent('iss', p.maxTime),
-    cal: { title: S.lang === 'en' ? '🛰️ ISS visible' : '🛰️ La ISS pasa sobre ti', start: p.start, end: p.end, desc: `${c.high} ${fmtNum(p.maxAlt)}° ${c.towards} ${azName(p.maxAz)} (${fmtHM(p.maxTime)})`, alarm: 10 } })));
+    cal: { title: S.lang === 'en' ? '🛰️ ISS visible' : '🛰️ La ISS pasa sobre ti', start: p.start, end: p.end, desc: `${c.high} ${fmtNum(p.maxAlt)}° ${c.towards} ${azName(p.maxAz)} (${fmtHM(p.maxTime)})`, alarm: 10, link: deepLink('iss', p.maxTime) } })));
   // Lluvias
   const sh = n.shower, shName = s => (S.lang === 'en' ? s.en : s.es);
   box.append(section('☄️ ' + c.meteorsNight));
@@ -2325,7 +2340,7 @@ function buildEvents(sky) {
     if (m !== month) { month = m; g = grp(null); g.append(section('📅 ' + m)); }
     const onClick = e.action ? () => goToEvent(e.action.id, e.action.time) : null;
     const row = evRow({ ico: e.ico, when: `${fmtDay(e.date)} · ${fmtHM(e.date)}`, what: e.what, more: e.more, onClick: e.href ? null : onClick, href: e.href, hl: e.hl, video: topicVideo(e.topic),
-      cal: e.date > Date.now() ? { title: `${e.ico} ${e.what}`, start: e.date, end: new Date(+e.date + 3600e3), desc: e.more || '', alarm: e.cat === 'launch' ? 30 : 60 } : null });
+      cal: e.date > Date.now() ? { title: `${e.ico} ${e.what}`, start: e.date, end: new Date(+e.date + 3600e3), desc: e.more || '', alarm: e.cat === 'launch' ? 30 : 60, link: deepLink(e.action?.id || null, e.action?.time || e.date) } : null });
     row.dataset.cat = e.cat; g.append(row);
   });
   const empty = document.createElement('p'); empty.className = 'note evempty'; empty.textContent = FEED ? c.empty : c.noFeed; wrap.append(empty);
@@ -2795,7 +2810,7 @@ function paintInstall() {
 // ───────────── Modo Objeto (prototipo: la Luna) ─────────────
 const OBJECT_IDS = new Set(['moon', 'mars', 'sun']);
 const canObject = e => !!e && (OBJECT_IDS.has(e.id) || e.kind === 'sat' || e.kind === 'iss');
-let OBJ = null, objPrev = null, sunToday = false;
+let OBJ = null, objPrev = null;
 function getObj() {
   OBJ ||= createObjectView({
     THREE, renderer, lang: () => S.lang,
@@ -2803,7 +2818,7 @@ function getObj() {
     hiResMap: cb => texLoader.load('img/planets/luna_4k.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }),
     bodies: {
       mars: { material: () => planetMaterial(loadTex('img/planets/marte.jpg')), places: 'data/marte-lugares.json', face: [5, -70] }, // de cara: Valles Marineris y Tharsis
-      sun: { map: () => loadTex('img/planets/sol.jpg'), todayUrl: 'https://raw.githubusercontent.com/raulimbernonortega-tech/darwincaos/datos/sol-hoy.jpg', onToday: () => { sunToday = true; if (OBJ?.active && $('objTitle').textContent.startsWith('☀️')) $('objCardText').textContent = sunCard().text; } },
+      sun: { map: () => loadTex('img/planets/sol.jpg') },
     },
     onExit: () => { if (objPrev) { setFov(objPrev.fov); S.viewAz = objPrev.az; S.viewAlt = objPrev.alt; S.tracking = null; S.targetAz = null; } },
   });
@@ -2847,7 +2862,7 @@ $('infoCal').onclick = () => {
   const p = e.kind === 'iss' ? issPasses().find(x => x.visible) : SATS.nextVisiblePass(e.ref, simDate(), 72);
   if (!p) { toast(en ? 'No naked-eye pass in the next days' : 'No hay pasos visibles a simple vista en los próximos días'); return; }
   const az = azName(p.maxAz), name = e.name();
-  addToCalendar({ title: `🛰️ ${name} ${en ? 'visible' : 'pasa sobre ti'}`, start: p.start, end: p.end || new Date(+p.start + 6 * 60e3), alarm: 10,
+  addToCalendar({ title: `🛰️ ${name} ${en ? 'visible' : 'pasa sobre ti'}`, start: p.start, end: p.end || new Date(+p.start + 6 * 60e3), alarm: 10, link: deepLink(e.id, p.maxTime || p.maxT),
     desc: en ? `Highest at ${fmtHM(p.maxTime || p.maxT)} · ${fmtNum(p.maxAlt)}° towards ${az}` : `Punto más alto a las ${fmtHM(p.maxTime || p.maxT)} · ${fmtNum(p.maxAlt)}° hacia el ${az}` });
 };
 // Ficha del Sol en el modo Objeto (con la foto de hoy de la NASA, si ha llegado)
@@ -2856,7 +2871,7 @@ function sunCard() {
   return { title: en ? 'The Sun' : 'El Sol', meta: en ? 'G-type star · 4,600 million years old' : 'Estrella de tipo G · 4.600 millones de años',
     text: (en ? '109 times wider than Earth: about 1.3 million Earths would fit inside. Its surface is at about 5,500 °C and its light takes 8 minutes 20 seconds to reach us.'
       : 'Es 109 veces más ancho que la Tierra: dentro cabrían 1,3 millones de Tierras. Su superficie está a unos 5.500 °C y su luz tarda 8 minutos y 20 segundos en llegarnos.')
-      + (sunToday ? (en ? ' The face towards Earth is today\'s real photo from NASA\'s SDO satellite: the dark spots are real sunspots.' : ' La cara que mira a la Tierra es la foto real de hoy del satélite SDO de la NASA: las manchas oscuras son manchas solares de verdad.') : '') };
+ };
 }
 // Ficha corta que acompaña al modelo 3D en el modo Objeto
 function objCardFor(entry) {
@@ -2947,7 +2962,7 @@ async function init() {
   loadFeed().then(() => { if ($('modalCal').classList.contains('open')) renderCal(); feedReady(); });
   // Adelantamos el cálculo de eventos en segundo plano para que el calendario abra al instante
   setTimeout(() => (window.requestIdleCallback || (f => f()))(() => getSkyEvents().catch(() => { })), 6000);
-  SATS.load().then(() => { satEntries(); if (fromUrl === undefined && params.get('obj')?.startsWith('sat:')) { const e = CATALOG.find(c => c.id === params.get('obj')); if (e) openInfo(e); } });
+  SATS.load().then(() => { satEntries(); if (fromUrl === undefined && params.get('obj')?.startsWith('sat:')) { const e = CATALOG.find(c => c.id === params.get('obj')); if (e) { openInfo(e); pointTo(e); } } }); // enlace del calendario: abre y apunta al satélite
   loadISS().then(() => {
     updateISS(simDate());
     if (fromUrl?.kind === 'iss') aim(fromUrl); // la ISS solo tiene posición cuando llega su órbita
