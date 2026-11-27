@@ -68,7 +68,35 @@ class Ambient {
   }
 }
 
-export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang, onExit }) {
+// Sol: superficie con «oscurecimiento del limbo» (el borde se ve más oscuro y rojizo, como el Sol real),
+// un leve chisporroteo animado y, si llega, la imagen REAL de hoy del satélite SDO de la NASA en la cara que mira a la Tierra.
+function sunMaterial(THREE, map) {
+  return new THREE.ShaderMaterial({
+    uniforms: { map: { value: map }, today: { value: null }, uToday: { value: 0 }, uTime: { value: 0 }, uR: { value: 0.469 } },
+    vertexShader: `varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
+      void main(){ vUv = uv; vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform sampler2D map; uniform sampler2D today; uniform float uToday; uniform float uTime; uniform float uR;
+      varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
+      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      void main(){
+        vec3 base = texture2D(map, vUv).rgb;
+        float mu = clamp(dot(normalize(vN), normalize(cameraPosition - vW)), 0.0, 1.0);
+        float limb = 0.35 + 0.65 * pow(mu, 0.55);                      // oscurecimiento del limbo
+        float n = h(floor(vUv * vec2(900.0, 450.0)) + floor(uTime * 3.0)) * 0.06; // granulación que chisporrotea
+        vec3 col = base * (1.05 + n) * limb * vec3(1.0, 0.93 - 0.12 * (1.0 - mu), 0.78 - 0.25 * (1.0 - mu));
+        if (uToday > 0.5 && vP.x > 0.0) {                                // cara hacia la Tierra: foto de hoy
+          vec2 t = vec2(0.5 - vP.z * uR, 0.5 + vP.y * uR);
+          vec3 img = texture2D(today, t).rgb;
+          float edge = smoothstep(0.0, 0.25, vP.x);
+          col = mix(col, img * (0.55 + 0.45 * limb) * 1.08, edge);
+        }
+        gl_FragColor = vec4(col, 1.0);
+        #include <colorspace_fragment>
+      }`,
+  });
+}
+
+export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang, onExit, bodies = {} }) {
   const $ = id => document.getElementById(id);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.01, 100);
@@ -89,38 +117,66 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   // Luces para los modelos 3D (satélites); la Luna usa su propio sombreado y no les afecta
   const keyLight = new THREE.DirectionalLight(0xffffff, 2.8); keyLight.position.set(-3, 2, 5);
   scene.add(keyLight, new THREE.HemisphereLight(0xdbe7ff, 0x334466, 1.4));
-  let mode = 'moon', model = null;
-  const mat = makeMaterial();
+  let mode = 'moon', model = null, body = 'moon';
+  const moonMat = makeMaterial();
+  let mat = moonMat;
+  const mats = { moon: moonMat }; // materiales de cada astro, creados la primera vez que se abren
+  const matFor = b => {
+    if (mats[b]) return mats[b];
+    mats[b] = b === 'sun' ? sunMaterial(THREE, bodies.sun.map()) : bodies[b].material();
+    if (b === 'sun' && bodies.sun.todayUrl) { // foto real del Sol de hoy (NASA SDO), si está disponible
+      const tl = new THREE.TextureLoader(); tl.setCrossOrigin('anonymous');
+      tl.load(bodies.sun.todayUrl, t => { t.colorSpace = THREE.SRGBColorSpace; mats.sun.uniforms.today.value = t; mats.sun.uniforms.uToday.value = 1; bodies.sun.onToday?.(); }, undefined, () => { });
+    }
+    return mats[b];
+  };
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), mat);
+  // Halo del Sol (corona)
+  const coronaTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d'), gr = g.createRadialGradient(128, 128, 60, 128, 128, 128);
+    gr.addColorStop(0, 'rgba(255,200,120,0.55)'); gr.addColorStop(0.45, 'rgba(255,160,60,0.18)'); gr.addColorStop(1, 'rgba(255,140,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c); })();
+  const corona = new THREE.Sprite(new THREE.SpriteMaterial({ map: coronaTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  corona.scale.setScalar(4.2); corona.visible = false; scene.add(corona);
   mesh.rotation.y = -Math.PI / 2; // longitud 0 (centro de la cara visible) hacia la cámara
   pivot.add(mesh);
   let hiRes = false;
 
   // Lugares: posición en la esfera (mismo mapa equirectangular que la textura)
   let places = [];
+  const placesCache = {};
+  const labelBox = $('objLabels');
   const local = (lat, lon) => {
     const phi = (lon + 180) / 360 * Math.PI * 2, th = (90 - lat) * Math.PI / 180;
     return new THREE.Vector3(-Math.cos(phi) * Math.sin(th), Math.cos(th), Math.sin(phi) * Math.sin(th));
   };
-  fetch('data/luna-lugares.json').then(r => r.json()).then(d => {
-    places = d.lugares.map(p => ({ ...p, v: local(p.lat, p.lon) }));
+  function loadPlaces(b) {
+    const url = b === 'moon' ? 'data/luna-lugares.json' : bodies[b]?.places;
+    places = placesCache[b] || [];
     buildLabels();
-  }).catch(() => { });
-  const labelBox = $('objLabels');
+    if (!url || placesCache[b]) return;
+    fetch(url).then(r => r.json()).then(d => {
+      placesCache[b] = d.lugares.map(p => ({ ...p, v: local(p.lat, p.lon) }));
+      if (body === b) { places = placesCache[b]; buildLabels(); }
+    }).catch(() => { });
+  }
+  loadPlaces('moon');
+  const LANDING = new Set(['alunizaje', 'aterrizaje']);
+  const PLAIN = new Set(['mar', 'llanura', 'valle', 'polo']); // nombres de regiones: en cursiva, sin recuadro
   function buildLabels() {
     labelBox.replaceChildren();
     for (const p of places) {
       const el = document.createElement('button');
-      el.type = 'button'; el.className = `objLabel ${p.tipo}`;
-      el.textContent = (p.tipo === 'alunizaje' ? '🚩 ' : '') + (lang() === 'en' ? p.en : p.es);
+      el.type = 'button'; el.className = `objLabel ${PLAIN.has(p.tipo) ? 'mar' : LANDING.has(p.tipo) ? 'alunizaje' : p.tipo}`;
+      el.textContent = (LANDING.has(p.tipo) ? '🚩 ' : '') + (lang() === 'en' ? p.en : p.es);
       el.onclick = e => { e.stopPropagation(); showPlace(p); };
       labelBox.append(el); p.el = el;
     }
   }
   function showPlace(p) {
     const en = lang() === 'en';
-    $('objCardTitle').textContent = (p.tipo === 'alunizaje' ? '🚩 ' : '') + (en ? p.en : p.es);
-    const kind = { mar: en ? 'Lunar sea (mare)' : 'Mar lunar', crater: en ? 'Crater' : 'Cráter', alunizaje: en ? 'Landing site' : 'Lugar de alunizaje' }[p.tipo];
+    $('objCardTitle').textContent = (LANDING.has(p.tipo) ? '🚩 ' : '') + (en ? p.en : p.es);
+    const kind = { mar: en ? 'Lunar sea (mare)' : 'Mar lunar', crater: en ? 'Crater' : 'Cráter', alunizaje: en ? 'Landing site' : 'Lugar de alunizaje',
+      aterrizaje: en ? 'Landing site' : 'Lugar de aterrizaje', monte: en ? 'Volcano / mountain' : 'Volcán / monte', valle: en ? 'Canyon / valley' : 'Cañón / valle',
+      llanura: en ? 'Plain / basin' : 'Llanura / cuenca', polo: en ? 'Polar cap' : 'Casquete polar' }[p.tipo];
     $('objCardMeta').textContent = `${kind}${p.km ? ` · ${p.km.toLocaleString(en ? 'en' : 'es')} km` : ''} · ${Math.abs(p.lat).toFixed(1)}° ${p.lat >= 0 ? 'N' : 'S'}, ${Math.abs(p.lon).toFixed(1)}° ${p.lon >= 0 ? 'E' : (en ? 'W' : 'O')}`;
     $('objCardText').textContent = en ? p.txt_en : p.txt_es;
     $('objCard').hidden = false;
@@ -131,7 +187,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   function flyTo(p) {
     const w = p.v.clone().applyEuler(mesh.rotation); // en coordenadas del pivote
     const target = new THREE.Quaternion().setFromUnitVectors(w.normalize(), new THREE.Vector3(0, 0, 1));
-    const fd = fitDist(); flight = { from: pivot.quaternion.clone(), to: target, t: 0, dist0: dist, dist1: Math.min(dist, 1 + (fd - 1) * (p.tipo === 'mar' ? 0.55 : 0.3)) };
+    const fd = fitDist(); flight = { from: pivot.quaternion.clone(), to: target, t: 0, dist0: dist, dist1: Math.min(dist, 1 + (fd - 1) * (PLAIN.has(p.tipo) ? 0.55 : 0.3)) };
   }
 
   // ── Interacción: un dedo gira, dos dedos acercan, rueda del ratón acerca ──
@@ -160,7 +216,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   touch.addEventListener('pointerup', end); touch.addEventListener('pointercancel', end);
   touch.addEventListener('wheel', e => { e.preventDefault(); targetDist = clampDist(targetDist * Math.exp(e.deltaY * 0.0012)); }, { passive: false });
   const pinchDist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
-  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(mode === 'model' ? 0.45 : 1.16, d)); // Luna: más cerca el mapa de 4K ya se ve borroso
+  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(mode === 'model' ? 0.45 : body === 'moon' ? 1.16 : 1.3, d)); // más cerca los mapas ya se ven borrosos
 
   // ── Luz: iluminada entera (por defecto) o fase de hoy ──
   let fullLight = true, phaseLight = new THREE.Vector3(1, 0, 0);
@@ -184,36 +240,43 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
 
   let active = false;
   // opts.model: un modelo 3D ya normalizado (dimensión mayor = 1) → modo «modelo» (satélites); si no, la Luna
-  function enter({ phaseDir, name, model: m, card }) {
+  function enter({ phaseDir, name, model: m, card, body: b = 'moon' }) {
     active = true;
-    mode = m ? 'model' : 'moon';
+    mode = m ? 'model' : 'moon'; // «moon» = un astro esférico (Luna, Marte o Sol)
+    body = m ? null : b;
+    if (!m) { mat = matFor(body); mesh.material = mat; loadPlaces(body); }
     mesh.visible = mode === 'moon';
+    corona.visible = body === 'sun';
     labelBox.hidden = mode !== 'moon';
-    $('objLight').hidden = mode !== 'moon';
+    $('objLight').hidden = body !== 'moon';
     if (m) { model = m; model.scale.multiplyScalar(1.9); pivot.add(model); }
     phaseLight.copy(phaseDir || phaseLight);
     camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
     pivot.quaternion.identity(); targetDist = fitDist(); dist = targetDist * 1.7; vel = { x: 0, y: 0 }; flight = null;
     if (mode === 'model') pivot.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0)); // vista de tres cuartos
+    if (bodies[body]?.face) { const w = local(...bodies[body].face).applyEuler(mesh.rotation); pivot.quaternion.setFromUnitVectors(w.normalize(), new THREE.Vector3(0, 0, 1)); } // cara más interesante delante
     setLight(true); paintMusic();
     $('objTitle').textContent = name;
     $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two · tap a name' : 'Gira con un dedo · acerca con dos · toca un nombre';
     if (mode === 'moon' && places.length) buildLabels();
     $('objCard').hidden = true;
+    if (card && mode !== 'model') { $('objCardTitle').textContent = card.title; $('objCardMeta').textContent = card.meta || ''; $('objCardText').textContent = card.text || ''; $('objCard').hidden = false; }
+    if (body === 'sun') $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two' : 'Gira con un dedo · acerca con dos';
     if (mode === 'model') {
       $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two' : 'Gira con un dedo · acerca con dos';
       if (card) { $('objCardTitle').textContent = card.title; $('objCardMeta').textContent = card.meta || ''; $('objCardText').textContent = card.text || ''; $('objCard').hidden = false; }
     }
     $('objView').hidden = false;
     document.body.classList.add('objmode');
-    if (mode === 'moon' && !hiRes) { hiRes = true; const low = mat.uniforms.map.value; hiResMap(tex => { if (!active) { tex.dispose(); hiRes = false; return; } mat.uniforms.map.value = tex; mat.userData.low = low; }); }
+    if (body === 'moon' && !hiRes) { hiRes = true; const low = mat.uniforms.map.value; hiResMap(tex => { if (!active) { tex.dispose(); hiRes = false; return; } mat.uniforms.map.value = tex; mat.userData.low = low; }); }
     if (musicOn) music.start(); // estamos dentro de un toque del usuario: iOS deja sonar
   }
   function exit() {
     active = false;
     music.stop();
     if (model) { pivot.remove(model); model.traverse(o => { o.geometry?.dispose(); [].concat(o.material || []).forEach(mt => { mt.map?.dispose(); mt.dispose(); }); }); model = null; }
-    if (hiRes && mat.userData.low) { const hi = mat.uniforms.map.value; mat.uniforms.map.value = mat.userData.low; hi.dispose(); hiRes = false; } // libera la memoria del mapa 4K
+    if (hiRes && moonMat.userData.low) { const hi = moonMat.uniforms.map.value; moonMat.uniforms.map.value = moonMat.userData.low; hi.dispose(); hiRes = false; } // libera la memoria del mapa 4K
+    corona.visible = false;
     $('objView').hidden = true;
     document.body.classList.remove('objmode');
     onExit?.();
@@ -236,8 +299,9 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     camera.position.set(0, 0, dist);
     camera.lookAt(0, 0, 0);
     // Luz en coordenadas del mundo (la Luna gira por debajo de ella)
-    mat.uniforms.uLight.value.copy(fullLight ? fullDir : phaseLight);
-    mat.uniforms.uEarth.value = fullLight ? 0 : 0.03;
+    if (mat.uniforms.uLight) mat.uniforms.uLight.value.copy(fullLight || body !== 'moon' ? fullDir : phaseLight);
+    if (mat.uniforms.uEarth) mat.uniforms.uEarth.value = fullLight ? 0 : 0.03;
+    if (mat.uniforms.uTime) { mat.uniforms.uTime.value = performance.now() / 1000; pivot.rotateY(dt * 0.006); } // el Sol gira muy despacio (la cara de hoy no se escapa)
     renderer.render(scene, camera);
     // Etiquetas: solo en la cara que mira a la cámara y según lo cerca que estés
     const r = (dist - 1) / (fitDist() - 1), lvl = r < 0.4 ? 3 : r < 0.75 ? 2 : 1;

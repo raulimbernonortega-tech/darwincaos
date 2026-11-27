@@ -70,6 +70,12 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.8 — «Tu cielo de cada noche»
+- **Modo app**: se instala en la pantalla de inicio (Android: botón «Instalar»; iPhone: Compartir → «Añadir a pantalla de inicio», explicado en «Acerca de»), se abre a pantalla completa y funciona sin cobertura.
+- **¿Se verá esta noche?**: en «Esta noche», veredicto (🟢/🟡/🔴), mejor momento para observar y franja de nubosidad por horas con la Luna, a partir de la previsión de Open-Meteo.
+- **Añadir al calendario**: en cada evento y en los pasos visibles de la ISS y de los satélites («📅 Avisarme»), con aviso previo en el calendario del móvil.
+- **Modo Objeto del Sol y de Marte**: Marte con 32 lugares (Monte Olimpo, Valles Marineris, Hellas, cráteres de Curiosity y Perseverance, aterrizajes Viking, Spirit, Opportunity, Zhurong…) con coordenadas IAU; el Sol con oscurecimiento del limbo y, en la cara que mira a la Tierra, **la foto real de hoy del satélite SDO de la NASA** (manchas solares reales), que el robot descarga cada 6 horas.
+
 ### Versión 1.7.1 — satélites en el modo Objeto
 - Seguir un satélite por el cielo con zoom era casi imposible (se mueven ~1° por segundo). Ahora, desde su ficha (**🛰️ Ver en 3D**) o con **doble toque**, su modelo 3D se abre a pantalla completa en el modo Objeto: quieto, se gira con un dedo, se acerca con dos y lleva su ficha (agencia, lanzamiento, para qué sirve) y la música ambiental. También la ISS.
 
