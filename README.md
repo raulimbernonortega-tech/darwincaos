@@ -70,6 +70,12 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.9 — todo el Sistema Solar en el modo Objeto
+- **Todos los planetas en 3D**: Mercurio, Venus, la **Tierra**, Marte, Júpiter, Saturno, Urano, Neptuno y Plutón, además del Sol y la Luna, con su inclinación real (Urano tumbado) y su ficha.
+- **Lugares con nombre**: Mercurio (Caloris, cráteres de artistas, hielo en el polo, impacto de MESSENGER), Venus (botón nubes/superficie de radar: Maxwell Montes, Maat Mons, Venera 7 y 13), Júpiter (Gran Mancha Roja, cinturones), Saturno (anillos y hexágono polar) y la Tierra (continentes, océanos y **📍 tu ubicación**). Coordenadas oficiales de la IAU donde existen.
+- **La Tierra** se puede buscar («Tierra») y abrir en el modo Objeto, con nubes que se pueden quitar.
+- Texturas de 2K de Solar System Scope (CC BY 4.0).
+
 ### Versión 1.8.2
 - **Buscador más claro**: al elegir un resultado, el buscador se vacía; y si al tocarlo aún tiene texto, vuelve a mostrar su lista.
 

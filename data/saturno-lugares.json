@@ -1,0 +1,27 @@
+{
+ "_fuente": "Lugares aproximados para orientarse (posiciones sobre la textura).",
+ "lugares": [
+  {
+   "id": "hexagono",
+   "tipo": "polo",
+   "nivel": 1,
+   "lat": 82.0,
+   "lon": 0.0,
+   "es": "Hexágono polar",
+   "en": "Polar hexagon",
+   "txt_es": "Una corriente de nubes con forma de hexágono perfecto alrededor del polo norte, de unos 29.000 km de lado a lado. Nadie sabe del todo por qué tiene esa forma.",
+   "txt_en": "A cloud jet in a near-perfect hexagon around the north pole, about 29,000 km across. Nobody fully knows why it has that shape."
+  },
+  {
+   "id": "bandas_s",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": 0.0,
+   "lon": 0.0,
+   "es": "Bandas de nubes",
+   "en": "Cloud bands",
+   "txt_es": "Como en Júpiter, pero cubiertas por una neblina que les da su color suave. En el ecuador soplan vientos de 1.800 km/h.",
+   "txt_en": "Like Jupiter's, but covered by a haze that softens their colour. Equatorial winds reach 1,800 km/h."
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+{
+ "_fuente": "Lugares aproximados para orientarse (posiciones sobre la textura).",
+ "lugares": [
+  {
+   "id": "grs",
+   "tipo": "tormenta",
+   "nivel": 1,
+   "lat": -20.4,
+   "lon": -45.7,
+   "es": "Gran Mancha Roja",
+   "en": "Great Red Spot",
+   "txt_es": "Una tormenta más grande que la Tierra que lleva al menos 190 años girando. Se está encogiendo: hoy mide unos 16.000 km.",
+   "txt_en": "A storm bigger than Earth that has been spinning for at least 190 years. It is shrinking: today it is about 16,000 km across."
+  },
+  {
+   "id": "neb",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": 16.0,
+   "lon": 40.0,
+   "es": "Cinturón ecuatorial norte",
+   "en": "North Equatorial Belt",
+   "txt_es": "Las bandas oscuras («cinturones») son nubes que bajan; las claras («zonas»), nubes que suben. Vientos de más de 500 km/h las separan.",
+   "txt_en": "Dark bands ('belts') are sinking clouds; light ones ('zones') are rising clouds. Winds over 500 km/h separate them."
+  },
+  {
+   "id": "seb",
+   "tipo": "llanura",
+   "nivel": 2,
+   "lat": -16.0,
+   "lon": 120.0,
+   "es": "Cinturón ecuatorial sur",
+   "en": "South Equatorial Belt",
+   "txt_es": "El cinturón donde vive la Gran Mancha Roja. A veces «desaparece» durante meses.",
+   "txt_en": "The belt where the Great Red Spot lives. Sometimes it 'disappears' for months."
+  },
+  {
+   "id": "polo_j",
+   "tipo": "polo",
+   "nivel": 2,
+   "lat": 75.0,
+   "lon": 0.0,
+   "es": "Polo norte (ciclones)",
+   "en": "North pole (cyclones)",
+   "txt_es": "La sonda Juno descubrió en sus polos grupos de ciclones gigantes ordenados como un mosaico.",
+   "txt_en": "The Juno probe discovered clusters of giant cyclones arranged like a mosaic at its poles."
+  }
+ ]
+}

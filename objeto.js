@@ -162,6 +162,26 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     return mats[b];
   };
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 192, 96), mat);
+  // Anillos (Saturno) y capa de nubes (Tierra): se crean al abrir ese planeta y giran con él
+  let rings = null, clouds = null, alt = false;
+  function setExtras(b) {
+    if (rings) { pivot.remove(rings); rings = null; }
+    if (clouds) { pivot.remove(clouds); clouds = null; }
+    const cfg = bodies[b] || {};
+    if (cfg.rings) {
+      const { inner, outer } = cfg.rings, g = new THREE.RingGeometry(inner, outer, 160, 1);
+      const pos = g.attributes.position, uv = g.attributes.uv;
+      for (let i = 0; i < pos.count; i++) uv.setXY(i, (Math.hypot(pos.getX(i), pos.getY(i)) - inner) / (outer - inner), 0.5);
+      rings = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: cfg.rings.map(), transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+      rings.rotation.x = -Math.PI / 2; // en el plano del ecuador
+      pivot.add(rings);
+    }
+    if (cfg.clouds) {
+      clouds = new THREE.Mesh(new THREE.SphereGeometry(1.012, 96, 48), new THREE.MeshLambertMaterial({ color: 0xffffff, alphaMap: cfg.clouds(), transparent: true, depthWrite: false }));
+      clouds.rotation.y = -Math.PI / 2;
+      pivot.add(clouds);
+    }
+  }
   // Corona del Sol con llamaradas en movimiento
   const corona = coronaMesh(THREE); corona.visible = false; scene.add(corona);
   mesh.rotation.y = -Math.PI / 2; // longitud 0 (centro de la cara visible) hacia la cámara
@@ -178,14 +198,15 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   };
   function loadPlaces(b) {
     const url = b === 'moon' ? 'data/luna-lugares.json' : bodies[b]?.places;
-    places = placesCache[b] || [];
+    places = (placesCache[b] || []).concat(extra(b));
     buildLabels();
     if (!url || placesCache[b]) return;
     fetch(url).then(r => r.json()).then(d => {
       placesCache[b] = d.lugares.map(p => ({ ...p, v: local(p.lat, p.lon) }));
-      if (body === b) { places = placesCache[b]; buildLabels(); }
+      if (body === b) { places = placesCache[b].concat(extra(b)); buildLabels(); }
     }).catch(() => { });
   }
+  const extra = b => (bodies[b]?.extraPlaces?.() || []).map(p => ({ ...p, v: local(p.lat, p.lon) }));
   loadPlaces('moon');
   const LANDING = new Set(['alunizaje', 'aterrizaje']);
   const PLAIN = new Set(['mar', 'llanura', 'valle', 'polo']); // nombres de regiones: en cursiva, sin recuadro
@@ -204,9 +225,9 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     $('objCardTitle').textContent = (LANDING.has(p.tipo) ? '🚩 ' : '') + (en ? p.en : p.es);
     const kind = { mar: en ? 'Lunar sea (mare)' : 'Mar lunar', crater: en ? 'Crater' : 'Cráter', alunizaje: en ? 'Landing site' : 'Lugar de alunizaje',
       aterrizaje: en ? 'Landing site' : 'Lugar de aterrizaje', monte: en ? 'Volcano / mountain' : 'Volcán / monte', valle: en ? 'Canyon / valley' : 'Cañón / valle',
-      llanura: en ? 'Plain / basin' : 'Llanura / cuenca', polo: en ? 'Polar cap' : 'Casquete polar' }[p.tipo];
+      llanura: en ? 'Region / plain' : 'Región / llanura', polo: en ? 'Polar region' : 'Región polar', tormenta: en ? 'Storm' : 'Tormenta', aqui: en ? 'Your location' : 'Tu ubicación' }[p.tipo] || '';
     $('objCardMeta').textContent = `${kind}${p.km ? ` · ${p.km.toLocaleString(en ? 'en' : 'es')} km` : ''} · ${Math.abs(p.lat).toFixed(1)}° ${p.lat >= 0 ? 'N' : 'S'}, ${Math.abs(p.lon).toFixed(1)}° ${p.lon >= 0 ? 'E' : (en ? 'W' : 'O')}`;
-    $('objCardText').textContent = en ? p.txt_en : p.txt_es;
+    $('objCardText').textContent = (en ? p.txt_en : p.txt_es) || '';
     $('objCard').hidden = false;
     flyTo(p);
   }
@@ -225,7 +246,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   // Distancia a la que la Luna entera cabe en pantalla con margen (en vertical manda el ancho)
   const fitDist = () => {
     const v = camera.fov * Math.PI / 180, h = 2 * Math.atan(Math.tan(v / 2) * camera.aspect);
-    return 1 / Math.sin(Math.min(v, h) / 2 * 0.86);
+    return (bodies[body]?.extent || 1) / Math.sin(Math.min(v, h) / 2 * 0.86); // Saturno: que quepan los anillos
   };
   const rotateBy = (dx, dy) => {
     const s = mode === 'model' ? 3.2 / Math.min(innerWidth, innerHeight) : 2.4 * (dist - 1) / (dist * Math.min(innerWidth, innerHeight)); // Luna: más lento cuanto más cerca
@@ -244,16 +265,24 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
   touch.addEventListener('pointerup', end); touch.addEventListener('pointercancel', end);
   touch.addEventListener('wheel', e => { e.preventDefault(); targetDist = clampDist(targetDist * Math.exp(e.deltaY * 0.0012)); }, { passive: false });
   const pinchDist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
-  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(mode === 'model' ? 0.45 : body === 'moon' ? 1.16 : 1.3, d)); // más cerca los mapas ya se ven borrosos
+  const clampDist = d => Math.min(fitDist() * 1.5, Math.max(mode === 'model' ? 0.45 : body === 'moon' ? 1.16 : 1.25, d)); // más cerca los mapas ya se ven borrosos
 
   // ── Luz: iluminada entera (por defecto) o fase de hoy ──
   let fullLight = true, phaseLight = new THREE.Vector3(1, 0, 0);
   const fullDir = new THREE.Vector3(-0.62, 0.38, 1).normalize(); // casi de frente y algo ladeada: se ven los relieves
   function setLight(full) {
     fullLight = full;
-    $('objLight').textContent = full ? (lang() === 'en' ? '☀️ Fully lit' : '☀️ Iluminada') : (lang() === 'en' ? '🌗 Tonight\'s phase' : '🌗 Fase de hoy');
+    if (body === 'moon') $('objLight').textContent = full ? (lang() === 'en' ? '☀️ Fully lit' : '☀️ Iluminada') : (lang() === 'en' ? '🌗 Tonight\'s phase' : '🌗 Fase de hoy');
   }
-  $('objLight').onclick = () => setLight(!fullLight);
+  $('objLight').onclick = () => {
+    const tg = bodies[body]?.toggle;
+    if (!tg) return setLight(!fullLight);
+    alt = !alt;
+    $('objLight').textContent = tg[lang() === 'en' ? 'en' : 'es'][alt ? 1 : 0];
+    if (bodies[body].altMaterial) { mats[body + ':alt'] ||= bodies[body].altMaterial(); mat = alt ? mats[body + ':alt'] : mats[body]; mesh.material = mat; }
+    if (clouds) clouds.visible = !alt;
+    if (bodies[body].labelsWhenAlt) labelBox.hidden = !alt; // Venus: los nombres son de la superficie
+  };
 
   // ── Música ──
   const music = new Ambient();
@@ -272,17 +301,22 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     active = true;
     mode = m ? 'model' : 'moon'; // «moon» = un astro esférico (Luna, Marte o Sol)
     body = m ? null : b;
-    if (!m) { mat = matFor(body); mesh.material = mat; loadPlaces(body); }
+    alt = false;
+    if (!m) { mat = matFor(body); mesh.material = mat; loadPlaces(body); setExtras(body); } else setExtras(null);
     mesh.visible = mode === 'moon';
     corona.visible = body === 'sun';
     labelBox.hidden = mode !== 'moon';
-    $('objLight').hidden = body !== 'moon';
+    const tg = bodies[body]?.toggle; // Venus: nubes/superficie · Tierra: nubes sí/no · Luna: luz
+    $('objLight').hidden = !(body === 'moon' || tg);
+    if (tg) $('objLight').textContent = tg[lang() === 'en' ? 'en' : 'es'][0];
     if (m) { model = m; model.scale.multiplyScalar(1.9); pivot.add(model); }
     phaseLight.copy(phaseDir || phaseLight);
     camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
     pivot.quaternion.identity(); targetDist = fitDist(); dist = targetDist * 1.7; vel = { x: 0, y: 0 }; flight = null;
     if (mode === 'model') pivot.quaternion.setFromEuler(new THREE.Euler(0.35, -0.6, 0)); // vista de tres cuartos
-    if (bodies[body]?.face) { const w = local(...bodies[body].face).applyEuler(mesh.rotation); pivot.quaternion.setFromUnitVectors(w.normalize(), new THREE.Vector3(0, 0, 1)); } // cara más interesante delante
+    if (bodies[body]?.face) { const fc = bodies[body].face, w = local(...(typeof fc === 'function' ? fc() : fc)).applyEuler(mesh.rotation); pivot.quaternion.setFromUnitVectors(w.normalize(), new THREE.Vector3(0, 0, 1)); } // cara más interesante delante
+    if (bodies[body]?.tilt) { const [tz, tx] = bodies[body].tilt; pivot.quaternion.premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(tx * Math.PI / 180, 0, tz * Math.PI / 180))); } // inclinación real (Urano tumbado, anillos de Saturno a la vista)
+    labelBox.hidden = mode !== 'moon' || !!bodies[body]?.labelsWhenAlt;
     setLight(true); paintMusic();
     $('objTitle').textContent = name;
     $('objHint').textContent = lang() === 'en' ? 'Rotate with one finger · zoom with two · tap a name' : 'Gira con un dedo · acerca con dos · toca un nombre';
@@ -329,6 +363,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     // Luz en coordenadas del mundo (la Luna gira por debajo de ella)
     if (mat.uniforms.uLight) mat.uniforms.uLight.value.copy(fullLight || body !== 'moon' ? fullDir : phaseLight);
     if (mat.uniforms.uEarth) mat.uniforms.uEarth.value = fullLight ? 0 : 0.03;
+    if (clouds) clouds.rotation.y += dt * 0.004; // las nubes de la Tierra se mueven un poco
     if (body === 'sun') { const tt = performance.now() / 1000; mat.uniforms.uTime.value = tt; corona.material.uniforms.uTime.value = tt; corona.quaternion.copy(camera.quaternion); pivot.rotateY(dt * 0.01); } // el Sol vive y gira despacio
     renderer.render(scene, camera);
     // Etiquetas: solo en la cara que mira a la cámara y según lo cerca que estés
