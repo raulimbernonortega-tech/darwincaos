@@ -72,7 +72,7 @@ class Ambient {
 // un leve chisporroteo animado y, si llega, la imagen REAL de hoy del satélite SDO de la NASA en la cara que mira a la Tierra.
 function sunMaterial(THREE, map) {
   return new THREE.ShaderMaterial({
-    uniforms: { map: { value: map }, today: { value: null }, uToday: { value: 0 }, uTime: { value: 0 }, uR: { value: 0.46 } },
+    uniforms: { map: { value: map }, today: { value: null }, uToday: { value: 0 }, uTime: { value: 0 }, uR: { value: 0.469 } },
     vertexShader: `varying vec2 vUv; varying vec3 vP; varying vec3 vN; varying vec3 vW;
       void main(){ vUv = uv; vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: `uniform sampler2D map; uniform sampler2D today; uniform float uToday; uniform float uTime; uniform float uR;
@@ -301,7 +301,7 @@ export function createObjectView({ THREE, renderer, makeMaterial, hiResMap, lang
     // Luz en coordenadas del mundo (la Luna gira por debajo de ella)
     if (mat.uniforms.uLight) mat.uniforms.uLight.value.copy(fullLight || body !== 'moon' ? fullDir : phaseLight);
     if (mat.uniforms.uEarth) mat.uniforms.uEarth.value = fullLight ? 0 : 0.03;
-    if (mat.uniforms.uTime) { mat.uniforms.uTime.value = performance.now() / 1000; pivot.rotateY(dt * 0.02); } // el Sol gira despacio
+    if (mat.uniforms.uTime) { mat.uniforms.uTime.value = performance.now() / 1000; pivot.rotateY(dt * 0.006); } // el Sol gira muy despacio (la cara de hoy no se escapa)
     renderer.render(scene, camera);
     // Etiquetas: solo en la cara que mira a la cámara y según lo cerca que estés
     const r = (dist - 1) / (fitDist() - 1), lvl = r < 0.4 ? 3 : r < 0.75 ? 2 : 1;

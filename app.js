@@ -2803,7 +2803,7 @@ function getObj() {
     hiResMap: cb => texLoader.load('img/planets/luna_4k.jpg', t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); cb(t); }),
     bodies: {
       mars: { material: () => planetMaterial(loadTex('img/planets/marte.jpg')), places: 'data/marte-lugares.json', face: [5, -70] }, // de cara: Valles Marineris y Tharsis
-      sun: { map: () => loadTex('img/planets/sol.jpg'), todayUrl: 'https://raw.githubusercontent.com/raulimbernonortega-tech/darwincaos/datos/sol-hoy.jpg', onToday: () => { sunToday = true; } },
+      sun: { map: () => loadTex('img/planets/sol.jpg'), todayUrl: 'https://raw.githubusercontent.com/raulimbernonortega-tech/darwincaos/datos/sol-hoy.jpg', onToday: () => { sunToday = true; if (OBJ?.active && $('objTitle').textContent.startsWith('☀️')) $('objCardText').textContent = sunCard().text; } },
     },
     onExit: () => { if (objPrev) { setFov(objPrev.fov); S.viewAz = objPrev.az; S.viewAlt = objPrev.alt; S.tracking = null; S.targetAz = null; } },
   });

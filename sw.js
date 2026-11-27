@@ -17,7 +17,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('planetario-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-const DYNAMIC = /data\/(eventos|satelites)\.json|starlink\.tle|open-meteo\.com|wheretheiss|celestrak/;
+const DYNAMIC = /data\/(eventos|satelites)\.json|starlink\.tle|sol-hoy\.jpg|api\.open-meteo\.com\/v1\/forecast|wheretheiss|celestrak/; // (la búsqueda de ciudades va directa)
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
