@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 1.8.2
+- **Buscador más claro**: al elegir un resultado, el buscador se vacía; y si al tocarlo aún tiene texto, vuelve a mostrar su lista.
+
 ### Versión 1.8.1
 - **Logo en alta resolución** en la app y en los iconos de instalación.
 - **¿Se verá esta noche?** más claro: un icono por hora (✨ despejado, ⛅ algunas nubes, ☁️ cubierto, 🌧️ lluvia), la hora debajo, 🌙 cuando la Luna está arriba y una leyenda.

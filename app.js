@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.8.1';
-import { createSatellites } from './satelites.js?v=1.8.1';
+import { createObjectView } from './objeto.js?v=1.8.2';
+import { createSatellites } from './satelites.js?v=1.8.2';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.8.2';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1680,7 +1680,7 @@ function rowFor(entry, metaText, dim = false) {
   left.append(n, m);
   const arrow = document.createElement('span'); arrow.textContent = '›'; arrow.style.color = 'var(--accent)';
   b.append(left, arrow);
-  b.onclick = () => { openInfo(entry); pointTo(entry); };
+  b.onclick = () => { clearSearch(); openInfo(entry); pointTo(entry); };
   return b;
 }
 function section(title) { const d = document.createElement('div'); d.className = 'mini'; d.textContent = title; return d; }
@@ -1732,6 +1732,10 @@ function renderSkyList(filter = '', list = $('skyList')) {
     .sort((a, b) => b[1].alt - a[1].alt).slice(0, 15)
     .forEach(([e, aa]) => list.append(rowFor(e, posText(aa))));
 }
+// Tras elegir un resultado, el buscador se vacía: así al volver no queda un texto «huérfano» sin su lista
+function clearSearch() { const f = $('search'); f.value = ''; f.blur(); }
+// Si al tocar el buscador aún tiene texto, se vuelve a abrir su lista de resultados
+$('search').addEventListener('focus', e => { if (e.target.value.trim() && !$('modalSky').classList.contains('open')) toggleModal('modalSky'); });
 $('search').addEventListener('input', e => {
   const open = $('modalSky').classList.contains('open');
   if (!open && e.target.value.trim()) toggleModal('modalSky'); // borrar el texto no abre la lista
@@ -1742,7 +1746,7 @@ $('search').addEventListener('keydown', e => {
   const q = fold(e.target.value.trim());
   if (!q) return;
   const hit = CATALOG.find(x => x.names.some(n => fold(n) === q)) || CATALOG.find(x => x.names.some(n => fold(n).includes(q)));
-  if (hit) { openInfo(hit); pointTo(hit); e.target.blur(); }
+  if (hit) { clearSearch(); openInfo(hit); pointTo(hit); }
   else { toggleModal('modalPlace'); $('cityInput').value = e.target.value.trim(); searchCity(e.target.value.trim()); }
 });
 
