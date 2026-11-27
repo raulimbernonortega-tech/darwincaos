@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-27T13:27:44.741Z",
+ "actualizado": "2026-11-27T19:08:34.387Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -1191,6 +1191,18 @@
   ],
   "en": [
    {
+    "titulo": "Artemis III Astronaut Andre Douglas Visits VAB",
+    "resumen": "NASA astronaut Andre Douglas, Artemis III mission specialist, stands inside an RS-25 engine test article during a visit to the Vehicle Assembly Building at NASA’s Kennedy Space Center in Florida on Tuesday, Nov. 17, 2026. During Artemis III, four RS-25 engines will power the SLS ",
+    "url": "https://www.nasa.gov/image-article/artemis-iii-astronaut-andre-douglas-visits-vab/",
+    "imagen": "https://www.nasa.gov/wp-content/uploads/2026/11/ksc-20261117-ph-kls02-0020orig.jpg",
+    "fuente": "NASA",
+    "fecha": "2026-11-27T15:01:00Z",
+    "destacado": false,
+    "idioma": "en",
+    "puntos": 5,
+    "mini": "data/miniaturas/74abae3397dc3b.jpg"
+   },
+   {
     "titulo": "NASA’s Hubble Views Ocean of Stars in Groundwork for Roman",
     "resumen": "These Hubble observations are part of a survey that will help researchers better interpret upcoming Nancy Grace Roman Space Telescope observations as they seek to characterize the stars and search for exoplanets in this busy region of our galaxy.",
     "url": "https://science.nasa.gov/missions/hubble/nasas-hubble-views-ocean-of-stars-in-groundwork-for-roman/",
@@ -1225,18 +1237,6 @@
     "idioma": "en",
     "puntos": 10,
     "mini": "data/miniaturas/22ec70cd45bb11.jpg"
-   },
-   {
-    "titulo": "Progress MS-36 set to launch to ISS from Baikonur",
-    "resumen": "The fourth and final Progress cargo ship resupply mission to the International Space Station of…\r\nThe post Progress MS-36 set to launch to ISS from Baikonur appeared first on NASASpaceFlight.com.",
-    "url": "https://www.nasaspaceflight.com/2026/11/progress-ms-36/",
-    "imagen": "https://www.nasaspaceflight.com/wp-content/uploads/2026/04/IMG_9490.png",
-    "fuente": "NASASpaceflight",
-    "fecha": "2026-11-23T21:32:11Z",
-    "destacado": false,
-    "idioma": "en",
-    "puntos": 5,
-    "mini": "data/miniaturas/61a5c07252b2f5.jpg"
    },
    {
     "titulo": "NASA Seeks Partners to Design First Nuclear Reactor for the Moon",
