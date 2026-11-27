@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-27T08:56:14.176Z",
+ "actualizado": "2026-11-27T13:27:44.741Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -508,19 +508,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Long March 6A | Unknown Payload",
-   "fecha": "2026-11-27T13:00:00Z",
-   "estado": "Go",
-   "proveedor": "China Aerospace Science and Technology Corporation",
-   "cohete": "Long March 6A",
-   "lugar": "Taiyuan Satellite Launch Center, People's Republic of China",
-   "mision": "Details TBD.",
-   "tipo": "Unknown",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/long_march_6a__image_thumbnail_20251209050224.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
    "nombre": "Long March 6C | Unknown Payload",
    "fecha": "2026-11-29T03:50:00Z",
    "estado": "Go",
@@ -1016,6 +1003,19 @@
   },
   {
    "nombre": "HASTE | Leidos-3",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "Rocket Lab",
+   "cohete": "Electron",
+   "lugar": "Wallops Flight Facility, Virginia, USA",
+   "mision": "",
+   "tipo": "",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193613.jpeg",
+   "enlace": null,
+   "relevante": false
+  },
+  {
+   "nombre": "HASTE | Leidos-4",
    "fecha": "2026-12-31T00:00:00Z",
    "estado": "TBD",
    "proveedor": "Rocket Lab",
