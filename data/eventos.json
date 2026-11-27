@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-26T19:10:09.235Z",
+ "actualizado": "2026-11-27T01:29:42.998Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -508,19 +508,6 @@
  ],
  "lanzamientos": [
   {
-   "nombre": "Electron | Night Owls Never Sleep (StriX Launch 14)",
-   "fecha": "2026-11-27T00:05:00Z",
-   "estado": "Go",
-   "proveedor": "Rocket Lab",
-   "cohete": "Electron",
-   "lugar": "Rocket Lab Launch Complex 1, Mahia Peninsula, New Zealand",
-   "mision": "Synthetic aperture radar satellite for Japanese Earth imaging company Synspective.",
-   "tipo": "Earth Science",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193613.jpeg",
-   "enlace": null,
-   "relevante": false
-  },
-  {
    "nombre": "Long March 6A | Unknown Payload",
    "fecha": "2026-11-27T13:00:00Z",
    "estado": "Go",
@@ -1026,6 +1013,19 @@
    "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193632.jpeg",
    "enlace": null,
    "relevante": false
+  },
+  {
+   "nombre": "Gravity-2 | Demo Flight",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "Orienspace Technology",
+   "cohete": "Gravity-2",
+   "lugar": "Haiyang Oriental Spaceport",
+   "mision": "First test launch of OrienSpace’s Gravity-2 rocket.",
+   "tipo": "Test Flight",
+   "imagen": null,
+   "enlace": null,
+   "relevante": true
   }
  ],
  "noticias": [
