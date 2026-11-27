@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-27T01:29:42.998Z",
+ "actualizado": "2026-11-27T07:32:01.421Z",
  "videos": [
   {
    "id": "3aN8sGeDNMw",
@@ -560,19 +560,6 @@
    "relevante": true
   },
   {
-   "nombre": "Mir | Demo Flight",
-   "fecha": "2026-11-30T00:00:00Z",
-   "estado": "TBD",
-   "proveedor": "Agency for Defense Development",
-   "cohete": "Mir",
-   "lugar": "Sea Launch",
-   "mision": "Note: Launch vehicle name is provisional.\r\n\r\nFirst orbital full version launch of the South Korean military small satellite launch vehicle, after 2 sub-orbital tests of individual stages on 30 March and 30 December 2022, and 1 orbital test flight without the 2nd stage on 4 December 2023. Details TBD.",
-   "tipo": "Test Flight",
-   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305192440.png",
-   "enlace": null,
-   "relevante": true
-  },
-  {
    "nombre": "Kinetica 1 | Unknown Payload",
    "fecha": "2026-12-01T01:45:00Z",
    "estado": "Go",
@@ -587,8 +574,8 @@
   },
   {
    "nombre": "Kuaizhou 11 | Unknown Payload",
-   "fecha": "2026-12-01T08:00:00Z",
-   "estado": "TBC",
+   "fecha": "2026-12-02T11:55:00Z",
+   "estado": "Go",
    "proveedor": "ExPace",
    "cohete": "Kuaizhou 11",
    "lugar": "Jiuquan Satellite Launch Center, People's Republic of China",
@@ -1026,6 +1013,19 @@
    "imagen": null,
    "enlace": null,
    "relevante": true
+  },
+  {
+   "nombre": "HASTE | Leidos-3",
+   "fecha": "2026-12-31T00:00:00Z",
+   "estado": "TBD",
+   "proveedor": "Rocket Lab",
+   "cohete": "Electron",
+   "lugar": "Wallops Flight Facility, Virginia, USA",
+   "mision": "",
+   "tipo": "",
+   "imagen": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193613.jpeg",
+   "enlace": null,
+   "relevante": false
   }
  ],
  "noticias": [
