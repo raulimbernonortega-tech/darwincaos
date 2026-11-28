@@ -70,6 +70,11 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 2.1 — guía de bienvenida
+- **Guía de 4 tarjetas** la primera vez (mueve el móvil · toca cualquier astro · ¿qué ver esta noche? · tu cielo), con un foco luminoso sobre el botón real; se puede saltar y volver a ver desde «Acerca de».
+- **Permisos en iPhone**: si Safari ha olvidado el permiso de los sensores, la presentación espera al botón «Empezar», cuyo toque lo concede al instante (la brújula funciona desde el primer momento). En Android y ordenador entra directo.
+- **Modo rojo más oscuro**: ya no deslumbra ni «quema» la imagen.
+
 ### Versión 2.0.2 — ver bajo el horizonte
 - **Visión a través de la Tierra**: al bajar la vista por debajo del horizonte, el suelo se aclara poco a poco (con un tono azulado) y deja ver lo que hay al otro lado; al subirla vuelve a ser sólido.
 - La franja junto al horizonte sigue sólida y, más abajo, el suelo es un velo ligero; los nombres de los astros que están bajo el horizonte se leen por encima.
