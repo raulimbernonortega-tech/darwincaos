@@ -1,7 +1,7 @@
 // «Ayudante» de la app instalable (service worker): guarda la app en el móvil para que abra al
 // instante y funcione sin cobertura. Lo que cambia (noticias, vídeos, órbitas) se pide primero a
 // internet y, si no hay conexión, se usa lo último guardado.
-const VERSION = '1.9';
+const VERSION = '1.9.1';
 const CACHE = `planetario-${VERSION}`;
 // Lo imprescindible para arrancar sin conexión
 const CORE = [
