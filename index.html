@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#030712" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Estadísticas anónimas sin cookies (Umami). Solo en la web publicada. -->
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="289aa1b8-8c56-49e0-82bc-cdc8232e9f8f" data-domains="raulimbernonortega-tech.github.io"></script>
   <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -299,7 +301,7 @@
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=2.0" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=2.0.1" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -529,7 +531,7 @@
         <button id="installBtn" class="btn" type="button">📲 Instalar como app</button>
         <p id="installHelp" class="note" hidden></p>
       </div>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 2.0</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 2.0.1</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -537,6 +539,7 @@
         ISS: <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a> + satellite.js (MIT) ·
         Estrellas y nombres: <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a> (BSD) / Hipparcos ·
         Líneas e ilustraciones de constelaciones: Stellarium, ilustraciones de Johan Meuris (<a href="https://artlibre.org/licence/lal/es/" target="_blank" rel="noopener">Licencia Arte Libre</a>) ·
+        Estadísticas de uso anónimas y sin cookies con <a href="https://umami.is" target="_blank" rel="noopener">Umami</a>: no se recoge ningún dato personal; tu fecha de nacimiento y tu pasaporte nunca salen de tu móvil ·
         Distancias de estrellas (estrella de cumpleaños): <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noopener">HYG Database</a> (CC BY-SA 4.0) ·
         Texturas planetarias: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0), Plutón: NASA/JPL ·
         Lanzamientos: <a href="https://thespacedevs.com" target="_blank" rel="noopener">The Space Devs</a> / Launch Library 2 ·
@@ -598,9 +601,9 @@
   </div>
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=2.0"></script>
-  <script src="vendor/satellite.min.js?v=2.0"></script>
-  <script src="vendor/geomag.min.js?v=2.0"></script>
-  <script type="module" src="app.js?v=2.0"></script>
+  <script src="vendor/astronomy.browser.min.js?v=2.0.1"></script>
+  <script src="vendor/satellite.min.js?v=2.0.1"></script>
+  <script src="vendor/geomag.min.js?v=2.0.1"></script>
+  <script type="module" src="app.js?v=2.0.1"></script>
 </body>
 </html>
