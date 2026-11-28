@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=2.0.2';
-import { createSatellites } from './satelites.js?v=2.0.2';
+import { createObjectView } from './objeto.js?v=2.1';
+import { createSatellites } from './satelites.js?v=2.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '2.0.2';
+const APP_VERSION = '2.1';
 // Estadísticas anónimas (Umami, sin cookies): qué funciones se usan y cuántos clics van al canal.
 // Solo cuentan en la web publicada (data-domains del script en index.html); en pruebas no se envía nada.
 const track = (name, data) => { try { window.umami?.track(name, data); } catch { } };
@@ -2731,6 +2731,50 @@ function renderEclipses(box, en) {
     what: `${{ total: en ? 'Total' : 'Total', annular: en ? 'Annular' : 'Anular', partial: en ? 'Partial' : 'Parcial' }[e.kind]} · ${fmtNum(e.obscuration * 100)} % ${en ? 'covered' : 'cubierto'}`, more: `${en ? 'Sun' : 'Sol'} ${fmtNum(e.peak.altitude)}°`, onClick: () => goToEvent('sun', d) })); });
 }
 
+// ───────────── Guía de bienvenida (4 tarjetas, solo la primera vez) ─────────────
+const TOUR_KEY = 'dc_guia_vista';
+const tourDone = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch { return true; } };
+const TOUR = [
+  { target: '#compass', ico: '📱', es: ['Mueve el móvil', 'Apunta al cielo y verás lo que tienes delante, incluso lo que hay bajo tus pies.'], en: ['Move your phone', 'Point it at the sky to see what is in front of you — even what lies beneath your feet.'] },
+  { target: '.bottom', ico: '👆', es: ['Toca cualquier astro', 'Descubre qué es, sus vídeos y míralo en 3D. También puedes buscarlo aquí.'], en: ['Tap anything in the sky', 'Find out what it is, watch its videos and see it in 3D. You can also search for it here.'] },
+  { target: '#dockCal', ico: '🌤️', es: ['¿Qué ver esta noche?', 'Si estará despejado, los eventos y la ISS… y te avisamos en tu calendario.'], en: ['What to see tonight?', 'Whether it will be clear, events and the ISS… with reminders in your calendar.'] },
+  { target: '#dockMe', ico: '✨', es: ['Tu cielo', 'Tu edad en otros planetas y la estrella cuya luz salió cuando naciste.'], en: ['Your sky', 'Your age on other planets and the star whose light left it when you were born.'] },
+];
+let tourStep = 0;
+function startTour() {
+  if (OBJ?.active) return;
+  closeModals(); closeInfo(); hideNewVideo();
+  tourStep = 0; $('tour').hidden = false; document.body.classList.add('touring'); paintTour();
+  track('guia', { paso: 'inicio' });
+}
+function endTour(skipped) {
+  $('tour').hidden = true; document.body.classList.remove('touring');
+  try { localStorage.setItem(TOUR_KEY, '1'); } catch { }
+  track('guia', { paso: skipped ? 'saltada' : 'completa' });
+}
+function paintTour() {
+  const t = TOUR[tourStep], en = S.lang === 'en', [title, text] = t[en ? 'en' : 'es'], last = tourStep === TOUR.length - 1;
+  $('tourIco').textContent = t.ico; $('tourTitle').textContent = title; $('tourText').textContent = text;
+  $('tourNext').textContent = last ? (en ? 'Start exploring' : 'Empezar a explorar') : (en ? 'Next' : 'Siguiente');
+  $('tourSkip').textContent = en ? 'Skip' : 'Saltar';
+  $('tourDots').replaceChildren(...TOUR.map((_, i) => Object.assign(document.createElement('i'), { className: i === tourStep ? 'on' : '' })));
+  // Foco luminoso sobre el botón real
+  const el = document.querySelector(t.target), r = el?.getBoundingClientRect();
+  const ring = $('tourRing');
+  if (r && r.width) { const pad = 8; Object.assign(ring.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px`, borderRadius: getComputedStyle(el).borderRadius || '16px' }); ring.hidden = false; }
+  else ring.hidden = true;
+  // La tarjeta se coloca lejos del botón señalado
+  $('tourCard').classList.toggle('up', !!r && r.top > innerHeight * 0.55);
+}
+$('tourNext').onclick = () => { if (tourStep < TOUR.length - 1) { tourStep++; paintTour(); } else endTour(false); };
+$('tourSkip').onclick = () => endTour(true);
+{ let x0 = null; const t = $('tour');
+  t.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  t.addEventListener('touchend', e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (dx < -50 && tourStep < TOUR.length - 1) { tourStep++; paintTour(); } else if (dx > 50 && tourStep > 0) { tourStep--; paintTour(); } }); }
+addEventListener('resize', () => { if (!$('tour').hidden) paintTour(); });
+$('tourAgain').onclick = () => { closeModals(); setTimeout(startTour, 200); };
+
 // ───────────── Bucle principal ─────────────
 const belowEl = $('belowTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
 const camDir = new THREE.Vector3();
@@ -3288,6 +3332,7 @@ const nvMark = (id, v) => { try { const m = nvSeen(); m[id] = v; localStorage.se
 function hideNewVideo() { $('newVideo').hidden = true; clearTimeout(nvTimer); }
 function showNewVideo() {
   if (nvDone || !nvSplash || !nvFeed || !FEED?.videos) return;
+  if (document.body.classList.contains('touring')) { setTimeout(showNewVideo, 2000); return; } // primero la guía de bienvenida
   nvDone = true; // una vez por apertura
   const v = FEED.videos.filter(x => !x.corto && Date.now() - Date.parse(x.fecha) < 7 * 864e5).sort((a, b) => Date.parse(b.fecha) - Date.parse(a.fecha))[0];
   if (!v) return;
@@ -3345,11 +3390,20 @@ async function init() {
     else autoStartSensor();
   };
   if (!window.__splash) { startSensors(false); splashGone(); }
-  window.__splash?.ready(firstVisit, byUser => {
+  // iPhone: los sensores solo se pueden pedir tras un toque, y Safari a menudo olvida el permiso entre visitas.
+  // Si hace falta pedirlo (o es la primera visita), la presentación espera al botón «Empezar»: ese toque lo concede al instante.
+  const iosPerm = isIOS && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'; // solo iPhone/iPad: Chrome también tiene la función, pero no la necesita
+  let needTap = firstVisit;
+  if (!needTap && iosPerm) {
+    const st = await Promise.race([DeviceOrientationEvent.requestPermission().catch(() => 'need'), new Promise(r => setTimeout(() => r('need'), 900))]);
+    needTap = st !== 'granted';
+  }
+  window.__splash?.ready(needTap, byUser => {
     startSensors(byUser);
     splashGone();
+    if (!tourDone()) setTimeout(startTour, byUser && firstVisit ? 1600 : 900); // guía de bienvenida, solo la primera vez (tras los avisos de permisos)
     if (byUser && firstVisit && !saved.place && !urlPlace) requestLocation(true); // primera visita: «Empezar» pide también la ubicación
-    if (!saved.hinted && !urlPlace) setTimeout(() => toast(T().hintPlace), 1400);
+    if (!saved.hinted && !urlPlace && tourDone()) setTimeout(() => toast(T().hintPlace), 1400);
     try { const st = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); st.welcomed = true; localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch { }
   });
   persist();
