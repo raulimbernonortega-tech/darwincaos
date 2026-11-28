@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.9';
-import { createSatellites } from './satelites.js?v=1.9';
+import { createObjectView } from './objeto.js?v=1.9.1';
+import { createSatellites } from './satelites.js?v=1.9.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.9';
+const APP_VERSION = '1.9.1';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -61,7 +61,7 @@ const I18N = {
     L: { planets: 'Sol, Luna y planetas', iss: 'Estación Espacial (ISS)', sats: 'Satélites destacados', starlink: 'Starlink (más de 10.000)', lines: 'Líneas de constelaciones', art: 'Ilustraciones mitológicas',
       conNames: 'Nombres de constelaciones', starNames: 'Nombres de estrellas', deep: 'Galaxias, nebulosas y agujeros negros',
       ecliptic: 'Eclíptica', grid: 'Cuadrícula altura/acimut', meteors: 'Estrellas fugaces (lluvias reales)', atmosphere: 'Luz del día y crepúsculo',
-      skyline: 'Silueta de ciudad en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)', realDay: 'Día realista (oculta las estrellas con luz solar)' },
+      skyline: 'Silueta de ciudad en el horizonte', cardinals: 'Puntos cardinales en el horizonte', rose: 'Rosa de los vientos (en lo alto del cielo)', realDay: 'Día realista (oculta las estrellas con luz solar)' },
     envTitle: 'Entorno (paisaje y contaminación lumínica)', envOpts: { auto: '🤖 Automático', city: '🏙️ Ciudad', town: '🏘️ Pueblo', country: '🌲 Campo' },
     envDetected: 'Detectado', envDetecting: 'Detectando el entorno…', envNames: { city: 'ciudad', town: 'pueblo', country: 'campo / bosque' }, inhabitants: 'hab.', farFromTown: 'lejos del núcleo urbano', home: '⟲ Vista inicial',
     min: 'min', today: 'hoy', tomorrow: 'mañana',
@@ -101,7 +101,7 @@ const I18N = {
     L: { planets: 'Sun, Moon & planets', iss: 'Space Station (ISS)', sats: 'Featured satellites', starlink: 'Starlink (10,000+)', lines: 'Constellation lines', art: 'Mythological artwork',
       conNames: 'Constellation names', starNames: 'Star names', deep: 'Galaxies, nebulae & black holes',
       ecliptic: 'Ecliptic', grid: 'Alt/Az grid', meteors: 'Shooting stars (real showers)', atmosphere: 'Daylight & twilight',
-      skyline: 'City skyline on the horizon', rose: 'Compass rose (at the zenith)', realDay: 'Realistic daytime (hide stars in sunlight)' },
+      skyline: 'City skyline on the horizon', cardinals: 'Cardinal points on the horizon', rose: 'Compass rose (at the zenith)', realDay: 'Realistic daytime (hide stars in sunlight)' },
     envTitle: 'Surroundings (landscape & light pollution)', envOpts: { auto: '🤖 Automatic', city: '🏙️ City', town: '🏘️ Town', country: '🌲 Countryside' },
     envDetected: 'Detected', envDetecting: 'Detecting surroundings…', envNames: { city: 'city', town: 'town', country: 'countryside / forest' }, inhabitants: 'people', farFromTown: 'away from the town centre', home: '⟲ Initial view',
     min: 'min', today: 'today', tomorrow: 'tomorrow',
@@ -181,7 +181,7 @@ const STORE_KEY = 'dc_planetario_v2';
 const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; } })();
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ welcomed: true, lang: S.lang, place: S.place, layers: S.layers, envMode: S.envMode, red: S.red, tle: S.tleCache, hinted: true }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ welcomed: true, lang: S.lang, place: S.place, layers: S.layers, envMode: S.envMode, red: S.red, nightBright: S.nightBright, tle: S.tleCache, hinted: true }));
   } catch { /* almacenamiento no disponible */ }
 }
 const params = new URLSearchParams(location.search);
@@ -192,9 +192,10 @@ const urlPlace = params.has('lat') && params.has('lon')
 const S = {
   lang: params.get('lang') || saved.lang || ((navigator.language || 'es').startsWith('es') ? 'es' : 'en'),
   place: urlPlace || saved.place || PRESET_CITIES[0],
-  layers: Object.assign({ planets: true, iss: true, sats: true, starlink: false, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, realDay: false }, saved.layers),
+  layers: Object.assign({ planets: true, iss: true, sats: true, starlink: false, lines: true, art: true, conNames: true, starNames: true, deep: true, ecliptic: false, grid: false, meteors: true, atmosphere: true, skyline: true, rose: true, cardinals: true, realDay: false }, saved.layers),
   envMode: saved.envMode || 'auto', // auto | city | town | country
   red: !!saved.red,
+  nightBright: typeof saved.nightBright === 'number' ? saved.nightBright : 0.5, // brillo del cielo nocturno (0 realista … 1 muy visible)
   tleCache: saved.tle || null,
   offset: params.has('t') && !isNaN(Date.parse(params.get('t'))) ? Date.parse(params.get('t')) - Date.now() : 0,
   sensor: false, camera: false,
@@ -263,11 +264,13 @@ function updateSkyMatrix(date, force = false) {
 // ── Bóveda atmosférica con color según la altura del Sol ──
 const domeMat = new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false,
-  uniforms: { uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uSunDir: { value: new THREE.Vector3(0, -1, 0) }, uSunGlow: { value: 0 } },
+  uniforms: { uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uSunDir: { value: new THREE.Vector3(0, -1, 0) }, uSunGlow: { value: 0 },
+    uGlow: { value: new THREE.Color() }, uNight: { value: 0 } },
   vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-  fragmentShader: `uniform vec3 uZenith, uHorizon, uSunDir; uniform float uSunGlow; varying vec3 vDir;
+  fragmentShader: `uniform vec3 uZenith, uHorizon, uSunDir, uGlow; uniform float uSunGlow, uNight; varying vec3 vDir;
     void main(){ vec3 d = normalize(vDir); float h = clamp(d.y, 0.0, 1.0);
       vec3 c = mix(uHorizon, uZenith, pow(h, 0.5)); // resplandor urbano junto al horizonte
+      c += uNight * uGlow * exp(-h * 7.0) * 0.7;     // de noche: franja de resplandor pegada al horizonte
       if (d.y < 0.0) c = mix(uHorizon, uZenith * 0.8, pow(clamp(-d.y, 0.0, 1.0), 0.4));
       float s = max(dot(d, uSunDir), 0.0);
       c += uSunGlow * (pow(s, 8.0) * vec3(0.55, 0.35, 0.18) + pow(s, 64.0) * vec3(0.6, 0.5, 0.35));
@@ -293,26 +296,52 @@ function skyColorsFor(sunAlt) {
 }
 
 // ── Suelo translúcido + horizonte ──
-const ground = new THREE.Mesh(
-  new THREE.SphereGeometry(R.ground, 48, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
-  new THREE.MeshBasicMaterial({ color: 0x0a1428, transparent: true, opacity: 0.3, side: THREE.BackSide, depthWrite: false, depthTest: false }),
-);
+// El suelo se distingue del cielo: más claro junto al horizonte, más oscuro bajo los pies, y con un toque
+// azulado cuando la Luna lo ilumina. Sigue siendo algo translúcido para ver lo que hay «bajo el horizonte».
+const groundMat = new THREE.ShaderMaterial({
+  transparent: true, side: THREE.BackSide, depthWrite: false, depthTest: false,
+  uniforms: { uCol: { value: new THREE.Color('#2a3546') }, uMoon: { value: 0 }, uAlpha: { value: 0.8 } },
+  vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+  fragmentShader: `uniform vec3 uCol; uniform float uMoon, uAlpha; varying vec3 vDir;
+    void main(){ float dn = clamp(-vDir.y, 0.0, 1.0);
+      vec3 c = uCol * (1.35 - 0.9 * pow(dn, 0.35)) + vec3(0.10, 0.14, 0.22) * uMoon * (1.0 - dn * 0.6);
+      gl_FragColor = vec4(c, uAlpha * (0.75 + 0.25 * pow(dn, 0.3))); }`,
+});
+const ground = new THREE.Mesh(new THREE.SphereGeometry(R.ground, 48, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), groundMat);
 ground.renderOrder = 50;
 horizonGroup.add(ground);
 {
   const pts = [];
   for (let a = 0; a <= 360; a += 2) pts.push(altAzVec(a, 0, R.ground - 5));
-  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.3, depthTest: false }));
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.6, depthTest: false }));
   line.renderOrder = 61;
   horizonGroup.add(line);
+}
+// ── Marcas cardinales discretas pegadas al horizonte (justo debajo de la línea) ──
+const cardinalGroup = new THREE.Group();
+horizonGroup.add(cardinalGroup);
+function buildCardinals() {
+  cardinalGroup.clear();
+  const ticks = [];
+  for (let a = 0; a < 360; a += 15) { const big = a % 45 === 0; ticks.push(altAzVec(a, 0, R.ground - 6), altAzVec(a, big ? -1.6 : -0.8, R.ground - 6)); }
+  const tl = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(ticks), new THREE.LineBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.55, depthTest: false }));
+  tl.renderOrder = 61; cardinalGroup.add(tl);
+  const en = S.lang === 'en', names = en ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+  names.forEach((n, i) => {
+    const lab = makeLabel(n, { color: i === 0 ? '#fca5a5' : '#bae6fd', px: i % 2 ? 11 : 14, weight: 700, below: false, order: 62 });
+    lab.position.copy(altAzVec(i * 45, -3.2, R.ground - 8));
+    cardinalGroup.add(lab);
+  });
 }
 // ── Silueta de ciudad en el horizonte (opaca: tapa lo que hay detrás, como en la realidad) ──
 const SKY_TOP_DEG = 12, SKY_BOTTOM_DEG = -1.5, SKY_HS = 1.5; // SKY_HS: escala de altura de los edificios
 // Entornos: paisaje del horizonte, contaminación lumínica (magnitud límite) y color del cielo nocturno
+// Un cielo nocturno real nunca es negro: azul muy profundo y un resplandor junto al horizonte
+// (anaranjado en la ciudad por la contaminación lumínica; verdoso muy tenue en el campo, el «brillo del aire»)
 const ENV = {
-  city: { limit: 4.5, zen: '#070b18', hor: '#3d3a55' },    // resplandor anaranjado-violeta de la ciudad
-  town: { limit: 5.5, zen: '#03060f', hor: '#1f2b48' },
-  country: { limit: 6.5, zen: '#01030a', hor: '#111a30' },  // cielo oscuro de campo
+  city: { limit: 4.5, zen: '#101b3e', hor: '#46476e', glow: '#a2683f' },
+  town: { limit: 5.5, zen: '#0c1636', hor: '#334468', glow: '#5c5a74' },
+  country: { limit: 6.5, zen: '#09122e', hor: '#25375c', glow: '#2c5a50' },
 };
 function makeSkylineTexture(kind = 'city') {
   const W = 4096, H = 512, c = document.createElement('canvas');
@@ -830,7 +859,7 @@ function buildBodies() {
     Object.assign(b, { holder, scaled, frame, glow, radius, sphere });
   });
 }
-let bodiesTime = 0;
+let bodiesTime = 0, moonIllum = 0;
 function updateBodies(date, force = false) {
   if (!force && Math.abs(date - bodiesTime) < 20000) return;
   bodiesTime = +date;
@@ -844,7 +873,7 @@ function updateBodies(date, force = false) {
     const sinB = orientToObserver(b.holder, dir, b.pole[0], b.pole[1]);
     b.frame.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, Math.sqrt(1 - sinB * sinB), sinB));
     if (b.id === 'sun') sunLight.position.copy(dir).multiplyScalar(100);
-    if (b.id === 'moon') { const f = A.Illumination('Moon', date).phase_fraction; b.sphere.material.uniforms.uEarth.value = 0.012 + 0.07 * Math.pow(1 - f, 2); }
+    if (b.id === 'moon') { const f = moonIllum = A.Illumination('Moon', date).phase_fraction; b.sphere.material.uniforms.uEarth.value = 0.012 + 0.07 * Math.pow(1 - f, 2); }
   });
 }
 
@@ -1630,10 +1659,11 @@ $('dockRed').onclick = () => { S.red = !S.red; applyRed(); persist(); };
 // Pantalla limpia (sobre todo para móvil): oculta los menús; quedan la brújula y el botón ☰ para recuperarlos
 $('dockClean').onclick = () => { closeModals(); document.body.classList.add('clean'); };
 $('uiBtn').onclick = () => document.body.classList.remove('clean');
-function applyRed() { document.body.classList.toggle('red', S.red); $('dockRed').classList.toggle('active', S.red); }
+function applyRed() { document.documentElement.classList.toggle('red', S.red); document.body.classList.toggle('red', S.red); $('dockRed').classList.toggle('active', S.red); }
 $('dockLang').onclick = () => { S.lang = S.lang === 'es' ? 'en' : 'es'; applyLanguage(); persist(); };
 function applyLanguage() {
   SATS?.buildLabels();
+  buildCardinals();
   const t = T();
   document.documentElement.lang = S.lang;
   $('dockLang').textContent = S.lang.toUpperCase();
@@ -1654,7 +1684,7 @@ function applyLayers() {
   bodiesGroup.visible = L.planets; linesGroup.visible = L.lines; artGroup.visible = L.art; conNameGroup.visible = L.conNames;
   starNameGroup.visible = L.starNames; dsoGroup.visible = L.deep; eclipticGroup.visible = L.ecliptic; gridGroup.visible = L.grid;
   meteorGroup.visible = L.meteors;
-  skylineGroup.visible = L.skyline && !S.camera; roseGroup.visible = L.rose;
+  skylineGroup.visible = L.skyline && !S.camera; roseGroup.visible = L.rose; cardinalGroup.visible = L.cardinals;
 }
 function renderLayers() {
   const list = $('layerList'), t = T();
@@ -1669,6 +1699,16 @@ function renderLayers() {
   const note = document.createElement('p'); note.className = 'note';
   note.textContent = S.place.env ? `${t.envDetected}: ${t.envNames[S.place.env]}${S.place.envInfo ? ` (${S.place.envInfo})` : ''}` : t.envDetecting;
   list.append(q, seg, note);
+  // Brillo del cielo nocturno: de realista a muy visible
+  const bt = document.createElement('div'); bt.className = 'mini'; bt.textContent = S.lang === 'en' ? '🌙 Night sky brightness' : '🌙 Brillo del cielo nocturno';
+  const row = document.createElement('div'); row.className = 'brightRow';
+  const lo = document.createElement('span'); lo.textContent = S.lang === 'en' ? 'Realistic' : 'Realista';
+  const hi = document.createElement('span'); hi.textContent = S.lang === 'en' ? 'Very visible' : 'Muy visible';
+  const rg = Object.assign(document.createElement('input'), { type: 'range', min: 0, max: 100, value: Math.round(S.nightBright * 100) });
+  rg.oninput = () => { S.nightBright = rg.value / 100; };
+  rg.onchange = () => persist();
+  row.append(lo, rg, hi);
+  list.append(bt, row);
   Object.entries(t.L).forEach(([key, label]) => {
     const row = document.createElement('div'); row.className = 'row';
     const name = document.createElement('span'); name.className = 'name'; name.textContent = label;
@@ -2477,6 +2517,15 @@ function frame(now) {
   const atm = S.layers.atmosphere;
   const [zen, hor] = skyColorsFor(atm ? sunAlt : -90);
   { const e = ENV[currentEnv()], k = atm ? THREE.MathUtils.clamp((-sunAlt - 6) / 6, 0, 1) : 1; zen.lerp(new THREE.Color(e.zen), k); hor.lerp(new THREE.Color(e.hor), k); }
+  { // brillo nocturno elegido por el usuario (Capas): de realista a muy visible
+    const night = atm ? THREE.MathUtils.clamp((-sunAlt - 6) / 6, 0, 1) : 1, b = S.nightBright ?? 0.5;
+    const lift = 1 + night * (b - 0.35) * 1.4; zen.multiplyScalar(Math.max(0.5, lift)); hor.multiplyScalar(Math.max(0.5, lift));
+    domeMat.uniforms.uNight.value = night * (0.5 + b);
+    domeMat.uniforms.uGlow.value.set(ENV[currentEnv()].glow);
+    const moonUp = BODIES[1].holder.getWorldPosition(new THREE.Vector3()).y > 0;
+    groundMat.uniforms.uMoon.value = night * (moonUp ? moonIllum : 0); // la Luna ilumina el paisaje
+    groundMat.uniforms.uCol.value.set('#2a3546').multiplyScalar(0.55 + b * 0.9);
+  }
   domeMat.uniforms.uZenith.value.copy(zen); domeMat.uniforms.uHorizon.value.copy(hor);
   domeMat.uniforms.uSunDir.value.copy(sunW); domeMat.uniforms.uSunGlow.value = atm ? THREE.MathUtils.clamp((sunAlt + 8) / 10, 0, 1) : 0;
   const realFade = THREE.MathUtils.clamp((-sunAlt - 1) / 11, 0, 1);
