@@ -70,6 +70,10 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 2.0.2 — ver bajo el horizonte
+- **Visión a través de la Tierra**: al bajar la vista por debajo del horizonte, el suelo se aclara poco a poco (con un tono azulado) y deja ver lo que hay al otro lado; al subirla vuelve a ser sólido.
+- La franja junto al horizonte sigue sólida y, más abajo, el suelo es un velo ligero; los nombres de los astros que están bajo el horizonte se leen por encima.
+
 ### Versión 2.0.1 — estadísticas
 - **Estadísticas anónimas y sin cookies con Umami** (solo en la web publicada): visitas, procedencia, países, dispositivos y eventos de uso: fichas abiertas, modo Objeto, calendario, postales, pasaporte, Mi cielo, capas, modo rojo, cámara, instalación de la app y **clics hacia YouTube** (vídeo, canal o suscripción, y desde dónde).
 

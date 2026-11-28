@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=2.0.1';
-import { createSatellites } from './satelites.js?v=2.0.1';
+import { createObjectView } from './objeto.js?v=2.0.2';
+import { createSatellites } from './satelites.js?v=2.0.2';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 // Estadísticas anónimas (Umami, sin cookies): qué funciones se usan y cuántos clics van al canal.
 // Solo cuentan en la web publicada (data-domains del script en index.html); en pruebas no se envía nada.
 const track = (name, data) => { try { window.umami?.track(name, data); } catch { } };
@@ -303,15 +303,20 @@ function skyColorsFor(sunAlt) {
 // azulado cuando la Luna lo ilumina. Sigue siendo algo translúcido para ver lo que hay «bajo el horizonte».
 const groundMat = new THREE.ShaderMaterial({
   transparent: true, side: THREE.BackSide, depthWrite: false, depthTest: false,
-  uniforms: { uCol: { value: new THREE.Color('#2a3546') }, uMoon: { value: 0 }, uAlpha: { value: 0.8 } },
+  uniforms: { uCol: { value: new THREE.Color('#2a3546') }, uMoon: { value: 0 }, uAlpha: { value: 0.8 }, uSee: { value: 0 } },
   vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-  fragmentShader: `uniform vec3 uCol; uniform float uMoon, uAlpha; varying vec3 vDir;
+  fragmentShader: `uniform vec3 uCol; uniform float uMoon, uAlpha, uSee; varying vec3 vDir;
     void main(){ float dn = clamp(-vDir.y, 0.0, 1.0);
       vec3 c = uCol * (1.35 - 0.9 * pow(dn, 0.35)) + vec3(0.10, 0.14, 0.22) * uMoon * (1.0 - dn * 0.6);
-      gl_FragColor = vec4(c, uAlpha * (0.75 + 0.25 * pow(dn, 0.3))); }`,
+      // Junto al horizonte el suelo es sólido (se lee bien dónde acaba el cielo); más abajo, un velo más ligero
+      float a = uAlpha * mix(1.0, 0.55, smoothstep(0.02, 0.3, dn));
+      // Al mirar hacia abajo, «visión a través de la Tierra»: el velo se aclara y toma un tono azulado
+      a *= 1.0 - 0.62 * uSee * smoothstep(0.0, 0.08, dn);
+      c = mix(c, vec3(0.12, 0.2, 0.36), 0.45 * uSee);
+      gl_FragColor = vec4(c, a); }`,
 });
 const ground = new THREE.Mesh(new THREE.SphereGeometry(R.ground, 48, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), groundMat);
-ground.renderOrder = 50;
+ground.renderOrder = 5; // por debajo de etiquetas y brillos: los nombres de lo que hay bajo el horizonte se leen
 horizonGroup.add(ground);
 {
   const pts = [];
@@ -2798,6 +2803,11 @@ function frame(now) {
   }
   camera.getWorldDirection(camDir);
   const view = vecToAltAz(camDir);
+  { // al bajar la vista, el suelo se aclara poco a poco (y vuelve a ser sólido al subirla)
+    const target = THREE.MathUtils.smoothstep(-view.alt, 2, 14) * (S.camera ? 0 : 1);
+    S.see = (S.see || 0) + (target - (S.see || 0)) * Math.min(1, dt * 4);
+    groundMat.uniforms.uSee.value = S.see;
+  }
 
   // Atmósfera según el Sol
   const sun = BODIES[0], sunW = sun.holder.getWorldPosition(new THREE.Vector3()).normalize(), sunAlt = Math.asin(sunW.y) * R2D;
