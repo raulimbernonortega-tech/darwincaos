@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=2.1';
-import { createSatellites } from './satelites.js?v=2.1';
+import { createObjectView } from './objeto.js?v=2.1.1';
+import { createSatellites } from './satelites.js?v=2.1.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.1.1';
 // Estadísticas anónimas (Umami, sin cookies): qué funciones se usan y cuántos clics van al canal.
 // Solo cuentan en la web publicada (data-domains del script en index.html); en pruebas no se envía nada.
 const track = (name, data) => { try { window.umami?.track(name, data); } catch { } };
@@ -1647,7 +1647,7 @@ $('btnCamera').onclick = () => setCamera(!S.camera);
 // ───────────── Interfaz ─────────────
 let toastTimer;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 2600); }
-const MODALS = { modalMe: 'dockMe', modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: null, modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
+const MODALS = { modalMore: null, modalMe: 'dockMe', modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: null, modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
 function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); if (b) $(b).classList.remove('active'); }); }
 function toggleModal(id) {
   const open = $(id).classList.contains('open');
@@ -2759,7 +2759,7 @@ function paintTour() {
   $('tourSkip').textContent = en ? 'Skip' : 'Saltar';
   $('tourDots').replaceChildren(...TOUR.map((_, i) => Object.assign(document.createElement('i'), { className: i === tourStep ? 'on' : '' })));
   // Foco luminoso sobre el botón real
-  const el = document.querySelector(t.target), r = el?.getBoundingClientRect();
+  const el = document.querySelector(UI2 ? ({ '.bottom': '#tabSearch', '#dockCal': '#tabTonight2', '#dockMe': '#tabMe' }[t.target] || t.target) : t.target), r = el?.getBoundingClientRect();
   const ring = $('tourRing');
   if (r && r.width) { const pad = 8; Object.assign(ring.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px`, borderRadius: getComputedStyle(el).borderRadius || '16px' }); ring.hidden = false; }
   else ring.hidden = true;
@@ -2774,6 +2774,57 @@ $('tourSkip').onclick = () => endTour(true);
     if (dx < -50 && tourStep < TOUR.length - 1) { tourStep++; paintTour(); } else if (dx > 50 && tourStep > 0) { tourStep--; paintTour(); } }); }
 addEventListener('resize', () => { if (!$('tour').hidden) paintTour(); });
 $('tourAgain').onclick = () => { closeModals(); setTimeout(startTour, 200); };
+
+// ───────────── Diseño nuevo (prototipo): barra de pestañas + paneles desde abajo + acabado cristal ─────────────
+// Se activa con ?ui=2 (o desde «Acerca de»); ?ui=1 vuelve al clásico. Mientras sea prototipo, el diseño clásico es el de siempre.
+const UI2 = (() => { try { const q = params.get('ui'); if (q === '2') localStorage.setItem('dc_ui', '2'); if (q === '1') localStorage.removeItem('dc_ui'); return localStorage.getItem('dc_ui') === '2'; } catch { return false; } })();
+function setupUI2() {
+  const en = S.lang === 'en';
+  $('uiToggle').textContent = UI2 ? (en ? '↩️ Back to the classic design' : '↩️ Volver al diseño clásico') : (en ? '🧪 Try the new design' : '🧪 Probar el diseño nuevo');
+  $('uiToggle').onclick = () => { try { UI2 ? localStorage.removeItem('dc_ui') : localStorage.setItem('dc_ui', '2'); } catch { } track('diseno', { nuevo: !UI2 }); location.href = location.pathname; };
+  if (!UI2) return;
+  document.body.classList.add('ui2');
+  // El buscador pasa al panel «Buscar»; zoom, seguir el móvil y cámara, a botones flotantes
+  const sb = document.createElement('div'); sb.className = 'searchSheet'; sb.append(Object.assign(document.createElement('span'), { textContent: '🔎' }), $('search'));
+  $('modalSky').insertBefore(sb, $('skyList'));
+  $('fab').append($('btnSensor'), $('btnCamera'), $('zoomBtn'));
+  const labels = { tabSky: ['Cielo', 'Sky'], tabTonight2: ['Esta noche', 'Tonight'], tabSearch: ['Buscar', 'Search'], tabMe: ['Mi cielo', 'My sky'], tabMore: ['Más', 'More'] };
+  for (const [id, l] of Object.entries(labels)) $(id).querySelector('span').textContent = l[en ? 1 : 0];
+  const go = (id, fn) => $(id).onclick = () => { track('pestana', { pestana: id }); fn(); syncTabs(); };
+  go('tabSky', () => { closeModals(); closeInfo(); });
+  go('tabTonight2', () => { S.calTab = 'tonight'; if (!$('modalCal').classList.contains('open')) toggleModal('modalCal'); else renderCal(); });
+  go('tabSearch', () => { if (!$('modalSky').classList.contains('open')) toggleModal('modalSky'); setTimeout(() => $('search').focus(), 250); });
+  go('tabMe', () => { if (!$('modalMe').classList.contains('open')) toggleModal('modalMe'); });
+  go('tabMore', () => { if (!$('modalMore').classList.contains('open')) { toggleModal('modalMore'); renderMore(); } });
+  // La pestaña activa sigue al panel abierto
+  new MutationObserver(syncTabs).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  // Arrastrar un panel hacia abajo lo cierra
+  document.querySelectorAll('.modal, #infoCard').forEach(sheet => {
+    let y0 = null, dy = 0;
+    sheet.addEventListener('touchstart', e => { const t = e.target; if (t.closest('.scroll, #calBody, #meBody, #skyList, input, textarea') && t.closest('.scroll, #calBody, #meBody, #skyList')?.scrollTop > 0) return; if (e.touches[0].clientY - sheet.getBoundingClientRect().top > 70) return; y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+    sheet.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sheet.style.transform = `translate(-50%, ${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend', () => { if (y0 == null) return; sheet.style.transform = ''; if (dy > 90) { sheet.id === 'infoCard' ? closeInfo() : closeModals(); } y0 = null; });
+  });
+}
+function syncTabs() {
+  if (!UI2) return;
+  const open = id => $(id).classList.contains('open');
+  const act = open('modalCal') ? 'tabTonight2' : open('modalSky') ? 'tabSearch' : open('modalMe') ? 'tabMe' : open('modalMore') || open('modalLayers') || open('modalShot') || open('modalAbout') ? 'tabMore' : 'tabSky';
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.id === act));
+  document.body.classList.toggle('sheet', !!document.querySelector('.modal.open') || $('infoCard').classList.contains('open')); // los botones flotantes no tapan los paneles
+}
+function renderMore() {
+  const en = S.lang === 'en', g = $('moreGrid');
+  const items = [
+    ['📸', en ? 'Photo of the sky' : 'Foto del cielo', () => $('dockShot').click()],
+    ['🗂️', en ? 'Layers' : 'Capas', () => toggleModal('modalLayers')],
+    ['🔴', en ? 'Red night mode' : 'Modo rojo', () => { $('dockRed').click(); renderMore(); }, S.red],
+    ['🖼️', en ? 'Clean screen' : 'Pantalla limpia', () => $('dockClean').click()],
+    ['🌐', S.lang === 'en' ? 'Español' : 'English', () => { $('dockLang').click(); renderMore(); }],
+    ['ℹ️', en ? 'About & install' : 'Acerca de e instalar', () => toggleModal('modalAbout')],
+  ];
+  g.replaceChildren(...items.map(([ico, label, fn, on]) => { const b = document.createElement('button'); b.type = 'button'; if (on) b.className = 'on'; b.innerHTML = `<b>${ico}</b>${label}`; b.onclick = fn; return b; }));
+}
 
 // ───────────── Bucle principal ─────────────
 const belowEl = $('belowTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
@@ -3354,6 +3405,7 @@ function feedReady() { nvFeed = true; setTimeout(showNewVideo, 2500); }
 // ───────────── Arranque ─────────────
 async function init() {
   applyLanguage();
+  setupUI2();
   applyRed();
   $('placeLabel').textContent = S.place.name;
   setOffset(S.offset);
