@@ -1,7 +1,7 @@
 // «Ayudante» de la app instalable (service worker): guarda la app en el móvil para que abra al
 // instante y funcione sin cobertura. Lo que cambia (noticias, vídeos, órbitas) se pide primero a
 // internet y, si no hay conexión, se usa lo último guardado.
-const VERSION = '1.9.1';
+const VERSION = '2.0';
 const CACHE = `planetario-${VERSION}`;
 // Lo imprescindible para arrancar sin conexión
 const CORE = [
@@ -17,7 +17,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('planetario-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-const DYNAMIC = /data\/(eventos|satelites)\.json|starlink\.tle|sol-hoy\.jpg|api\.open-meteo\.com\/v1\/forecast|wheretheiss|celestrak/; // (la búsqueda de ciudades va directa)
+const DYNAMIC = /data\/(eventos|satelites)\.json|starlink\.tle|sol-hoy\.jpg|api\.open-meteo\.com\/v1\/forecast/; // (la búsqueda de ciudades va directa)
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;

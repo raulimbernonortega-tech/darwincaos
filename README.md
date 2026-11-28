@@ -70,6 +70,14 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 2.0 — «Tu cielo personal» (botón ✨ Mi cielo)
+- **🎂 Tu edad cósmica**: vueltas al Sol, kilómetros recorridos alrededor del Sol y de la Vía Láctea, tu edad en cada planeta y **tus próximos cumpleaños en Mercurio, Marte y Júpiter** (con aviso en el calendario). Tarjeta en formato historia para compartir.
+- **⭐ Tu estrella de cumpleaños**: la estrella visible cuya luz salió de ella el año en que naciste (distancias de Hipparcos, catálogo HYG, CC BY-SA 4.0), con botón para buscarla en el cielo.
+- **🛂 Pasaporte de observación**: 28 objetos (fases de la Luna, planetas, ISS, Tiangong, Hubble, Starlink, estrellas, constelaciones, cielo profundo) que se marcan con «👁️ Lo he visto» solo cuando de verdad se ven; 10 insignias y racha de noches.
+- **🌑 Eclipses desde tu ciudad**: cuenta atrás del próximo gran eclipse de Sol (2 de agosto de 2027: 92 % en Ciudad Real, total en Cádiz, Málaga y Ceuta), calculado con Astronomy Engine, con dónde será total, aviso en el calendario y lista de próximos eclipses.
+- La fecha de nacimiento y el pasaporte se guardan solo en el móvil del usuario.
+- Correcciones de la 1.9.1: los **puntos cardinales** ya se ven (se borraban al redibujar los nombres del cielo) y el **modo rojo** funciona en iPhone (Safari no aplicaba el filtro anterior).
+
 ### Versión 1.9.1 — noche más visible
 - **Cielo nocturno con profundidad**: azul noche en vez de negro, con el resplandor real del horizonte según el entorno (anaranjado en la ciudad, verdoso tenue en el campo).
 - **Horizonte y suelo visibles**: línea de horizonte luminosa, suelo con su propio tono (más claro junto al horizonte) y luz azulada de la Luna sobre el paisaje cuando está arriba.
