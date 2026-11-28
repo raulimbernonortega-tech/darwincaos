@@ -36,8 +36,10 @@
     /* Modo nocturno rojo: conserva la adaptación del ojo a la oscuridad */
     /* Modo nocturno rojo (como en las apps de observación): todo se ve igual, pero convertido a tonos rojos
        según su brillo, así nada se pierde y se conserva la visión nocturna. */
-    #redFilter { display: none; }
-    html.red { filter: url(#nightRed); background: #000; }
+    /* Dos capas que Safari sí aplica: «color» pasa todo a tonos rojos conservando su brillo y «multiply» deja solo el rojo puro */
+    #redFilter, #redFilter2 { position: fixed; inset: 0; z-index: 100; background: #f00; pointer-events: none; display: none; }
+    #redFilter { mix-blend-mode: color; } #redFilter2 { mix-blend-mode: multiply; }
+    body.red #redFilter, body.red #redFilter2 { display: block; }
     .brightRow { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
     .brightRow input { flex: 1; accent-color: #38bdf8; }
 
@@ -134,7 +136,21 @@
     @keyframes nvIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
     body.clean #focusBanner { top: calc(max(10px, env(safe-area-inset-top)) + 14px); } /* el nombre de la constelación se mantiene */
     /* Calendario */
-    #modalCal { width: min(520px, calc(100vw - 80px)); }
+    #modalCal, #modalMe { width: min(520px, calc(100vw - 80px)); }
+    @media (max-width: 560px) { #modalMe { width: calc(100vw - 24px); max-height: 80vh; } }
+    .meForm { display: flex; flex-direction: column; gap: 8px; } .meForm .input { font-size: 16px; }
+    .cosmic, .cosStar, .eclCard, .passHead { background: rgba(15,25,46,.7); border: 1px solid rgba(56,189,248,.22); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .cosHead { font-size: 15.5px; font-weight: 800; } .cosHead b { color: #fde68a; } .cosmic .note b, .cosStar .note b { color: #e2e8f0; }
+    .cosGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 13px; } .cosGrid div { display: flex; justify-content: space-between; gap: 6px; } .cosGrid b { color: #fff; }
+    .cosNext { display: flex; flex-direction: column; gap: 6px; }
+    .btn.seen { background: rgba(34,197,94,.18); border: 1px solid rgba(34,197,94,.5); color: #bbf7d0; } .btn.seen:disabled { opacity: .55; }
+    .passBar { height: 8px; border-radius: 99px; background: rgba(148,163,184,.2); overflow: hidden; } .passBar i { display: block; height: 100%; background: linear-gradient(90deg, #38bdf8, #a78bfa); }
+    .badges { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .badge { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; background: rgba(148,163,184,.08); filter: grayscale(1); opacity: .45; text-align: center; }
+    .badge span { font-size: 22px; } .badge small { font-size: 9.5px; line-height: 1.2; color: #cbd5e1; } .badge.on { filter: none; opacity: 1; background: rgba(250,204,21,.14); border: 1px solid rgba(250,204,21,.4); }
+    .eclCard { flex-direction: row; align-items: center; gap: 14px; }
+    .eclDays { display: flex; flex-direction: column; align-items: center; min-width: 84px; } .eclDays b { font-size: 38px; color: #fde68a; line-height: 1; } .eclDays span { font-size: 11px; color: var(--muted); }
+    .eclKind { font-weight: 800; color: #fca5a5; } .eclWarn { color: #fcd34d; }
     @media (max-width: 560px) { #modalCal { width: calc(100vw - 24px); max-height: 78vh; } }
     .tabs { display: flex; gap: 6px; }
     .tab { flex: 1; padding: 8px 4px; white-space: nowrap; border-radius: 10px; border: 1px solid rgba(56,189,248,.28); background: var(--card); color: var(--muted); font-size: 13px; font-weight: 700; }
@@ -193,7 +209,7 @@
     .btn.ghost { background: rgba(14,165,233,.14); border: 1px solid rgba(56,189,248,.4); color: var(--accent); }
     .btn.yt { background: #dc2626; }
     .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
-    input[type=text], input[type=datetime-local] { background: rgba(15,23,42,.9); border: 1px solid rgba(56,189,248,.35); color: #fff; border-radius: 10px; padding: 8px 11px; font-size: 16px; outline: none; min-width: 0; } /* 16 px: el iPhone no hace zoom al escribir */
+    input[type=text], input[type=datetime-local], input[type=date] { background: rgba(15,23,42,.9); border: 1px solid rgba(56,189,248,.35); color: #fff; border-radius: 10px; padding: 8px 11px; font-size: 16px; outline: none; min-width: 0; } /* 16 px: el iPhone no hace zoom al escribir */
     input[type=range] { width: 100%; accent-color: var(--accent); }
     .switch { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid rgba(148,163,184,.35); background: rgba(100,116,139,.2); color: var(--muted); min-width: 48px; }
     .switch.on { background: rgba(14,165,233,.22); color: var(--accent); border-color: var(--accent); }
@@ -278,15 +294,12 @@
   <div id="guide"><span>➤</span><small></small></div>
   <div id="finder"><div id="finderArrow">➤</div><div id="finderText"></div></div>
   <div id="findChip" class="pill"><button id="findOpen" type="button"></button><button id="findClose" type="button" aria-label="Cerrar">✕</button></div>
-  <div id="redFilter"></div>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="nightRed" color-interpolation-filters="sRGB">
-    <feColorMatrix type="matrix" values="0.55 0.95 0.45 0 0.02  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" />
-  </filter></svg>
+  <div id="redFilter"></div><div id="redFilter2"></div>
   <!-- Bienvenida: amanecer orbital + marca. Sustituye a la pantalla de carga -->
   <div id="splash" role="dialog" aria-label="Planetarium by DarwinCaos">
     <canvas id="splashSky"></canvas>
     <div class="splash-content">
-      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=1.9.1" alt="" /></span>
+      <span class="splash-logo"><img id="splashLogo" src="img/logo.png?v=2.0" alt="" /></span>
       <h1 class="splash-title">Planetarium</h1>
       <div class="splash-by">by <strong>DarwinCaos</strong></div>
       <div class="splash-line"></div>
@@ -401,6 +414,9 @@
   </button>
 
   <aside class="dock pill" aria-label="Herramientas">
+    <button id="dockMe" class="dock-btn" type="button" title="Mi cielo">
+      <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 8l-3.6 3 1.1 4.8L12 13.4 8 15.8l1.1-4.8L5.5 8l4.7-.4z"/><path d="M5 20h14"/></svg>
+    </button>
     <button id="dockCal" class="dock-btn" type="button" data-i18n-title="calTitle" title="Calendario">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.6"/></svg>
     </button>
@@ -465,6 +481,17 @@
     <div id="calBody" class="scroll"></div>
   </section>
 
+  <!-- ✨ Mi cielo: cumpleaños cósmico, pasaporte y eclipses -->
+  <section id="modalMe" class="modal pill">
+    <div class="modal-head"><div class="modal-title">✨ Mi cielo</div><button class="close" type="button">✕</button></div>
+    <div class="tabs">
+      <button id="meTabBirth" class="tab on" type="button">🎂 Cumpleaños</button>
+      <button id="meTabPass" class="tab" type="button">🛂 Pasaporte</button>
+      <button id="meTabEcl" class="tab" type="button">🌑 Eclipses</button>
+    </div>
+    <div id="meBody" class="scroll"></div>
+  </section>
+
   <!-- Compartir el cielo -->
   <section id="modalShot" class="modal pill">
     <div class="modal-head"><div class="modal-title" data-i18n="shotTitle">📸 Compartir el cielo</div><button class="close" type="button">✕</button></div>
@@ -502,7 +529,7 @@
         <button id="installBtn" class="btn" type="button">📲 Instalar como app</button>
         <p id="installHelp" class="note" hidden></p>
       </div>
-      <p class="note" id="appVersion" style="opacity:.8">Versión 1.9.1</p>
+      <p class="note" id="appVersion" style="opacity:.8">Versión 2.0</p>
       <a id="subscribeBtn" class="btn yt" target="_blank" rel="noopener" style="text-align:center;text-decoration:none" data-i18n="subscribe">▶ Suscríbete al canal</a>
       <div class="mini" data-i18n="credits">Créditos</div>
       <p class="note">
@@ -510,6 +537,7 @@
         ISS: <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a> + satellite.js (MIT) ·
         Estrellas y nombres: <a href="https://github.com/ofrohn/d3-celestial" target="_blank" rel="noopener">d3-celestial</a> (BSD) / Hipparcos ·
         Líneas e ilustraciones de constelaciones: Stellarium, ilustraciones de Johan Meuris (<a href="https://artlibre.org/licence/lal/es/" target="_blank" rel="noopener">Licencia Arte Libre</a>) ·
+        Distancias de estrellas (estrella de cumpleaños): <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noopener">HYG Database</a> (CC BY-SA 4.0) ·
         Texturas planetarias: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0), Plutón: NASA/JPL ·
         Lanzamientos: <a href="https://thespacedevs.com" target="_blank" rel="noopener">The Space Devs</a> / Launch Library 2 ·
         Noticias: Spaceflight News API (The Space Devs) y <a href="https://www.agenciasinc.es" target="_blank" rel="noopener">Agencia SINC</a> ·
@@ -532,6 +560,7 @@
     <div id="infoVideos"></div>
     <div class="btn-row">
       <button id="infoObject" class="btn obj" type="button" hidden>🌕 Objeto</button>
+      <button id="infoSeen" class="btn seen" type="button" hidden>👁️ Lo he visto</button>
       <button id="infoCal" class="btn ghost" type="button" hidden>📅 Avisarme</button>
       <button id="infoPoint" class="btn ghost" type="button" data-i18n="pointTo">Apuntar</button>
       <button id="infoShare" class="btn ghost" type="button" data-i18n="share">Compartir</button>
@@ -569,9 +598,9 @@
   </div>
   <div id="toast" class="pill"></div>
 
-  <script src="vendor/astronomy.browser.min.js?v=1.9.1"></script>
-  <script src="vendor/satellite.min.js?v=1.9.1"></script>
-  <script src="vendor/geomag.min.js?v=1.9.1"></script>
-  <script type="module" src="app.js?v=1.9.1"></script>
+  <script src="vendor/astronomy.browser.min.js?v=2.0"></script>
+  <script src="vendor/satellite.min.js?v=2.0"></script>
+  <script src="vendor/geomag.min.js?v=2.0"></script>
+  <script type="module" src="app.js?v=2.0"></script>
 </body>
 </html>

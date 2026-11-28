@@ -2,15 +2,15 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=1.9.1';
-import { createSatellites } from './satelites.js?v=1.9.1';
+import { createObjectView } from './objeto.js?v=2.0';
+import { createSatellites } from './satelites.js?v=2.0';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '2.0';
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -321,6 +321,7 @@ horizonGroup.add(ground);
 const cardinalGroup = new THREE.Group();
 horizonGroup.add(cardinalGroup);
 function buildCardinals() {
+  cardinalGroup.children.forEach(o => { if (o.userData.rec) screenSprites.delete(o.userData.rec); o.material?.map?.dispose(); o.material?.dispose(); o.geometry?.dispose(); });
   cardinalGroup.clear();
   const ticks = [];
   for (let a = 0; a < 360; a += 15) { const big = a % 45 === 0; ticks.push(altAzVec(a, 0, R.ground - 6), altAzVec(a, big ? -1.6 : -0.8, R.ground - 6)); }
@@ -328,8 +329,9 @@ function buildCardinals() {
   tl.renderOrder = 61; cardinalGroup.add(tl);
   const en = S.lang === 'en', names = en ? ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'] : ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
   names.forEach((n, i) => {
-    const lab = makeLabel(n, { color: i === 0 ? '#fca5a5' : '#bae6fd', px: i % 2 ? 11 : 14, weight: 700, below: false, order: 62 });
-    lab.position.copy(altAzVec(i * 45, -3.2, R.ground - 8));
+    const lab = makeLabel(n, { color: i === 0 ? '#fca5a5' : '#bae6fd', px: i % 2 ? 13 : 18, weight: 800, below: false, order: 62 });
+    textLabels.pop(); // lista propia: los nombres del cielo se rehacen a menudo y no deben llevarse estas letras
+    lab.position.copy(altAzVec(i * 45, -2.9, R.ground - 8));
     cardinalGroup.add(lab);
   });
 }
@@ -1266,6 +1268,7 @@ function openInfo(entry) {
   renderInfoText(entry);
   renderInfoVideos(entry);
   $('infoVideo').href = videoUrl(entry);
+  paintSeenBtn(entry);
   $('infoObject').hidden = !canObject(entry);
   $('infoCal').hidden = !(entry.kind === 'iss' || (entry.kind === 'sat' && entry.ref.info.orbita !== 'geo'));
   $('infoCal').textContent = S.lang === 'en' ? '📅 Remind me' : '📅 Avisarme';
@@ -1634,7 +1637,7 @@ $('btnCamera').onclick = () => setCamera(!S.camera);
 // ───────────── Interfaz ─────────────
 let toastTimer;
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.style.opacity = 1; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 2600); }
-const MODALS = { modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: null, modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
+const MODALS = { modalMe: 'dockMe', modalShot: 'dockShot', modalCal: 'dockCal', modalPlace: 'placeBtn', modalTime: 'timeBtn', modalSky: null, modalLayers: 'dockLayers', modalAbout: 'dockAbout' };
 function closeModals() { Object.entries(MODALS).forEach(([m, b]) => { $(m).classList.remove('open'); if (b) $(b).classList.remove('active'); }); }
 function toggleModal(id) {
   const open = $(id).classList.contains('open');
@@ -1646,6 +1649,7 @@ function toggleModal(id) {
   if (id === 'modalLayers') renderLayers();
   if (id === 'modalPlace') renderCities();
   if (id === 'modalCal') renderCal();
+  if (id === 'modalMe') renderMe();
   if (id === 'modalAbout') paintInstall();
 }
 Object.entries(MODALS).forEach(([m, b]) => { if (b) $(b).onclick = () => toggleModal(m); });
@@ -2439,6 +2443,279 @@ $('tabNow').onclick = () => { S.calTab = 'now'; renderCal(); };
 $('tabTonight').onclick = () => { S.calTab = 'tonight'; renderCal(); };
 $('tabEvents').onclick = () => { S.calTab = 'events'; renderCal(); };
 
+// ───────────── ✨ Mi cielo (versión 2.0): tu cumpleaños cósmico, tu estrella, pasaporte de observación y eclipses ─────────────
+// Todo se guarda solo en el móvil del usuario (localStorage): ni la fecha de nacimiento ni lo observado salen de él.
+const ME_KEY = 'dc_mi_cielo';
+const ME = (() => { try { return Object.assign({ birth: null, name: '', seen: {}, nights: [] }, JSON.parse(localStorage.getItem(ME_KEY) || '{}')); } catch { return { birth: null, name: '', seen: {}, nights: [] }; } })();
+const saveMe = () => { try { localStorage.setItem(ME_KEY, JSON.stringify(ME)); } catch { } };
+S.meTab = 'birth';
+const PLANET_YEAR = { mercury: 87.969, venus: 224.701, mars: 686.98, jupiter: 4332.59, saturn: 10759.22, uranus: 30688.5, neptune: 60182 };
+const PL_ICON = { mercury: '🌑', venus: '🟡', mars: '🔴', jupiter: '🟠', saturn: '🪐', uranus: '🔵', neptune: '🔵' };
+const birthDate = () => (ME.birth ? new Date(ME.birth + 'T12:00:00') : null);
+let NEAR = null; // estrellas cercanas con su distancia (HYG / Hipparcos)
+const loadNear = () => NEAR ? Promise.resolve(NEAR) : fetch(`data/estrellas-cercanas.json?v=${APP_VERSION}`).then(r => r.json()).then(d => (NEAR = d));
+const GREEK_ES = { 'α': 'Alfa', 'β': 'Beta', 'γ': 'Gamma', 'δ': 'Delta', 'ε': 'Épsilon', 'ζ': 'Zeta', 'η': 'Eta', 'θ': 'Theta', 'ι': 'Iota', 'κ': 'Kappa', 'λ': 'Lambda', 'μ': 'Mu', 'ν': 'Nu', 'ξ': 'Xi', 'ο': 'Ómicron', 'π': 'Pi', 'ρ': 'Rho', 'σ': 'Sigma', 'τ': 'Tau', 'υ': 'Ípsilon', 'φ': 'Fi', 'χ': 'Ji', 'ψ': 'Psi', 'ω': 'Omega' };
+function nearName(st) {
+  const con = NEAR.cons[st.c]?.[S.lang === 'en' ? 1 : 0] || st.c;
+  if (st.pe || st.p) return { name: S.lang === 'en' ? (st.p || st.pe) : (st.pe || st.p), con };
+  const g = st.g && (GREEK_ES[st.g[0]] ? `${GREEK_ES[st.g[0]]}${st.g.slice(1)}` : st.g);
+  return { name: S.lang === 'en' ? `${g} ${con}` : `${g} de ${con}`, con };
+}
+// La estrella cuya luz salió el año en que naciste (su distancia en años luz ≈ tu edad); a igualdad, la más brillante
+function birthdayStar(ageYears) {
+  let best = null, bs = Infinity;
+  for (const st of NEAR.estrellas) { const sc = Math.abs(st.ly - ageYears) + 0.04 * st.m; if (sc < bs) { bs = sc; best = st; } }
+  return best;
+}
+// Entrada provisional del catálogo para poder apuntar a cualquier estrella por sus coordenadas
+const starEntry = (st, label) => ({ id: 'near:' + st.ra, kind: 'near', names: [label], name: () => label, sub: () => '⭐', world: () => eqVec(st.ra, st.de, R.stars).applyMatrix4(skyGroup.matrixWorld) });
+
+function cosmicAge(now = simDate()) {
+  const b = birthDate(); if (!b) return null;
+  const days = (now - b) / 864e5, orbits = days / 365.256;
+  const next = {};
+  for (const [p, y] of Object.entries(PLANET_YEAR)) { const n = Math.floor(days / y) + 1; next[p] = { n, date: new Date(+b + n * y * 864e5) }; }
+  return { days, years: days / 365.2422, orbits, km: orbits * 939.95e6, galaxyKm: days * 86400 * 220, planets: Object.fromEntries(Object.entries(PLANET_YEAR).map(([p, y]) => [p, days / y])), next };
+}
+const bigNum = (n, en) => { // 44.800 millones de km · 331.000 millones
+  const m = n / 1e6; return m >= 1000 ? `${fmtNum(Math.round(m / 100) * 100)} ${en ? 'million' : 'millones de'}` : `${fmtNum(Math.round(m))} ${en ? 'million' : 'millones de'}`;
+};
+function ageOn(v, en) { // edad en otro planeta en palabras
+  if (v >= 2) return `${fmtNum(Math.floor(v))} ${en ? 'years' : 'años'}`;
+  if (v >= 1) return en ? `${fmtNum(v, 1)} years` : `${fmtNum(v, 1)} años`;
+  const months = Math.floor(v * 12); return months >= 2 ? `${fmtNum(months)} ${en ? 'months' : 'meses'}` : months === 1 ? (en ? '1 month' : '1 mes') : (en ? 'less than a month' : 'menos de un mes');
+}
+
+// ── Pasaporte de observación ──
+const PASS = [
+  { cat: 'luna', items: [['moon-cre', '🌒', 'Luna creciente', 'Waxing Moon'], ['moon-full', '🌕', 'Luna llena', 'Full Moon'], ['moon-men', '🌘', 'Luna menguante', 'Waning Moon']] },
+  { cat: 'planetas', items: [['mercury', '🌑', 'Mercurio', 'Mercury'], ['venus', '🟡', 'Venus', 'Venus'], ['mars', '🔴', 'Marte', 'Mars'], ['jupiter', '🟠', 'Júpiter', 'Jupiter'], ['saturn', '🪐', 'Saturno', 'Saturn'], ['uranus', '🔵', 'Urano (con prismáticos)', 'Uranus (binoculars)']] },
+  { cat: 'satelites', items: [['iss', '🛰️', 'Estación Espacial (ISS)', 'Space Station (ISS)'], ['sat:tiangong', '🛰️', 'Tiangong', 'Tiangong'], ['sat:hubble', '🔭', 'Hubble', 'Hubble'], ['starlink', '✨', 'Un Starlink', 'A Starlink']] },
+  { cat: 'estrellas', items: [['s:Sirius', '⭐', 'Sirio', 'Sirius'], ['s:Vega', '⭐', 'Vega', 'Vega'], ['s:Polaris', '⭐', 'Estrella Polar', 'Polaris'], ['s:Betelgeuse', '⭐', 'Betelgeuse', 'Betelgeuse'], ['s:Arcturus', '⭐', 'Arturo', 'Arcturus'], ['s:Aldebaran', '⭐', 'Aldebarán', 'Aldebaran']] },
+  { cat: 'constelaciones', items: [['c:Ori', '✨', 'Orión', 'Orion'], ['c:UMa', '✨', 'Osa Mayor', 'Great Bear'], ['c:Cas', '✨', 'Casiopea', 'Cassiopeia'], ['c:Sco', '✨', 'Escorpio', 'Scorpius'], ['c:Cyg', '✨', 'El Cisne', 'Cygnus'], ['c:Leo', '✨', 'Leo', 'Leo']] },
+  { cat: 'profundo', items: [['m45', '💫', 'Las Pléyades', 'The Pleiades'], ['m31', '🌌', 'Galaxia de Andrómeda', 'Andromeda Galaxy'], ['m42', '🌫️', 'Nebulosa de Orión', 'Orion Nebula']] },
+];
+const PASS_CAT = { luna: ['🌙 La Luna', '🌙 The Moon'], planetas: ['🪐 Planetas', '🪐 Planets'], satelites: ['🛰️ Satélites', '🛰️ Satellites'], estrellas: ['⭐ Estrellas', '⭐ Stars'], constelaciones: ['✨ Constelaciones', '✨ Constellations'], profundo: ['🌌 Cielo profundo', '🌌 Deep sky'] };
+const PASS_ALL = PASS.flatMap(c => c.items.map(i => i[0]));
+const BADGES = [
+  ['first', '🔭', 'Primera observación', 'First observation', s => Object.keys(s).length >= 1],
+  ['planets', '🪐', 'Los cinco planetas', 'All five planets', s => ['mercury', 'venus', 'mars', 'jupiter', 'saturn'].every(k => s[k])],
+  ['moon', '🌕', 'Ciclo lunar', 'Lunar cycle', s => ['moon-cre', 'moon-full', 'moon-men'].every(k => s[k])],
+  ['stations', '🛰️', 'Cazador de estaciones', 'Station hunter', s => s.iss && s['sat:tiangong']],
+  ['stars', '⭐', 'Estrellas brillantes', 'Bright stars', s => PASS[3].items.every(i => s[i[0]])],
+  ['cons', '✨', 'Constelaciones', 'Constellations', s => PASS[4].items.every(i => s[i[0]])],
+  ['deep', '🌌', 'Cielo profundo', 'Deep sky', s => PASS[5].items.every(i => s[i[0]])],
+  ['streak3', '🔥', 'Tres noches seguidas', 'Three nights in a row', () => streak() >= 3],
+  ['streak7', '🏆', 'Una semana observando', 'A week of stargazing', () => streak() >= 7],
+  ['master', '👑', 'Maestro del cielo', 'Sky master', s => PASS_ALL.every(k => s[k])],
+];
+const nightKey = d => { const x = new Date(+d - 12 * 3600e3); return x.toISOString().slice(0, 10); }; // la noche cuenta con la fecha de la tarde
+function streak() {
+  const set = new Set(ME.nights); let n = 0, d = new Date();
+  if (!set.has(nightKey(d))) d = new Date(+d - 864e5);
+  while (set.has(nightKey(d))) { n++; d = new Date(+d - 864e5); }
+  return n;
+}
+// ¿A qué casilla del pasaporte corresponde esta ficha? (la Luna según su fase de ahora)
+function passIdFor(entry) {
+  if (!entry) return null;
+  if (entry.id === 'moon') { const now = simDate(), il = A.Illumination('Moon', now).phase_fraction, ph = A.MoonPhase(now); return il > 0.93 ? 'moon-full' : ph < 180 ? 'moon-cre' : 'moon-men'; }
+  if (entry.kind === 'sat' && entry.ref?.tipo === 'starlink') return 'starlink';
+  return PASS_ALL.includes(entry.id) ? entry.id : null;
+}
+function passItem(id) { for (const c of PASS) for (const i of c.items) if (i[0] === id) return i; return null; }
+// Solo se puede marcar si de verdad se puede ver ahora: sobre el horizonte y con el cielo oscuro
+function canSee(entry) {
+  const aa = entryAltAz(entry); if (!aa || aa.alt < 3) return false;
+  const sunAlt = altAzAt('Sun', simDate()).altitude;
+  return entry.id === 'moon' || sunAlt < -4;
+}
+function markSeen(entry) {
+  const id = passIdFor(entry); if (!id || ME.seen[id]) return;
+  const before = BADGES.filter(b => b[4](ME.seen)).map(b => b[0]);
+  ME.seen[id] = { t: new Date().toISOString(), place: S.place.name.split(',')[0] };
+  const nk = nightKey(new Date()); if (!ME.nights.includes(nk)) ME.nights.push(nk);
+  saveMe();
+  const fresh = BADGES.filter(b => b[4](ME.seen) && !before.includes(b[0]));
+  const en = S.lang === 'en';
+  toast(fresh.length ? `${fresh[0][1]} ${en ? 'New badge' : 'Nueva insignia'}: ${fresh[0][en ? 3 : 2]}!` : `✅ ${en ? 'Added to your passport' : 'Añadido a tu pasaporte'}`);
+  paintSeenBtn(entry);
+}
+function paintSeenBtn(entry) {
+  const btn = $('infoSeen'), id = passIdFor(entry), en = S.lang === 'en';
+  btn.hidden = !id;
+  if (!id) return;
+  if (ME.seen[id]) { btn.textContent = en ? '✅ In your passport' : '✅ En tu pasaporte'; btn.disabled = true; return; }
+  const ok = canSee(entry);
+  btn.disabled = !ok;
+  btn.textContent = ok ? (en ? '👁️ I\'ve seen it' : '👁️ Lo he visto') : (en ? '👁️ Mark when visible at night' : '👁️ Márcalo cuando se vea de noche');
+}
+
+// ── Eclipses desde tu ciudad ──
+const ECLIPSE_CITIES = [['Cádiz', 36.53, -6.29], ['Málaga', 36.72, -4.42], ['Sevilla', 37.39, -5.98], ['Granada', 37.18, -3.60], ['Almería', 36.84, -2.46], ['Córdoba', 37.88, -4.78], ['Huelva', 37.26, -6.95],
+  ['Ceuta', 35.89, -5.32], ['Murcia', 37.99, -1.13], ['Valencia', 39.47, -0.38], ['Ciudad Real', 38.98, -3.93], ['Madrid', 40.42, -3.70], ['Toledo', 39.86, -4.02], ['Zaragoza', 41.65, -0.89], ['Barcelona', 41.39, 2.17],
+  ['Bilbao', 43.26, -2.93], ['A Coruña', 43.36, -8.41], ['Palma', 39.57, 2.65], ['Las Palmas', 28.12, -15.43], ['Lisboa', 38.72, -9.14]];
+function solarEclipses(n = 5) {
+  const out = []; let e;
+  try {
+    e = A.SearchLocalSolarEclipse(simDate(), observer);
+    for (let k = 0; k < n; k++) { out.push(e); e = A.NextLocalSolarEclipse(e.peak.time, observer); }
+  } catch { }
+  return out;
+}
+function totalityCities(peakDate) { // dónde será total ese eclipse (entre ciudades de referencia)
+  const res = [];
+  for (const [name, lat, lon] of ECLIPSE_CITIES) {
+    try { const e = A.SearchLocalSolarEclipse(new Date(+peakDate - 2 * 864e5), new A.Observer(lat, lon, 0)); if (Math.abs(e.peak.time.date - peakDate) < 864e5 && e.kind === 'total') res.push(name); } catch { }
+  }
+  return res;
+}
+
+// ── Interfaz ──
+function renderMe() {
+  const box = $('meBody'), en = S.lang === 'en';
+  ['Birth', 'Pass', 'Ecl'].forEach(k => $('meTab' + k).classList.toggle('on', S.meTab === { Birth: 'birth', Pass: 'pass', Ecl: 'ecl' }[k]));
+  box.replaceChildren();
+  if (S.meTab === 'birth') return renderBirth(box, en);
+  if (S.meTab === 'pass') return renderPass(box, en);
+  return renderEclipses(box, en);
+}
+function renderBirth(box, en) {
+  if (!ME.birth || S.meEdit) {
+    const f = document.createElement('div'); f.className = 'meForm';
+    f.innerHTML = `<p class="note">${en ? 'Enter your date of birth to see your cosmic age and your birthday star. It is only stored on this device.' : 'Escribe tu fecha de nacimiento para ver tu edad cósmica y tu estrella de cumpleaños. Solo se guarda en este móvil.'}</p>
+      <label class="mini">${en ? 'Date of birth' : 'Fecha de nacimiento'}</label><input id="meBirth" type="date" class="input" max="${new Date().toISOString().slice(0, 10)}" value="${ME.birth || ''}">
+      <label class="mini">${en ? 'Your name (optional, for the card)' : 'Tu nombre (opcional, para la tarjeta)'}</label><input id="meName" type="text" class="input" maxlength="24" value="${ME.name || ''}">
+      <button id="meSave" class="btn" type="button">✨ ${en ? 'Discover my cosmic age' : 'Descubrir mi edad cósmica'}</button>`;
+    box.append(f);
+    $('meSave').onclick = () => { const v = $('meBirth').value; if (!v) return toast(en ? 'Choose a date' : 'Elige una fecha'); ME.birth = v; ME.name = $('meName').value.trim(); S.meEdit = false; saveMe(); renderMe(); };
+    return;
+  }
+  const a = cosmicAge(), b = birthDate();
+  const card = document.createElement('div'); card.className = 'cosmic';
+  const who = ME.name ? `${ME.name}, ` : '';
+  card.innerHTML = `<div class="cosHead">🌍 ${who}${en ? 'you have travelled' : 'has dado'} <b>${fmtNum(a.orbits, 1)}</b> ${en ? 'times around the Sun' : 'vueltas al Sol'}</div>
+    <p class="note">${en ? `and travelled <b>${bigNum(a.km, en)} km</b> around it without leaving the sofa.` : `y viajado <b>${bigNum(a.km, en)} km</b> a su alrededor, sin moverte del sofá.`}</p>
+    <div class="mini">${en ? '🪐 Your age on other worlds' : '🪐 Tu edad en otros mundos'}</div>
+    <div class="cosGrid">${Object.keys(PLANET_YEAR).map(p => `<div><span>${PL_ICON[p]} ${bodyName(BODIES.find(x => x.id === p))}</span><b>${ageOn(a.planets[p], en)}</b></div>`).join('')}</div>
+    <p class="note">🌌 ${en ? `Riding with the Sun, you have also travelled about <b>${bigNum(a.galaxyKm, en)} km</b> around the centre of the Milky Way.` : `Con el Sol, además, has recorrido unos <b>${bigNum(a.galaxyKm, en)} km</b> alrededor del centro de la Vía Láctea.`}</p>`;
+  box.append(card);
+  // Próximos cumpleaños en otros planetas (con aviso en el calendario)
+  const nx = document.createElement('div'); nx.className = 'cosNext';
+  const mk = (p, label) => { const d = a.next[p]; const row = document.createElement('div'); row.className = 'ev';
+    row.innerHTML = `<span class="ico">${PL_ICON[p]}</span><div><div class="when">${d.date.toLocaleDateString(S.lang, { day: 'numeric', month: 'long', year: 'numeric' })}</div><div class="what">${label.replace('{n}', d.n)}</div></div>`;
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'vchip calchip'; c.textContent = `📅 ${en ? 'Remind me' : 'Avisarme'}`;
+    c.onclick = () => addToCalendar({ title: `🎂 ${label.replace('{n}', d.n)}`, start: new Date(d.date.setHours(10, 0, 0, 0)), end: new Date(+d.date + 3600e3), alarm: 0, desc: en ? 'Your cosmic birthday — open Planetarium by DarwinCaos' : 'Tu cumpleaños cósmico — ábrelo en el Planetarium by DarwinCaos', link: deepLink(p, d.date) });
+    row.querySelector('div').append(c); nx.append(row); };
+  nx.append(Object.assign(document.createElement('div'), { className: 'mini', textContent: en ? '🎂 Your next cosmic birthdays' : '🎂 Tus próximos cumpleaños cósmicos' }));
+  mk('mercury', en ? 'You turn {n} on Mercury' : 'Cumples {n} años en Mercurio');
+  mk('mars', en ? 'You turn {n} on Mars' : 'Cumples {n} años en Marte');
+  mk('jupiter', en ? 'You turn {n} on Jupiter' : 'Cumples {n} años en Júpiter');
+  box.append(nx);
+  // Tu estrella de cumpleaños
+  const sb = document.createElement('div'); sb.className = 'cosStar'; sb.innerHTML = `<p class="note">${en ? 'Finding your star…' : 'Buscando tu estrella…'}</p>`;
+  box.append(sb);
+  loadNear().then(() => {
+    const st = birthdayStar(a.years), { name, con } = nearName(st);
+    const left = new Date(+simDate() - st.ly * 365.2422 * 864e5), diff = a.years - st.ly;
+    const when = left.toLocaleDateString(S.lang, { month: 'long', year: 'numeric' });
+    const rel = Math.abs(diff) < 1 / 12 ? (en ? 'right when you were born' : 'justo cuando naciste') : diff > 0 ? (en ? `when you were ${ageOn(diff, en)} old` : `cuando tenías ${ageOn(diff, en)}`) : (en ? `${ageOn(-diff, en)} before you were born` : `${ageOn(-diff, en)} antes de que nacieras`);
+    const aa = vecToAltAz(eqVec(st.ra, st.de, 1).applyMatrix4(skyGroup.matrixWorld));
+    sb.innerHTML = `<div class="cosHead">⭐ ${en ? 'Your birthday star' : 'Tu estrella de cumpleaños'}: <b>${name}</b></div>
+      <p class="note">${en ? `In ${con}, ${fmtNum(st.ly, 1)} light-years away. The light reaching your eyes tonight left it in <b>${when}</b>, ${rel}: it has been travelling towards you your whole life.`
+        : `En ${con}, a ${fmtNum(st.ly, 1)} años luz. La luz que te llega esta noche salió de ella en <b>${when}</b>, ${rel}: lleva toda tu vida viajando hacia ti.`}</p>
+      <p class="note">${st.m <= 4.5 ? (en ? '👁️ Visible to the naked eye' : '👁️ Se ve a simple vista') : (en ? '🔭 Faint: best with binoculars' : '🔭 Débil: mejor con prismáticos')} · ${aa.alt > 0 ? (en ? `now ${fmtNum(aa.alt)}° high towards ${azName(aa.az)}` : `ahora a ${fmtNum(aa.alt)}° hacia el ${azName(aa.az)}`) : (en ? 'below the horizon right now' : 'ahora bajo el horizonte')}</p>`;
+    const go = document.createElement('button'); go.type = 'button'; go.className = 'btn ghost'; go.textContent = `🎯 ${en ? 'Find it in the sky' : 'Búscala en el cielo'}`;
+    go.onclick = () => { closeModals(); const e = starEntry(st, `⭐ ${name}`); S.selected = null; pointTo(e, true); };
+    sb.append(go);
+    ME._star = { name, ly: st.ly, when };
+  });
+  const row = document.createElement('div'); row.className = 'btn-row';
+  const share = document.createElement('button'); share.type = 'button'; share.className = 'btn'; share.textContent = `📤 ${en ? 'Share my card' : 'Compartir mi tarjeta'}`;
+  share.onclick = () => shareCosmicCard();
+  const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'btn ghost'; edit.textContent = `✏️ ${en ? 'Change date' : 'Cambiar fecha'}`;
+  edit.onclick = () => { S.meEdit = true; renderMe(); };
+  row.append(share, edit); box.append(row);
+}
+// Tarjeta para redes (formato historia 1080×1920) dibujada en el propio móvil
+async function shareCosmicCard() {
+  const en = S.lang === 'en', a = cosmicAge(), W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0b1430'); bg.addColorStop(0.6, '#060b1d'); bg.addColorStop(1, '#02040c'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 420; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.7})`; g.beginPath(); g.arc(Math.random() * W, Math.random() * H, Math.random() * 2.2, 0, 7); g.fill(); }
+  const logo = await new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = 'img/logo.png'; });
+  if (logo) { g.save(); g.beginPath(); g.arc(W / 2, 200, 110, 0, 7); g.clip(); g.drawImage(logo, W / 2 - 137, 63, 274, 274); g.restore(); }
+  const t = (txt, y, size, color = '#e2e8f0', weight = 700) => { g.font = `${weight} ${size}px system-ui, -apple-system, sans-serif`; g.fillStyle = color; g.textAlign = 'center'; g.fillText(txt, W / 2, y); };
+  t(en ? 'MY COSMIC AGE' : 'MI EDAD CÓSMICA', 400, 44, '#93c5fd', 800);
+  if (ME.name) t(ME.name, 470, 60, '#fff', 800);
+  t(`${fmtNum(a.orbits, 1)}`, 640, 170, '#fde68a', 900);
+  t(en ? 'trips around the Sun' : 'vueltas al Sol', 720, 50, '#e2e8f0', 600);
+  t(en ? `${bigNum(a.km, en)} km travelled` : `${bigNum(a.km, en)} km recorridos`, 800, 46, '#bae6fd', 600);
+  const rows = ['mercury', 'venus', 'mars', 'jupiter', 'saturn', 'neptune'];
+  rows.forEach((p, i) => { const y = 930 + i * 92; g.font = '600 46px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = '#cbd5e1'; g.fillText(`${PL_ICON[p]}  ${bodyName(BODIES.find(x => x.id === p))}`, 170, y); g.textAlign = 'right'; g.fillStyle = '#fff'; g.font = '800 50px system-ui, sans-serif'; g.fillText(ageOn(a.planets[p], en), W - 170, y); });
+  if (ME._star) { t(`⭐ ${en ? 'My birthday star' : 'Mi estrella de cumpleaños'}: ${ME._star.name}`, 1560, 44, '#fde68a', 700); t(en ? `its light left it in ${ME._star.when}` : `su luz salió de ella en ${ME._star.when}`, 1620, 38, '#cbd5e1', 500); }
+  t('Planetarium by DarwinCaos', 1790, 40, '#93c5fd', 700);
+  t(location.host + location.pathname, 1845, 30, '#64748b', 500);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const file = new File([blob], 'mi-edad-cosmica.png', { type: 'image/png' });
+  try {
+    if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: en ? 'My cosmic age' : 'Mi edad cósmica', text: en ? 'How old are you on Mars? Find out:' : '¿Cuántos años tienes en Marte? Descúbrelo:' }); return; }
+  } catch { return; }
+  const u = URL.createObjectURL(blob); const l = Object.assign(document.createElement('a'), { href: u, download: 'mi-edad-cosmica.png' }); document.body.append(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 15000);
+}
+function renderPass(box, en) {
+  const n = PASS_ALL.filter(k => ME.seen[k]).length;
+  const head = document.createElement('div'); head.className = 'passHead';
+  head.innerHTML = `<div class="cosHead">🛂 ${en ? 'Your observing passport' : 'Tu pasaporte de observación'}</div>
+    <div class="passBar"><i style="width:${(n / PASS_ALL.length * 100).toFixed(0)}%"></i></div>
+    <p class="note">${n} / ${PASS_ALL.length} ${en ? 'seen with your own eyes' : 'vistos con tus propios ojos'} · 🔥 ${en ? 'streak' : 'racha'}: ${streak()} ${streak() === 1 ? (en ? 'night' : 'noche') : (en ? 'nights' : 'noches')}</p>
+    <p class="note">${en ? 'Open any object, look for it in the real sky and tap «👁️ I\'ve seen it» (only possible when it is really visible).' : 'Abre cualquier objeto, búscalo en el cielo real y pulsa «👁️ Lo he visto» (solo se puede cuando de verdad se ve).'}</p>`;
+  box.append(head);
+  const bg = document.createElement('div'); bg.className = 'badges';
+  for (const [id, ico, es, en2, ok] of BADGES) { const d = document.createElement('div'); d.className = 'badge' + (ok(ME.seen) ? ' on' : ''); d.innerHTML = `<span>${ico}</span><small>${en ? en2 : es}</small>`; bg.append(d); }
+  box.append(bg);
+  for (const c of PASS) {
+    box.append(Object.assign(document.createElement('div'), { className: 'mini', textContent: PASS_CAT[c.cat][en ? 1 : 0] }));
+    for (const [id, ico, es, en2] of c.items) {
+      const seen = ME.seen[id];
+      const r = document.createElement('button'); r.type = 'button'; r.className = 'ev passRow' + (seen ? ' hl' : '');
+      r.innerHTML = `<span class="ico">${seen ? '✅' : ico}</span><div><div class="what">${en ? en2 : es}</div><div class="more">${seen ? `${new Date(seen.t).toLocaleDateString(S.lang, { day: 'numeric', month: 'short', year: 'numeric' })} · ${seen.place}` : (en ? 'Not seen yet · tap to find it' : 'Aún no · toca para buscarlo')}</div></div>`;
+      r.onclick = () => { const key = id.startsWith('moon') ? 'moon' : id === 'starlink' ? null : id; const e = key && CATALOG.find(x => x.id === key); if (e) { closeModals(); openInfo(e); pointTo(e); } else if (id === 'starlink') { S.layers.starlink = true; applyLayers(); closeModals(); toast(en ? 'Starlink layer on: tap a moving dot' : 'Capa Starlink activada: toca un punto que se mueva'); } };
+      box.append(r);
+    }
+  }
+}
+function renderEclipses(box, en) {
+  const list = solarEclipses(6), now = simDate();
+  const big = list.find(e => e.peak.altitude > 0 && e.obscuration > 0.5);
+  box.append(Object.assign(document.createElement('div'), { className: 'cosHead', textContent: `🌑 ${en ? 'Solar eclipses from' : 'Eclipses de Sol desde'} ${S.place.name.split(',')[0]}` }));
+  if (big) {
+    const d = big.peak.time.date, days = Math.ceil((d - now) / 864e5);
+    const kind = { total: en ? 'TOTAL' : 'TOTAL', annular: en ? 'ANNULAR' : 'ANULAR', partial: en ? 'PARTIAL' : 'PARCIAL' }[big.kind];
+    const card = document.createElement('div'); card.className = 'eclCard';
+    card.innerHTML = `<div class="eclDays"><b>${fmtNum(days)}</b><span>${en ? 'days to go' : 'días'}</span></div>
+      <div class="eclInfo"><div class="eclKind">${kind}${big.kind === 'partial' ? ` · ${fmtNum(big.obscuration * 100)} % ${en ? 'of the Sun covered' : 'del Sol cubierto'}` : ''}</div>
+      <div>${d.toLocaleDateString(S.lang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', ...tzOpt() })}</div>
+      <div class="note">${en ? 'Maximum at' : 'Máximo a las'} ${fmtHM(d)} · ${en ? 'Sun' : 'Sol'} ${fmtNum(big.peak.altitude)}° ${en ? 'high' : 'de altura'}</div></div>`;
+    box.append(card);
+    const where = document.createElement('p'); where.className = 'note'; where.textContent = en ? 'Checking where it will be total…' : 'Comprobando dónde será total…'; box.append(where);
+    setTimeout(() => { const tc = totalityCities(d); where.textContent = big.kind === 'total' ? (en ? '🎉 It will be TOTAL where you are!' : '🎉 ¡Desde donde estás será TOTAL!') : tc.length ? (en ? `To see it total, travel to: ${tc.join(', ')}.` : `Para verlo total, viaja a: ${tc.join(', ')}.`) : (en ? 'It will not be total in any of our reference cities.' : 'No será total en ninguna de nuestras ciudades de referencia.'); }, 60);
+    const row = document.createElement('div'); row.className = 'btn-row';
+    const cal = document.createElement('button'); cal.type = 'button'; cal.className = 'btn'; cal.textContent = `📅 ${en ? 'Add to calendar' : 'Añadir al calendario'}`;
+    cal.onclick = () => addToCalendar({ title: `🌑 ${en ? 'Solar eclipse' : 'Eclipse de Sol'} (${kind})`, start: big.partial_begin?.time.date || d, end: big.partial_end?.time.date || new Date(+d + 3600e3), alarm: 60 * 24, desc: en ? 'Never look at the Sun without certified eclipse glasses.' : 'Nunca mires al Sol sin gafas de eclipse homologadas.', link: deepLink('sun', d) });
+    const sky = document.createElement('button'); sky.type = 'button'; sky.className = 'btn ghost'; sky.textContent = `🔭 ${en ? 'See it in the sky' : 'Verlo en el cielo'}`;
+    sky.onclick = () => goToEvent('sun', d);
+    row.append(cal, sky); box.append(row);
+    const v = topicVideo('eclipse-solar'); if (v) { const a = Object.assign(document.createElement('a'), { className: 'btn yt', href: v.url, target: '_blank', rel: 'noopener', textContent: `▶ ${v.titulo}` }); a.style.textDecoration = 'none'; box.append(a); }
+    box.append(Object.assign(document.createElement('p'), { className: 'note eclWarn', textContent: en ? '⚠️ Never look at the Sun without certified eclipse glasses (ISO 12312-2), not even during a partial eclipse.' : '⚠️ Nunca mires al Sol sin gafas de eclipse homologadas (ISO 12312-2), ni siquiera durante un eclipse parcial.' }));
+  }
+  box.append(Object.assign(document.createElement('div'), { className: 'mini', textContent: en ? 'Next solar eclipses visible here' : 'Próximos eclipses de Sol visibles aquí' }));
+  const vis = list.filter(e => e.peak.altitude > 0);
+  if (!vis.length) box.append(Object.assign(document.createElement('p'), { className: 'note', textContent: en ? 'None in the coming years.' : 'Ninguno en los próximos años.' }));
+  vis.forEach(e => { const d = e.peak.time.date; box.append(evRow({ ico: '🌑', when: `${d.toLocaleDateString(S.lang, { day: 'numeric', month: 'short', year: 'numeric', ...tzOpt() })} · ${fmtHM(d)}`,
+    what: `${{ total: en ? 'Total' : 'Total', annular: en ? 'Annular' : 'Anular', partial: en ? 'Partial' : 'Parcial' }[e.kind]} · ${fmtNum(e.obscuration * 100)} % ${en ? 'covered' : 'cubierto'}`, more: `${en ? 'Sun' : 'Sol'} ${fmtNum(e.peak.altitude)}°`, onClick: () => goToEvent('sun', d) })); });
+}
+
 // ───────────── Bucle principal ─────────────
 const belowEl = $('belowTag'), banner = $('focusBanner'), timeLabel = $('timeLabel');
 const camDir = new THREE.Vector3();
@@ -2929,6 +3206,10 @@ function enterObject(entry) {
   requestAnimationFrame(step);
 }
 $('infoObject').onclick = () => S.selected && enterObject(S.selected);
+$('infoSeen').onclick = () => S.selected && markSeen(S.selected);
+$('meTabBirth').onclick = () => { S.meTab = 'birth'; renderMe(); };
+$('meTabPass').onclick = () => { S.meTab = 'pass'; renderMe(); };
+$('meTabEcl').onclick = () => { S.meTab = 'ecl'; renderMe(); };
 // «📅 Avisarme»: el próximo paso VISIBLE de la ISS o del satélite, al calendario del móvil
 $('infoCal').onclick = () => {
   const e = S.selected; if (!e) return;
