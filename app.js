@@ -2,15 +2,18 @@
 // Cielo real: efemérides (Astronomy Engine), catálogo Hipparcos, ISS por TLE (satellite.js),
 // 88 constelaciones IAU con ilustraciones de Stellarium y texturas planetarias fotográficas.
 import * as THREE from './vendor/three.module.min.js';
-import { createObjectView } from './objeto.js?v=2.0';
-import { createSatellites } from './satelites.js?v=2.0';
+import { createObjectView } from './objeto.js?v=2.0.1';
+import { createSatellites } from './satelites.js?v=2.0.1';
 
 const A = window.Astronomy;
 const SAT = window.satellite;
 
 // ───────────── Configuración del canal ─────────────
 // Versión de la app. Al publicar cambios, súbela aquí y en index.html (?v=) para que los móviles no usen archivos viejos.
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.0.1';
+// Estadísticas anónimas (Umami, sin cookies): qué funciones se usan y cuántos clics van al canal.
+// Solo cuentan en la web publicada (data-domains del script en index.html); en pruebas no se envía nada.
+const track = (name, data) => { try { window.umami?.track(name, data); } catch { } };
 const CHANNEL_URL = 'https://www.youtube.com/@DarwinCaos'; // ← verificar el handle real
 // Vídeos del canal por objeto. Si falta, se abre la búsqueda del canal con el nombre del objeto.
 const VIDEOS = {
@@ -1258,6 +1261,7 @@ function infoStats(entry) {
   return { stats, fact };
 }
 function openInfo(entry) {
+  track('ficha', { objeto: entry.kind === 'sat' && entry.ref?.tipo === 'starlink' ? 'starlink' : entry.id });
   SATS.hidePath();
   S.selected = entry;
   if (entry.kind === 'sat') { entry.ref.now = SATS.lookAt(entry.ref, simDate()); entry.ref.path = SATS.showPath(entry.ref, simDate()); } // posición ya y su recorrido por el cielo
@@ -1626,6 +1630,7 @@ async function setCamera(on) {
     } catch { toast(T().camFail); on = false; }
   } else if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
   S.camera = on;
+  if (on) track('camara-ra');
   document.body.classList.toggle('camera', on);
   dome.visible = !on; ground.visible = !on;
   applyLayers();
@@ -1659,7 +1664,7 @@ $('infoPoint').onclick = () => S.selected && pointTo(S.selected, true);
 $('infoShare').onclick = () => share(S.selected);
 $('subscribeBtn').href = `${CHANNEL_URL}?sub_confirmation=1`;
 
-$('dockRed').onclick = () => { S.red = !S.red; applyRed(); persist(); };
+$('dockRed').onclick = () => { S.red = !S.red; if (S.red) track('modo-rojo'); applyRed(); persist(); };
 // Pantalla limpia (sobre todo para móvil): oculta los menús; quedan la brújula y el botón ☰ para recuperarlos
 $('dockClean').onclick = () => { closeModals(); document.body.classList.add('clean'); };
 $('uiBtn').onclick = () => document.body.classList.remove('clean');
@@ -1717,7 +1722,7 @@ function renderLayers() {
     const row = document.createElement('div'); row.className = 'row';
     const name = document.createElement('span'); name.className = 'name'; name.textContent = label;
     const sw = document.createElement('button'); sw.type = 'button'; sw.className = 'switch' + (S.layers[key] ? ' on' : ''); sw.textContent = S.layers[key] ? 'ON' : 'OFF';
-    sw.onclick = () => { S.layers[key] = !S.layers[key]; applyLayers(); persist(); renderLayers(); };
+    sw.onclick = () => { S.layers[key] = !S.layers[key]; track('capa', { capa: key, activa: S.layers[key] }); applyLayers(); persist(); renderLayers(); };
     row.append(name, sw);
     list.append(row);
   });
@@ -2012,7 +2017,7 @@ function evRow({ ico, when, what, more, onClick, href, img, hl, box: thumbBox, v
   if (video) { // «▶ Ver vídeo» del canal, sin abrir el evento
     const b = document.createElement('button'); b.type = 'button'; b.className = 'vchip';
     b.textContent = `▶ ${S.lang === 'en' ? 'Watch video' : 'Ver vídeo'}`; b.title = video.titulo;
-    b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); window.open(video.url, '_blank', 'noopener'); };
+    b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); track('youtube', { tipo: 'video', desde: 'evento' }); window.open(video.url, '_blank', 'noopener'); };
     box.append(b);
   }
   el.append(box);
@@ -2089,6 +2094,7 @@ function deepLink(objId, time) {
   return u.toString();
 }
 function addToCalendar({ title, start, end, desc = '', alarm = 15, link }) {
+  track('calendario', { evento: title.slice(0, 40) });
   link ||= deepLink(null, start);
   const ics = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const esc = t => String(t).replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n');
@@ -2179,6 +2185,7 @@ function renderTonight(box) {
   const wx = document.createElement('div'); wx.className = 'wxCard';
   box.append(section(S.lang === 'en' ? '🌤️ Will it be clear tonight?' : '🌤️ ¿Se verá esta noche?'), wx);
   renderWeather(wx, n);
+  track('esta-noche');
   // Luna
   const moonE = bodyEntry('moon');
   box.append(evRow({ ico: n.moon.ph < 180 ? '🌒' : '🌘', what: `${n.moon.name} · ${fmtNum(n.moon.illum * 100)} % ${c.lit}`,
@@ -2534,6 +2541,7 @@ function markSeen(entry) {
   const id = passIdFor(entry); if (!id || ME.seen[id]) return;
   const before = BADGES.filter(b => b[4](ME.seen)).map(b => b[0]);
   ME.seen[id] = { t: new Date().toISOString(), place: S.place.name.split(',')[0] };
+  track('pasaporte', { objeto: id });
   const nk = nightKey(new Date()); if (!ME.nights.includes(nk)) ME.nights.push(nk);
   saveMe();
   const fresh = BADGES.filter(b => b[4](ME.seen) && !before.includes(b[0]));
@@ -2573,6 +2581,7 @@ function totalityCities(peakDate) { // dónde será total ese eclipse (entre ciu
 
 // ── Interfaz ──
 function renderMe() {
+  track('mi-cielo', { seccion: S.meTab });
   const box = $('meBody'), en = S.lang === 'en';
   ['Birth', 'Pass', 'Ecl'].forEach(k => $('meTab' + k).classList.toggle('on', S.meTab === { Birth: 'birth', Pass: 'pass', Ecl: 'ecl' }[k]));
   box.replaceChildren();
@@ -2588,7 +2597,7 @@ function renderBirth(box, en) {
       <label class="mini">${en ? 'Your name (optional, for the card)' : 'Tu nombre (opcional, para la tarjeta)'}</label><input id="meName" type="text" class="input" maxlength="24" value="${ME.name || ''}">
       <button id="meSave" class="btn" type="button">✨ ${en ? 'Discover my cosmic age' : 'Descubrir mi edad cósmica'}</button>`;
     box.append(f);
-    $('meSave').onclick = () => { const v = $('meBirth').value; if (!v) return toast(en ? 'Choose a date' : 'Elige una fecha'); ME.birth = v; ME.name = $('meName').value.trim(); S.meEdit = false; saveMe(); renderMe(); };
+    $('meSave').onclick = () => { track('cumpleanos-guardado'); const v = $('meBirth').value; if (!v) return toast(en ? 'Choose a date' : 'Elige una fecha'); ME.birth = v; ME.name = $('meName').value.trim(); S.meEdit = false; saveMe(); renderMe(); };
     return;
   }
   const a = cosmicAge(), b = birthDate();
@@ -2639,6 +2648,7 @@ function renderBirth(box, en) {
 }
 // Tarjeta para redes (formato historia 1080×1920) dibujada en el propio móvil
 async function shareCosmicCard() {
+  track('tarjeta-cosmica');
   const en = S.lang === 'en', a = cosmicAge(), W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
   const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0b1430'); bg.addColorStop(0.6, '#060b1d'); bg.addColorStop(1, '#02040c'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
@@ -3038,6 +3048,7 @@ function zonedToUtc(str, tz) {
   return new Date(guess);
 }
 async function makePostal() {
+  track('postal-fecha-especial');
   const P = S.postal, keep = { place: S.place, offset: S.offset, q: camera.quaternion.clone(), fov: S.fov, sel: S.selected };
   // Cielo de ese momento y lugar (sin guardar nada: al terminar se restaura todo)
   S.place = P.place; observer = new A.Observer(P.place.lat, P.place.lon, 0);
@@ -3083,6 +3094,7 @@ $('postMake').onclick = async () => {
   S.shotEntry = null;
 };
 function saveShot() {
+  track('foto-cielo', { accion: 'guardar' });
   const a = document.createElement('a'); a.href = shotUrl; a.download = shotName(); document.body.append(a); a.click(); a.remove();
 }
 $('infoShot').onclick = () => openShot();
@@ -3090,6 +3102,7 @@ $('dockShot').onclick = () => ($('modalShot').classList.contains('open') ? close
 $('shotSave').onclick = saveShot;
 $('shotShare').onclick = async () => {
   if (!shotBlob) return;
+  track('foto-cielo', { accion: 'compartir' });
   const file = new File([shotBlob], shotName(), { type: 'image/jpeg' });
   const text = S.postal ? `${S.shotCap} · ${S.postal.place.name} · ${T().shotText} ${location.href.split('?')[0]}` : `${S.shotCap || T().shotDefault} · ${T().shotText} ${shareUrl(S.shotEntry)}`;
   try {
@@ -3126,9 +3139,17 @@ document.addEventListener('focusout', e => {
 // El «ayudante» (sw.js) guarda la app en el móvil: abre al instante y funciona sin cobertura.
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => { });
 const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+addEventListener('load', () => setTimeout(() => { if (isStandalone()) track('abierta-como-app'); }, 3000));
+// Cualquier enlace a YouTube (vídeos relacionados, aviso de estreno, «Ver en el canal», «Suscríbete»): el dato clave de rentabilidad
+document.addEventListener('click', e => {
+  const a = e.target.closest?.('a[href*="youtube.com"], a[href*="youtu.be"]');
+  if (!a) return;
+  const desde = a.closest('#infoCard') ? 'ficha' : a.closest('#newVideo') ? 'aviso-estreno' : a.closest('#modalAbout') ? 'acerca-de' : a.closest('#modalMe') ? 'mi-cielo' : a.closest('#calBody') ? 'calendario' : 'otro';
+  track('youtube', { tipo: /sub_confirmation/.test(a.href) ? 'suscribirse' : /\/(watch|shorts)\b/.test(a.href) ? 'video' : 'canal', desde });
+}, true);
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; paintInstall(); }); // Android/Chrome: lo instalamos con nuestro botón
-addEventListener('appinstalled', () => { installEvt = null; paintInstall(); toast(S.lang === 'en' ? 'Installed ✔' : 'Instalada ✔'); });
+addEventListener('appinstalled', () => { track('app-instalada'); installEvt = null; paintInstall(); toast(S.lang === 'en' ? 'Installed ✔' : 'Instalada ✔'); });
 function paintInstall() {
   const en = S.lang === 'en', btn = $('installBtn'), help = $('installHelp');
   help.hidden = true;
@@ -3136,6 +3157,7 @@ function paintInstall() {
   btn.disabled = false;
   btn.textContent = en ? '📲 Install as an app' : '📲 Instalar como app';
   btn.onclick = async () => {
+    track('instalar-boton', { sistema: isIOS ? 'ios' : 'otro' });
     if (installEvt) { installEvt.prompt(); await installEvt.userChoice.catch(() => { }); installEvt = null; paintInstall(); return; }
     help.hidden = false; // iPhone (y navegadores sin instalación automática): explicamos los pasos
     help.textContent = isIOS
@@ -3183,6 +3205,7 @@ function moonPhaseView() {
   return new THREE.Vector3(L.dot(right), L.dot(up), -L.dot(f)).normalize();
 }
 function enterObject(entry) {
+  track('objeto-3d', { astro: entry.kind === 'sat' && entry.ref?.tipo === 'starlink' ? 'starlink' : entry.id });
   const o = getObj();
   objPrev = { fov: S.fov, az: S.viewAz, alt: S.viewAlt };
   const card = entry.kind === 'sat' || entry.kind === 'iss' ? objCardFor(entry) : null;

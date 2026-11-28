@@ -70,6 +70,9 @@ vendor/               three.js 0.160, Astronomy Engine 2.1.19, satellite.js 5.0 
 
 ## Historial de versiones
 
+### Versión 2.0.1 — estadísticas
+- **Estadísticas anónimas y sin cookies con Umami** (solo en la web publicada): visitas, procedencia, países, dispositivos y eventos de uso: fichas abiertas, modo Objeto, calendario, postales, pasaporte, Mi cielo, capas, modo rojo, cámara, instalación de la app y **clics hacia YouTube** (vídeo, canal o suscripción, y desde dónde).
+
 ### Versión 2.0 — «Tu cielo personal» (botón ✨ Mi cielo)
 - **🎂 Tu edad cósmica**: vueltas al Sol, kilómetros recorridos alrededor del Sol y de la Vía Láctea, tu edad en cada planeta y **tus próximos cumpleaños en Mercurio, Marte y Júpiter** (con aviso en el calendario). Tarjeta en formato historia para compartir.
 - **⭐ Tu estrella de cumpleaños**: la estrella visible cuya luz salió de ella el año en que naciste (distancias de Hipparcos, catálogo HYG, CC BY-SA 4.0), con botón para buscarla en el cielo.
